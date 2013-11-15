@@ -23,7 +23,7 @@
 
  */
 (function (window, undefined) {
-    
+
     var router = new window.Router;
 
     window.Controller = Base.extend(function Controller(opts) {
