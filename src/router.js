@@ -28,15 +28,22 @@
      * @type {function}
      */
     window.Router = Base.extend(function Router() {
-        Base.prototype.constructor.call(this);
+        Base.prototype.constructor.apply(this);
+    });
+
+    /**
+     *
+     */
+    Router.prototype.init = function () {
         this.set('routing', {});
         this.bindEvents();
-    });
+    };
+
     /**
      *
      * @returns {*}
      */
-    window.Router.prototype.bindEvents = function () {
+    Router.prototype.bindEvents = function () {
         window.onhashchange = this.onHashChange.bind(this);
         return this;
     };
@@ -44,7 +51,7 @@
      *
      * @returns {*}
      */
-    window.Router.prototype.onHashChange = function () {
+    Router.prototype.onHashChange = function () {
         var routing = this.get('routing'),
             hash = window.location.hash.substr(1),
             paths = hash.split("/"),
@@ -64,7 +71,7 @@
         }
         return this;
     };
-    window.Router.prototype.restore = function () {
+    Router.prototype.restore = function () {
         this.onHashChange();
     };
     /**
@@ -73,7 +80,7 @@
      * @param callback
      * @returns {*}
      */
-    window.Router.prototype.when = function (path, callback) {
+    Router.prototype.when = function (path, callback) {
         var routing = this.get('routing'),
             paths = path.split("/"),
             action = paths.shift();

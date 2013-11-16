@@ -23,27 +23,22 @@
 
  */
 (function (window, undefined) {
-
-    var router = new window.Router;
-
+    var router = new window.Router();
     window.Controller = Base.extend(function Controller(opts) {
+        Base.prototype.constructor.apply(this, arguments);
+    });
+
+    Controller.prototype.init = function (opts) {
         var config;
         opts = opts || {};
         config = opts.config || {};
-        Base.prototype.constructor.call(this);
         this.set('initOpts', opts);
         this.set('config', config);
         this.set('routes', config.routes || {});
-        this.bindMethods();
         this.initConfig();
-        this.init();
-    });
-
-    window.Controller.prototype.init = function () {
-
     };
 
-    window.Controller.prototype.initConfig = function () {
+    Controller.prototype.initConfig = function () {
         var routes = this.get('routes');
         if (routes) {
             for (var k in routes) {
@@ -55,17 +50,7 @@
         }
     };
 
-    window.Controller.prototype.bindMethods = function () {
-        var initOpts = this.get('initOpts');
-        for (var property in initOpts) {
-            if (initOpts.hasOwnProperty(property) && typeof initOpts[property] === 'function') {
-                this[property] = initOpts[property].bind(this);
-            }
-        }
-    };
-
-    window.Controller.prototype.getRouter = function () {
+    Controller.prototype.getRouter = function () {
         return router;
     };
-
 }(window));

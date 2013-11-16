@@ -23,6 +23,7 @@
 
  */
 (function (window, undefined) {
+    var VTM;
     window.ViewManager = {
         views: {},
         i: 0,
@@ -34,7 +35,7 @@
             return this.views[id];
         }
     };
-    window.ViewTemplateManager = {
+    window.ViewTemplateManager = VTM = {
         tpl: {},
         add: function (id, view) {
             this.tpl[id] = view;
@@ -48,72 +49,70 @@
      * @type {function}
      */
     window.View = Base.extend(function View(opts) {
+        Base.prototype.constructor.apply(this, arguments);
+    });
+
+    View.prototype.init = function (_opts) {
         var config,
-            opts = opts || {},
+            opts = _opts || {},
             id;
         config = opts.config || {};
         config.id = id = config.id || 'view-' + ViewManager.i;
-        config.views = config.views || [];
-        Base.prototype.constructor.call(this);
+        config.views = config.views || {};
         this.set('initOpts', opts);
         this.set('config', config);
-        this.bindMethods();
         this.initConfig();
-        this.init();
         ViewManager.add(id, this);
-    });
+    };
     /**
      *
      */
-    window.View.prototype.initConfig = function () {
-        var config = this.get('config'),
+    View.prototype.initConfig = function () {
+        var me = this,
+            config = me.get('config'),
             div = document.createElement('div'),
             _tpl,
             tpl;
         if (!config.tpl) {
             throw new Error('no tpl set');
         }
-        if (!ViewTemplateManager.get(config.tpl)) {
+        if (!VTM.get(config.tpl)) {
             _tpl = document.getElementById(config.tpl);
-            ViewTemplateManager.add(config.tpl, _tpl.parentNode.removeChild(_tpl));
+            if (!_tpl)
+                throw new Error('no tpl ' + config.tpl + ' found');
+            VTM.add(config.tpl, _tpl.parentNode.removeChild(_tpl));
         }
-        tpl = ViewTemplateManager.get(config.tpl).childNodes.item(1).cloneNode(true);
+        tpl = VTM.get(config.tpl).childNodes.item(1).cloneNode(true);
         div.appendChild(tpl);
-        this.set('tpl', div);
-    };
-    /**
-     *
-     */
-    window.View.prototype.init = function () {
-    };
-    /**
-     *
-     */
-    window.View.prototype.bindMethods = function () {
-        var initOpts = this.get('initOpts');
-        for (var property in initOpts) {
-            if (initOpts.hasOwnProperty(property) && typeof initOpts[property] === 'function') {
-                this[property] = initOpts[property].bind(this);
-            }
-        }
+        me.set('tpl', div);
     };
     /**
      *
      * @param data
      * @returns {Node}
      */
-    window.View.prototype.render = function (data) {
-        var tpl = this.get('tpl'),
-            id = this.get('config').renderTo,
-            model = data || this.get('config').models,
-            parent,
+    View.prototype.render = function (data) {
+        var me = this,
+            tpl = me.get('tpl'),
+            config = me.get('config'),
+            id = config.renderTo,
+            model = data || config.models,
+            parent = config.parent,
             el,
             domToText;
-        if (this.get('config').fullscreen) {
-            parent = document.querySelectorAll(id).item(0);
-        } else if (this.get('config').parent) {
-            parent = this.get('config').parent.querySelectorAll(id).item(0);
+
+        if (parent) {
+            if (id) {
+                parent = parent.querySelectorAll(id).item(0);
+            } else {
+                parent = parent.get('el');
+            }
+        } else {
+            if (id) {
+                parent = document.querySelectorAll(id).item(0);
+            }
         }
+
         if (model) {
             domToText = tpl.innerHTML;
             var headers = domToText.match(/\{\{(.*?)\}\}/gi);
@@ -123,26 +122,27 @@
                         header = fullHeader.substr(2, (fullHeader.length - 4));
                     if (model[header]) {
                         domToText = domToText.replace(fullHeader, model[header]);
-                    }else{
-                        domToText = domToText.replace(fullHeader, "inherit");
+                    } else {
+                        domToText = domToText.replace(fullHeader, "");
                     }
                 }
             }
             tpl.innerHTML = domToText;
         }
         el = tpl.childNodes.item(0);
-
-        this.set('el', el);
-        this.set('isInDOM', true);
+        el.setAttribute('yamvc-id', config.id);
+        me.set('el', el);
         if (parent) {
             parent.appendChild(el);
+            me.set('isInDOM', true);
+            me.reAppendChildren();
         }
-        return tpl.childNodes.item(1);
+        return tpl.childNodes.item(0);
     };
     /**
      *
      */
-    window.View.prototype.removeChildren = function () {
+    View.prototype.removeChildren = function () {
         var views = this.get('config').views || [];
         for (var i = 0, len = views.length; i < len; i++) {
             views[i].clear();
@@ -151,14 +151,59 @@
     /**
      *
      */
-    window.View.prototype.clear = function () {
-        var el = this.get('el');
-        if (this.isInDOM()) {
+    View.prototype.clear = function () {
+        var me = this, el = me.get('el');
+        if (me.isInDOM()) {
             el.parentNode.removeChild(el);
-            this.set('isInDOM', false);
+            me.set('isInDOM', false);
         }
     };
-    window.View.prototype.isInDOM = function () {
+
+    /**
+     *
+     * @returns {*}
+     */
+    View.prototype.isInDOM = function () {
         return this._isInDOM;
-    }
+    };
+
+    /**
+     *
+     * @param parent
+     */
+    View.prototype.appendTo = function (parent) {
+        var me = this,
+            config = me.get('config'),
+            id = config.id,
+            views = parent.get('config').views,
+            parentEl = parent.get('el');
+        if (config.parent && config.parent.get('config').id !== parent.get('config').id) {
+            delete config.parent.get('config').views[id];
+        }
+        if (!me.isInDOM() && parent.isInDOM()) {
+            if (!me.get('el')) {
+                me.render();
+            } else {
+                parentEl.appendChild(me.get('el'));
+                me.set('isInDOM', true);
+                me.reAppendChildren();
+            }
+        }
+        views[id] = me;
+        config.parent = parent;
+    };
+
+
+    /**
+     *
+     */
+    View.prototype.reAppendChildren = function () {
+        var views = this.get('config').views;
+        for (var key in views) {
+            if (views.hasOwnProperty(key)) {
+                views[key].appendTo(this);
+            }
+        }
+    };
+
 }(window));

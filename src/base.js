@@ -25,14 +25,35 @@
 (function (window, undefined) {
     "use strict";
     var Base = window.Base || (function () {
-        /**
-         *
-         * @constructor
-         */
         function Base() {
             this.set('listeners', {});
             this.set('suspendEvents', false);
+            this.bindMethods.apply(this, arguments);
+            this.init.apply(this, arguments);
         }
+
+        /**
+         * abstract method
+         */
+        Base.prototype.init = function () {
+        };
+
+        /**
+         * abstract method
+         */
+        Base.prototype.initConfig = function () {
+        };
+
+        /**
+         * binds custom methods from config object to class instance
+         */
+        Base.prototype.bindMethods = function (initOpts) {
+            for (var property in initOpts) {
+                if (initOpts.hasOwnProperty(property) && typeof initOpts[property] === 'function') {
+                    this[property] = initOpts[property].bind(this);
+                }
+            }
+        };
 
         /**
          *
@@ -77,7 +98,7 @@
         };
 
         /**
-         * add listener on event
+         * fire event
          * @param evName
          * @param callback
          * @returns {this}
@@ -102,7 +123,7 @@
 
         /**
          *
-         * unbind onChange callback
+         * unbind callback
          * @param property
          * @param callback
          * @returns {this}
@@ -123,9 +144,9 @@
         };
 
         /**
-         * extend object
+         * extend passed function
          * @static
-         * @param Func constructor of new one
+         * @param Func
          * @returns {Function}
          */
         Base.extend = function (Func) {
