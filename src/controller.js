@@ -22,22 +22,81 @@
 
 
  */
+/**
+ * ## Basic controller usage
+ *
+ *     @example
+ *     var ctl = new Controller({
+ *         config: {
+ *             name: 'Main',
+ *             views: {
+ *                 layout: ViewManager.get('view-0')
+ *             },
+ *             routes: {
+ *                 "page/{\\d+}": 'changePage'
+ *             },
+ *         },
+ *         bindElements : function (){
+ *             var me = this;
+ *             me.set('$arrowRight', document.querySelector('#arrow-right'));
+ *             me.set('$arrowLeft', document.querySelector('#arrow-left'));
+ *         },
+ *         bindEvents: function () {
+ *             var me = this;
+ *             me.get('$arrowRight').addEventListener('click', this.nextPage.bind(this));
+ *             me.get('$arrowLeft').addEventListener('click', this.prevPage.bind(this));
+ *         },
+ *         changePage: function (id) {
+ *             // changing page mechanism
+ *         },
+ *         nextPage: function () {
+ *             // changing page mechanism
+ *         },
+ *         prevPage: function () {
+ *             // changing page mechanism
+ *         }
+ *     });
+ *
+ * ## Configuration properties
+ *
+ * @cfg config.name {String} Name of the controller
+ * @cfg config.routes {Object} Object with defined routes and callbacks
+ * @cfg config.views {Object} List of views connected with controller
+ *
+ */
 (function (window, undefined) {
-    var router = new window.Router();
+    var router;
+
+    /**
+     *
+     * @type {*}
+     */
     window.Controller = Base.extend(function Controller(opts) {
         Base.prototype.constructor.apply(this, arguments);
     });
 
+    /**
+     * Initialize controller
+     *
+     * @param opts
+     *
+     */
     Controller.prototype.init = function (opts) {
         var config;
         opts = opts || {};
         config = opts.config || {};
+        router = router ||  new Router();
         this.set('initOpts', opts);
         this.set('config', config);
         this.set('routes', config.routes || {});
         this.initConfig();
+        return this;
     };
 
+    /**
+     * Initialize controller config
+     *
+     */
     Controller.prototype.initConfig = function () {
         var routes = this.get('routes');
         if (routes) {
@@ -48,9 +107,26 @@
                 }
             }
         }
+        return this;
     };
 
+    /**
+     *
+     * @returns {window.Router}
+     */
     Controller.prototype.getRouter = function () {
         return router;
+    };
+
+    /**
+     * Redirect to different location
+     *
+     * @param path
+     * @returns {Controller}
+     *
+     */
+    Controller.prototype.redirectTo = function (path) {
+        window.location.hash = path;
+        return this;
     };
 }(window));

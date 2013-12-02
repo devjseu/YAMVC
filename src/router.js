@@ -22,9 +22,16 @@
 
 
  */
+
+/**
+ *
+ * ## Router
+ * Router is used internally in controller, so don't instantiated it again.
+ */
 (function (window, undefined) {
+
     /**
-     *
+     * @constructor
      * @type {function}
      */
     window.Router = Base.extend(function Router() {
@@ -32,7 +39,7 @@
     });
 
     /**
-     *
+     * Initialize router
      */
     Router.prototype.init = function () {
         this.set('routing', {});
@@ -40,16 +47,19 @@
     };
 
     /**
+     * Bind all necessary events
+     * @returns {Router}
      *
-     * @returns {*}
      */
     Router.prototype.bindEvents = function () {
         window.onhashchange = this.onHashChange.bind(this);
         return this;
     };
+
     /**
+     * When hash change occurs match routes and run proper callback
+     * @returns {Router}
      *
-     * @returns {*}
      */
     Router.prototype.onHashChange = function () {
         var routing = this.get('routing'),
@@ -71,14 +81,25 @@
         }
         return this;
     };
+
+    /**
+     * Restore state
+     *
+     * @returns {Router}
+     *
+     */
     Router.prototype.restore = function () {
         this.onHashChange();
+        return this;
     };
+
     /**
+     * Define new route
      *
      * @param path
      * @param callback
-     * @returns {*}
+     * @returns {Router}
+     *
      */
     Router.prototype.when = function (path, callback) {
         var routing = this.get('routing'),
@@ -91,4 +112,5 @@
         this.set('routing', routing);
         return this;
     };
+
 }(window));

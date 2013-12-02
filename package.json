@@ -1,6 +1,6 @@
 {
   "name": "YAMVC",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Simply MVC Framework for my own use",
   "main": "./distrib/YAMVC-all.js",
   "repository": {
@@ -8,8 +8,8 @@
     "url": "https://github.com/devjseu/YAMVC"
   },
   "keywords": [
-    "scroll",
-    "smooth"
+    "MVC",
+    "library"
   ],
   "author": {
     "name": "Sebastian Widelak",

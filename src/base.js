@@ -24,7 +24,13 @@
  */
 (function (window, undefined) {
     "use strict";
-    var Base = window.Base || (function () {
+    window.Base = window.Base || (function () {
+
+        /**
+         *
+         * @constructor
+         *
+         */
         function Base() {
             this.set('listeners', {});
             this.set('suspendEvents', false);
@@ -34,18 +40,21 @@
 
         /**
          * abstract method
+         *
          */
         Base.prototype.init = function () {
         };
 
         /**
          * abstract method
+         *
          */
         Base.prototype.initConfig = function () {
         };
 
         /**
          * binds custom methods from config object to class instance
+         *
          */
         Base.prototype.bindMethods = function (initOpts) {
             for (var property in initOpts) {
@@ -59,15 +68,15 @@
          *
          * @param property
          * @param value
-         * @returns {*}
+         * @returns {this}
+         *
          */
         Base.prototype.set = function (property, value) {
             var p = "_" + property,
                 oldVal = this[p];
             if (value !== oldVal) {
                 this[p] = value;
-                if (!this._suspendEvents)
-                    this.fireEvent(property + 'Change', this, value, oldVal);
+                this.fireEvent(property + 'Change', this, value, oldVal);
             }
             return this;
         };
@@ -76,6 +85,7 @@
          *
          * @param property
          * @returns {*}
+         *
          */
         Base.prototype.get = function (property) {
             return this["_" + property];
@@ -85,8 +95,11 @@
          * fire event
          * @param evName
          * @returns {boolean}
+         *
          */
         Base.prototype.fireEvent = function (evName /** param1, ... */) {
+            if (!this._suspendEvents)
+                return true;
             var ret = true, shift = Array.prototype.shift;
             shift.call(arguments);
             for (var i = 0, li = this._listeners[evName] || [], len = li.length; i < len; i++) {
@@ -102,6 +115,7 @@
          * @param evName
          * @param callback
          * @returns {this}
+         *
          */
         Base.prototype.addListener = function (evName, callback) {
             var listeners = this._listeners[evName] || [];
@@ -115,6 +129,7 @@
          * @param property
          * @param callback
          * @returns {this}
+         *
          */
         Base.prototype.onChange = function (property, callback) {
             this.addListener(property + 'Change', callback);
@@ -127,6 +142,7 @@
          * @param property
          * @param callback
          * @returns {this}
+         *
          */
         Base.prototype.unbindOnChange = function (property, callback) {
             var listeners = this._listeners[property + 'Change'] || [];
@@ -139,36 +155,37 @@
             return this;
         };
 
+        /**
+         * suspend all events
+         * @param {Boolean} suspend
+         */
         Base.prototype.suspendEvents = function (suspend) {
+            suspend = suspend || true;
             this.set('suspendEvents', suspend);
+            return this;
         };
 
         /**
          * extend passed function
+         *
          * @static
          * @param Func
          * @returns {Function}
+         *
          */
         Base.extend = function (Func) {
-            var Parent = this;
-            var Class = function () {
-                for (var key in Class.prototype) {
-                    if (typeof Class.prototype[key] === 'object') {
-                        this[key] = Class.prototype[key].constructor();
-                    }
-                }
-                Func.prototype.constructor.apply(this, arguments);
-            };
+            var Parent = this,
+                Class = function () {
+                    Func.prototype.constructor.apply(this, arguments);
+                };
             for (var method in Parent.prototype) {
                 if (Parent.prototype.hasOwnProperty(method)) {
                     Class.prototype[method] = Parent.prototype[method];
                 }
             }
-            Class._parent = Parent.prototype;
             Class.extend = Base.extend;
             return Class;
         };
         return Base;
     }());
-    window.Base = Base;
 }(window));
