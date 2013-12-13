@@ -133,7 +133,8 @@
             shift.call(arguments);
             for (var i = 0, li = this._listeners[evName] || [], len = li.length; i < len; i++) {
                 if (ret) {
-                    ret = li[i].apply(shift.call(arguments), arguments);
+                    var scope = shift.call(arguments);
+                    ret = li[i].apply(scope, arguments);
                 }
             }
             return ret;

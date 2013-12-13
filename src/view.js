@@ -251,7 +251,6 @@
             me.set('isInDOM', true);
             me.reAppendChildren();
             me.fireEvent('render', null, me);
-            console.log('render');
         }
         return tpl.childNodes.item(0);
     };
@@ -318,7 +317,6 @@
                 me.set('isInDOM', true);
                 me.reAppendChildren();
                 me.fireEvent('render', null, me);
-                console.log('render');
             }
         }
         views[id] = me;

@@ -12,7 +12,7 @@
 
     Liker.prototype.incrementLikes = function () {
         this.getModels().likes++;
-        this.fireEvent('liked');
+        this.fireEvent('liked', this);
     };
 
     Liker.prototype.updateLiker = function () {

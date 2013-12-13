@@ -116,7 +116,7 @@
         }
         if (control && views) {
             for (var view in views) {
-                if (views.hasOwnProperty(view)){
+                if (views.hasOwnProperty(view)) {
                     views[view].addListener('render', this.resolveEvents.bind(this));
                 }
             }
@@ -124,14 +124,25 @@
         return this;
     };
 
+    /**
+     *
+     * @param view
+     */
     Controller.prototype.resolveEvents = function (view) {
-        var control = this.get('control');
+        var control = this.get('control'),
+            viewEvents;
         for (var query in control) {
             if (control.hasOwnProperty(query)) {
+                viewEvents = control[query];
                 var elements = view.get('el').querySelectorAll(query);
-                console.log(elements);
+                for (var i = 0, l = elements.length; i < l; i++) {
+                    for (var event in viewEvents) {
+                        if (viewEvents.hasOwnProperty(event)) {
+                            elements[i].addEventListener(event, viewEvents[event].bind(view));
+                        }
+                    }
+                }
             }
-
         }
     };
 
