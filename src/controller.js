@@ -84,17 +84,18 @@
      *
      */
     Controller.prototype.init = function (opts) {
-        var config;
+        var config,
+            me = this;
         opts = opts || {};
         config = opts.config || {};
         router = router || new Router();
-        this.set('initOpts', opts);
-        this.set('config', config);
-        this.set('routes', config.routes || {});
-        this.set('control', config.control || {});
-        this.set('views', config.views || {});
-        this.initConfig();
-        return this;
+        me.set('initOpts', opts);
+        me.set('config', config);
+        me.set('routes', config.routes || {});
+        me.set('control', config.events || {});
+        me.set('views', config.views || {});
+        me.initConfig();
+        return me;
     };
 
     /**
@@ -103,21 +104,22 @@
      */
     Controller.prototype.initConfig = function () {
         Base.prototype.initConfig.apply(this);
-        var routes = this.get('routes'),
-            control = this.get('control'),
-            views = this.get('views');
+        var me = this,
+            routes = me.get('routes'),
+            events = me.get('control'),
+            views = me.get('views');
         if (routes) {
             for (var k in routes) {
                 if (routes.hasOwnProperty(k)) {
-                    var callback = this[routes[k]].bind(this);
+                    var callback = me[routes[k]].bind(me);
                     router.when(k, callback);
                 }
             }
         }
-        if (control && views) {
+        if (events && views) {
             for (var view in views) {
                 if (views.hasOwnProperty(view)) {
-                    views[view].addListener('render', this.resolveEvents.bind(this));
+                    views[view].addListener('render', me.resolveEvents.bind(me));
                 }
             }
         }
@@ -129,11 +131,11 @@
      * @param view
      */
     Controller.prototype.resolveEvents = function (view) {
-        var control = this.get('control'),
+        var events = this.get('control'),
             viewEvents;
-        for (var query in control) {
-            if (control.hasOwnProperty(query)) {
-                viewEvents = control[query];
+        for (var query in events) {
+            if (events.hasOwnProperty(query)) {
+                viewEvents = events[query];
                 var elements = view.get('el').querySelectorAll(query);
                 for (var i = 0, l = elements.length; i < l; i++) {
                     for (var event in viewEvents) {
