@@ -29,13 +29,14 @@
  * Router is used internally in controller, so don't instantiated it again.
  */
 (function (window, undefined) {
+    "use strict";
 
     /**
      * @constructor
      * @type {function}
      */
     window.Router = Base.extend(function Router() {
-        Base.prototype.constructor.apply(this);
+        Base.apply(this);
     });
 
     /**

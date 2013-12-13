@@ -110,6 +110,8 @@
  *
  */
 (function (window, undefined) {
+    "use strict";
+
     var VTM;
     /**
      * Allows to get proper with by id
@@ -147,7 +149,7 @@
      * @type {function}
      */
     window.View = Base.extend(function View(opts) {
-        Base.prototype.constructor.apply(this, arguments);
+        Base.apply(this, arguments);
     });
 
 
@@ -171,11 +173,11 @@
      * Initialize view config
      */
     View.prototype.initConfig = function () {
+        Base.prototype.initConfig.apply(this);
         var me = this,
             config = me.get('config'),
             div = document.createElement('div'),
-            _tpl,
-            tpl;
+            _tpl;
         if (!config.tpl) {
             throw new Error('no tpl set');
         }
@@ -185,8 +187,7 @@
                 throw new Error('no tpl ' + config.tpl + ' found');
             VTM.add(config.tpl, _tpl.parentNode.removeChild(_tpl));
         }
-        tpl = VTM.get(config.tpl).childNodes.item(1).cloneNode(true);
-        div.appendChild(tpl);
+        div.innerHTML = VTM.get(config.tpl).innerHTML;
         me.set('tpl', div);
     };
 
@@ -225,7 +226,7 @@
                 for (var i = 0, len = headers.length; i < len; i++) {
                     var fullHeader = headers[i],
                         header = fullHeader.substr(2, (fullHeader.length - 4));
-                    if (model[header]) {
+                    if (typeof model[header] !== 'undefined') {
                         domToText = domToText.replace(fullHeader, model[header]);
                     } else {
                         domToText = domToText.replace(fullHeader, "");
@@ -234,7 +235,11 @@
             }
             tpl.innerHTML = domToText;
         }
-        el = tpl.childNodes.item(0);
+        var j = 0;
+        while (j < tpl.childNodes.length && tpl.childNodes.item(j).nodeType !== 1) {
+            j++;
+        }
+        el = tpl.childNodes.item(j);
         el.setAttribute('yamvc-id', config.id);
         me.set('el', el);
         if (parent) {
@@ -245,6 +250,8 @@
             }
             me.set('isInDOM', true);
             me.reAppendChildren();
+            me.fireEvent('render', null, me);
+            console.log('render');
         }
         return tpl.childNodes.item(0);
     };
@@ -310,6 +317,8 @@
                 parentEl.appendChild(me.get('el'));
                 me.set('isInDOM', true);
                 me.reAppendChildren();
+                me.fireEvent('render', null, me);
+                console.log('render');
             }
         }
         views[id] = me;

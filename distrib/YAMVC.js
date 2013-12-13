@@ -48,13 +48,6 @@
         };
 
         /**
-         * abstract method
-         *
-         */
-        Base.prototype.initConfig = function () {
-        };
-
-        /**
          * binds custom methods from config object to class instance
          *
          */

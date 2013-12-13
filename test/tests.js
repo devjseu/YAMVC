@@ -1,8 +1,10 @@
 test("basic library tests", function () {
+    "use strict";
+
     var model, view, ctr;
 
     model = {
-        app: "Hello World"
+        likes: 1
     };
 
     view = new View({
@@ -37,5 +39,6 @@ test("basic library tests", function () {
     ok(model instanceof Object);
     ok(view instanceof View);
     ok(ctr instanceof Controller);
+    ok(ctr.getName() === 'TestController');
 
 });

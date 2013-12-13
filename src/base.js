@@ -24,6 +24,16 @@
  */
 (function (window, undefined) {
     "use strict";
+
+    var onReadyCallbacks = [],
+        readyStateCheckInterval;
+
+    function run() {
+        for (var i = 0, l = onReadyCallbacks.length; i < l; i++) {
+            onReadyCallbacks[i]();
+        }
+    }
+
     window.Base = window.Base || (function () {
 
         /**
@@ -46,10 +56,28 @@
         };
 
         /**
-         * abstract method
          *
          */
         Base.prototype.initConfig = function () {
+            var me = this,
+                config = me.get('config'),
+                getter,
+                setter,
+                property;
+            for (property in config) {
+                if (config.hasOwnProperty(property)) {
+                    (function (property) {
+                        getter = "get" + property.charAt(0).toUpperCase() + property.slice(1);
+                        setter = "set" + property.charAt(0).toUpperCase() + property.slice(1);
+                        me[getter] = function () {
+                            return me.get('config')[property];
+                        };
+                        me[setter] = function (property, value) {
+                            me.set(property, value);
+                        };
+                    }(property));
+                }
+            }
         };
 
         /**
@@ -98,13 +126,14 @@
          *
          */
         Base.prototype.fireEvent = function (evName /** param1, ... */) {
-            if (!this._suspendEvents)
+            if (this._suspendEvents)
                 return true;
-            var ret = true, shift = Array.prototype.shift;
+            var ret = true,
+                shift = Array.prototype.shift;
             shift.call(arguments);
             for (var i = 0, li = this._listeners[evName] || [], len = li.length; i < len; i++) {
                 if (ret) {
-                    ret = li[i].call(shift.apply(arguments), arguments);
+                    ret = li[i].apply(shift.call(arguments), arguments);
                 }
             }
             return ret;
@@ -121,6 +150,35 @@
             var listeners = this._listeners[evName] || [];
             listeners.push(callback);
             this._listeners[evName] = listeners;
+            return this;
+        };
+
+        /**
+         * fire event
+         * @param evName
+         * @param callback
+         * @returns {this}
+         *
+         */
+        Base.prototype.removeListener = function (evName, callback) {
+            var listeners = this._listeners,
+                index;
+            if (listeners) {
+                if (callback) {
+                    if (typeof callback === "function") {
+                        for (var i = 0, len = listeners.length; i < len; i++) {
+                            if (listeners[i] === callback) {
+                                index = i;
+                            }
+                        }
+                    } else {
+                        index = callback;
+                    }
+                    listeners.splice(index, 1);
+                } else {
+                    this._listeners = [];
+                }
+            }
             return this;
         };
 
@@ -163,6 +221,24 @@
             suspend = suspend || true;
             this.set('suspendEvents', suspend);
             return this;
+        };
+
+
+        /**
+         * provide way to execute all necessary code after DOM is ready
+         *
+         * @param callback
+         */
+        Base.onReady = function (callback) {
+            onReadyCallbacks.push(callback);
+            if (!readyStateCheckInterval && document.readyState !== "complete") {
+                readyStateCheckInterval = setInterval(function () {
+                    if (document.readyState === "complete") {
+                        clearInterval(readyStateCheckInterval);
+                        run();
+                    }
+                }, 10);
+            }
         };
 
         /**

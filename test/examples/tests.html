@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>QUnit Example</title>
+    <link rel="stylesheet" href="../../assets/js/lib/qunit/qunit/qunit.css">
+</head>
+<body>
+<div id="qunit"></div>
+<div id="qunit-fixture"></div>
+<script src="../../assets/js/lib/qunit/qunit/qunit.js"></script>
+
+<!-- Use latest versionless copy of current release -->
+<script src="../../src/base.js"></script>
+<script src="../../src/controller.js"></script>
+<script src="../../src/router.js"></script>
+<script src="../../src/view.js"></script>
+<script src="../../examples/1/views/liker.js"></script>
+<script src="tests.js"></script>
+<div id="container" style="display: none">
+
+</div>
+<script type="text/html" id="tpl-liker">
+    <div>
+        <button id="liker">{{likes}}</button>
+    </div>
+</script>
+</body>
+</html>
