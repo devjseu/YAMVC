@@ -31,12 +31,14 @@
 (function (window, undefined) {
     "use strict";
 
+    var yamvc = window.yamvc || {},
+        Router;
     /**
      * @constructor
      * @type {function}
      */
-    window.Router = Base.extend(function Router() {
-        Base.apply(this);
+    Router = yamvc.Base.extend(function () {
+        yamvc.Base.apply(this);
     });
 
     /**
@@ -114,4 +116,5 @@
         return this;
     };
 
+    window.yamvc.Router = Router;
 }(window));

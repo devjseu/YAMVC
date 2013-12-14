@@ -67,14 +67,16 @@
 (function (window, undefined) {
     "use strict";
 
-    var router;
+    var yamvc = window.yamvc || {},
+        Controller,
+        router;
 
     /**
      *
      * @type {*}
      */
-    window.Controller = Base.extend(function Controller(opts) {
-        Base.apply(this, arguments);
+    Controller = yamvc.Base.extend(function(opts) {
+        yamvc.Base.apply(this, arguments);
     });
 
     /**
@@ -88,13 +90,14 @@
             me = this;
         opts = opts || {};
         config = opts.config || {};
-        router = router || new Router();
+        router = router || new yamvc.Router();
         me.set('initOpts', opts);
         me.set('config', config);
         me.set('routes', config.routes || {});
-        me.set('control', config.events || {});
+        me.set('events', config.events || {});
         me.set('views', config.views || {});
         me.initConfig();
+        me.renderViews();
         return me;
     };
 
@@ -103,10 +106,10 @@
      *
      */
     Controller.prototype.initConfig = function () {
-        Base.prototype.initConfig.apply(this);
+        yamvc.Base.prototype.initConfig.apply(this);
         var me = this,
             routes = me.get('routes'),
-            events = me.get('control'),
+            events = me.get('events'),
             views = me.get('views');
         if (routes) {
             for (var k in routes) {
@@ -126,12 +129,24 @@
         return this;
     };
 
+    Controller.prototype.renderViews = function () {
+        var me = this,
+            views = me.get('views');
+        for (var view in views) {
+            if (views.hasOwnProperty(view)) {
+                if (views[view].getAutoCreate && views[view].getAutoCreate()) {
+                    views[view].render();
+                }
+            }
+        }
+    };
+
     /**
      *
      * @param view
      */
     Controller.prototype.resolveEvents = function (view) {
-        var events = this.get('control'),
+        var events = this.get('events'),
             viewEvents;
         for (var query in events) {
             if (events.hasOwnProperty(query)) {
@@ -140,7 +155,7 @@
                 for (var i = 0, l = elements.length; i < l; i++) {
                     for (var event in viewEvents) {
                         if (viewEvents.hasOwnProperty(event)) {
-                            elements[i].addEventListener(event, viewEvents[event].bind(view));
+                            elements[i].addEventListener(event, viewEvents[event].bind(this, view));
                         }
                     }
                 }
@@ -168,4 +183,6 @@
         window.location.hash = path;
         return this;
     };
+
+    window.yamvc.Controller = Controller;
 }(window));

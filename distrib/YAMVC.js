@@ -1,4 +1,4 @@
-/*! YAMVC v0.1.1 - 2013-12-02 
+/*! YAMVC v0.1.1 - 2013-12-14 
  *  License:  */
 /*
  The MIT License (MIT)
@@ -26,7 +26,19 @@
  */
 (function (window, undefined) {
     "use strict";
-    window.Base = window.Base || (function () {
+
+    var yamvc = window.yamvc || {},
+        Base,
+        onReadyCallbacks = [],
+        readyStateCheckInterval;
+
+    function run() {
+        for (var i = 0, l = onReadyCallbacks.length; i < l; i++) {
+            onReadyCallbacks[i]();
+        }
+    }
+
+    Base = yamvc.Base || (function () {
 
         /**
          *
@@ -45,6 +57,32 @@
          *
          */
         Base.prototype.init = function () {
+        };
+
+        /**
+         *
+         */
+        Base.prototype.initConfig = function () {
+            var me = this,
+                config = me.get('config'),
+                getter,
+                setter,
+                property,
+                init = function (property) {
+                    getter = "get" + property.charAt(0).toUpperCase() + property.slice(1);
+                    setter = "set" + property.charAt(0).toUpperCase() + property.slice(1);
+                    me[getter] = function () {
+                        return me.get('config')[property];
+                    };
+                    me[setter] = function (property, value) {
+                        me.set(property, value);
+                    };
+                };
+            for (property in config) {
+                if (config.hasOwnProperty(property)) {
+                    init(property);
+                }
+            }
         };
 
         /**
@@ -93,13 +131,15 @@
          *
          */
         Base.prototype.fireEvent = function (evName /** param1, ... */) {
-            if (!this._suspendEvents)
+            if (this._suspendEvents)
                 return true;
-            var ret = true, shift = Array.prototype.shift;
+            var ret = true,
+                shift = Array.prototype.shift;
             shift.call(arguments);
             for (var i = 0, li = this._listeners[evName] || [], len = li.length; i < len; i++) {
                 if (ret) {
-                    ret = li[i].call(shift.apply(arguments), arguments);
+                    var scope = shift.call(arguments);
+                    ret = li[i].apply(scope, arguments);
                 }
             }
             return ret;
@@ -116,6 +156,35 @@
             var listeners = this._listeners[evName] || [];
             listeners.push(callback);
             this._listeners[evName] = listeners;
+            return this;
+        };
+
+        /**
+         * fire event
+         * @param evName
+         * @param callback
+         * @returns {this}
+         *
+         */
+        Base.prototype.removeListener = function (evName, callback) {
+            var listeners = this._listeners,
+                index;
+            if (listeners) {
+                if (callback) {
+                    if (typeof callback === "function") {
+                        for (var i = 0, len = listeners.length; i < len; i++) {
+                            if (listeners[i] === callback) {
+                                index = i;
+                            }
+                        }
+                    } else {
+                        index = callback;
+                    }
+                    listeners.splice(index, 1);
+                } else {
+                    this._listeners = [];
+                }
+            }
             return this;
         };
 
@@ -160,6 +229,24 @@
             return this;
         };
 
+
+        /**
+         * provide way to execute all necessary code after DOM is ready
+         *
+         * @param callback
+         */
+        Base.onReady = function (callback) {
+            onReadyCallbacks.push(callback);
+            if (!readyStateCheckInterval && document.readyState !== "complete") {
+                readyStateCheckInterval = setInterval(function () {
+                    if (document.readyState === "complete") {
+                        clearInterval(readyStateCheckInterval);
+                        run();
+                    }
+                }, 10);
+            }
+        };
+
         /**
          * extend passed function
          *
@@ -183,6 +270,8 @@
         };
         return Base;
     }());
+    yamvc.Base = Base;
+    window.yamvc = yamvc;
 }(window));
 /*
  The MIT License (MIT)
@@ -251,14 +340,18 @@
  *
  */
 (function (window, undefined) {
-    var router;
+    "use strict";
+
+    var yamvc = window.yamvc || {},
+        Controller,
+        router;
 
     /**
      *
      * @type {*}
      */
-    window.Controller = Base.extend(function Controller(opts) {
-        Base.prototype.constructor.apply(this, arguments);
+    Controller = yamvc.Base.extend(function(opts) {
+        yamvc.Base.apply(this, arguments);
     });
 
     /**
@@ -268,15 +361,19 @@
      *
      */
     Controller.prototype.init = function (opts) {
-        var config;
+        var config,
+            me = this;
         opts = opts || {};
         config = opts.config || {};
-        router = router ||  new Router();
-        this.set('initOpts', opts);
-        this.set('config', config);
-        this.set('routes', config.routes || {});
-        this.initConfig();
-        return this;
+        router = router || new yamvc.Router();
+        me.set('initOpts', opts);
+        me.set('config', config);
+        me.set('routes', config.routes || {});
+        me.set('events', config.events || {});
+        me.set('views', config.views || {});
+        me.initConfig();
+        me.renderViews();
+        return me;
     };
 
     /**
@@ -284,17 +381,63 @@
      *
      */
     Controller.prototype.initConfig = function () {
-        var routes = this.get('routes');
+        yamvc.Base.prototype.initConfig.apply(this);
+        var me = this,
+            routes = me.get('routes'),
+            events = me.get('events'),
+            views = me.get('views');
         if (routes) {
             for (var k in routes) {
                 if (routes.hasOwnProperty(k)) {
-                    var callback = this[routes[k]].bind(this);
+                    var callback = me[routes[k]].bind(me);
                     router.when(k, callback);
+                }
+            }
+        }
+        if (events && views) {
+            for (var view in views) {
+                if (views.hasOwnProperty(view)) {
+                    views[view].addListener('render', me.resolveEvents.bind(me));
                 }
             }
         }
         return this;
     };
+
+    Controller.prototype.renderViews = function () {
+        var me = this,
+            views = me.get('views');
+        for (var view in views) {
+            if (views.hasOwnProperty(view)) {
+                if (views[view].getAutoCreate && views[view].getAutoCreate()) {
+                    views[view].render();
+                }
+            }
+        }
+    };
+
+    /**
+     *
+     * @param view
+     */
+    Controller.prototype.resolveEvents = function (view) {
+        var events = this.get('events'),
+            viewEvents;
+        for (var query in events) {
+            if (events.hasOwnProperty(query)) {
+                viewEvents = events[query];
+                var elements = view.get('el').querySelectorAll(query);
+                for (var i = 0, l = elements.length; i < l; i++) {
+                    for (var event in viewEvents) {
+                        if (viewEvents.hasOwnProperty(event)) {
+                            elements[i].addEventListener(event, viewEvents[event].bind(this, view));
+                        }
+                    }
+                }
+            }
+        }
+    };
+
 
     /**
      *
@@ -315,6 +458,8 @@
         window.location.hash = path;
         return this;
     };
+
+    window.yamvc.Controller = Controller;
 }(window));
 /*
  The MIT License (MIT)
@@ -347,13 +492,16 @@
  * Router is used internally in controller, so don't instantiated it again.
  */
 (function (window, undefined) {
+    "use strict";
 
+    var yamvc = window.yamvc || {},
+        Router;
     /**
      * @constructor
      * @type {function}
      */
-    window.Router = Base.extend(function Router() {
-        Base.prototype.constructor.apply(this);
+    Router = yamvc.Base.extend(function () {
+        yamvc.Base.apply(this);
     });
 
     /**
@@ -431,6 +579,7 @@
         return this;
     };
 
+    window.yamvc.Router = Router;
 }(window));
 /*
  The MIT License (MIT)
@@ -462,7 +611,7 @@
  * View Manager is singleton object and helps to get proper view instance based on passed id
  *
  *      @example
- *      ViewManager
+ *      VM
  *          .get('layout')
  *          .render();
  *
@@ -544,12 +693,17 @@
  *
  */
 (function (window, undefined) {
-    var VTM;
+    "use strict";
+
+    var yamvc = window.yamvc || {},
+        VM,
+        VTM,
+        View;
     /**
      * Allows to get proper with by id
      * @type {{views: {}, i: number, add: Function, get: Function}}
      */
-    window.ViewManager = {
+    VM = yamvc.ViewManager = {
         views: {},
         i: 0,
         add: function (id, view) {
@@ -580,8 +734,8 @@
      * @params opts Object with configuration properties
      * @type {function}
      */
-    window.View = Base.extend(function View(opts) {
-        Base.prototype.constructor.apply(this, arguments);
+    View = yamvc.Base.extend(function (opts) {
+        yamvc.Base.apply(this, arguments);
     });
 
 
@@ -593,23 +747,23 @@
         var config, id;
         opts = opts || {};
         config = opts.config || {};
-        config.id = id = config.id || 'view-' + ViewManager.i;
+        config.id = id = config.id || 'view-' + VM.i;
         config.views = config.views || {};
         this.set('initOpts', opts);
         this.set('config', config);
         this.initConfig();
-        ViewManager.add(id, this);
+        VM.add(id, this);
     };
 
     /**
      * Initialize view config
      */
     View.prototype.initConfig = function () {
+        yamvc.Base.prototype.initConfig.apply(this);
         var me = this,
             config = me.get('config'),
             div = document.createElement('div'),
-            _tpl,
-            tpl;
+            _tpl;
         if (!config.tpl) {
             throw new Error('no tpl set');
         }
@@ -619,8 +773,7 @@
                 throw new Error('no tpl ' + config.tpl + ' found');
             VTM.add(config.tpl, _tpl.parentNode.removeChild(_tpl));
         }
-        tpl = VTM.get(config.tpl).childNodes.item(1).cloneNode(true);
-        div.appendChild(tpl);
+        div.innerHTML = VTM.get(config.tpl).innerHTML;
         me.set('tpl', div);
     };
 
@@ -659,7 +812,7 @@
                 for (var i = 0, len = headers.length; i < len; i++) {
                     var fullHeader = headers[i],
                         header = fullHeader.substr(2, (fullHeader.length - 4));
-                    if (model[header]) {
+                    if (typeof model[header] !== 'undefined') {
                         domToText = domToText.replace(fullHeader, model[header]);
                     } else {
                         domToText = domToText.replace(fullHeader, "");
@@ -668,7 +821,11 @@
             }
             tpl.innerHTML = domToText;
         }
-        el = tpl.childNodes.item(0);
+        var j = 0;
+        while (j < tpl.childNodes.length && tpl.childNodes.item(j).nodeType !== 1) {
+            j++;
+        }
+        el = tpl.childNodes.item(j);
         el.setAttribute('yamvc-id', config.id);
         me.set('el', el);
         if (parent) {
@@ -679,8 +836,19 @@
             }
             me.set('isInDOM', true);
             me.reAppendChildren();
+            me.fireEvent('render', null, me);
         }
         return tpl.childNodes.item(0);
+    };
+
+    /**
+     *
+     * @param view
+     * @param selector
+     */
+    View.prototype.addChild = function (view, selector) {
+        view.appendTo(this, selector);
+        this.fireEvent('elementAdded', this, view);
     };
 
     /**
@@ -744,6 +912,7 @@
                 parentEl.appendChild(me.get('el'));
                 me.set('isInDOM', true);
                 me.reAppendChildren();
+                me.fireEvent('render', null, me);
             }
         }
         views[id] = me;
@@ -764,4 +933,5 @@
         }
     };
 
+    window.yamvc.View = View;
 }(window));

@@ -25,7 +25,9 @@
 (function (window, undefined) {
     "use strict";
 
-    var onReadyCallbacks = [],
+    var yamvc = window.yamvc || {},
+        Base,
+        onReadyCallbacks = [],
         readyStateCheckInterval;
 
     function run() {
@@ -34,7 +36,7 @@
         }
     }
 
-    window.Base = window.Base || (function () {
+    Base = yamvc.Base || (function () {
 
         /**
          *
@@ -63,19 +65,20 @@
                 config = me.get('config'),
                 getter,
                 setter,
-                property;
+                property,
+                init = function (property) {
+                    getter = "get" + property.charAt(0).toUpperCase() + property.slice(1);
+                    setter = "set" + property.charAt(0).toUpperCase() + property.slice(1);
+                    me[getter] = function () {
+                        return me.get('config')[property];
+                    };
+                    me[setter] = function (property, value) {
+                        me.set(property, value);
+                    };
+                };
             for (property in config) {
                 if (config.hasOwnProperty(property)) {
-                    (function (property) {
-                        getter = "get" + property.charAt(0).toUpperCase() + property.slice(1);
-                        setter = "set" + property.charAt(0).toUpperCase() + property.slice(1);
-                        me[getter] = function () {
-                            return me.get('config')[property];
-                        };
-                        me[setter] = function (property, value) {
-                            me.set(property, value);
-                        };
-                    }(property));
+                    init(property);
                 }
             }
         };
@@ -265,4 +268,6 @@
         };
         return Base;
     }());
+    yamvc.Base = Base;
+    window.yamvc = yamvc;
 }(window));

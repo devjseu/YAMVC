@@ -1,8 +1,10 @@
 (function (window, undefined) {
     "use strict";
+    var yamvc = window.yamvc,
+        Liker;
 
-    var Liker = View.extend(function (opts) {
-        View.apply(this, arguments);
+    Liker = yamvc.View.extend(function (opts) {
+        yamvc.View.apply(this, arguments);
         this.bindEvents();
     });
 

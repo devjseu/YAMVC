@@ -1,0 +1,13 @@
+body,
+html {
+  margin: 0;
+  padding: 0;
+}
+.bar {
+  background-color: #c0c0c0;
+  width: 100%;
+  height: 40px;
+}
+.bar ul {
+  margin: 0;
+}

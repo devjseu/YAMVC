@@ -28,7 +28,7 @@
  * View Manager is singleton object and helps to get proper view instance based on passed id
  *
  *      @example
- *      ViewManager
+ *      VM
  *          .get('layout')
  *          .render();
  *
@@ -112,12 +112,15 @@
 (function (window, undefined) {
     "use strict";
 
-    var VTM;
+    var yamvc = window.yamvc || {},
+        VM,
+        VTM,
+        View;
     /**
      * Allows to get proper with by id
      * @type {{views: {}, i: number, add: Function, get: Function}}
      */
-    window.ViewManager = {
+    VM = yamvc.ViewManager = {
         views: {},
         i: 0,
         add: function (id, view) {
@@ -148,8 +151,8 @@
      * @params opts Object with configuration properties
      * @type {function}
      */
-    window.View = Base.extend(function View(opts) {
-        Base.apply(this, arguments);
+    View = yamvc.Base.extend(function (opts) {
+        yamvc.Base.apply(this, arguments);
     });
 
 
@@ -161,19 +164,19 @@
         var config, id;
         opts = opts || {};
         config = opts.config || {};
-        config.id = id = config.id || 'view-' + ViewManager.i;
+        config.id = id = config.id || 'view-' + VM.i;
         config.views = config.views || {};
         this.set('initOpts', opts);
         this.set('config', config);
         this.initConfig();
-        ViewManager.add(id, this);
+        VM.add(id, this);
     };
 
     /**
      * Initialize view config
      */
     View.prototype.initConfig = function () {
-        Base.prototype.initConfig.apply(this);
+        yamvc.Base.prototype.initConfig.apply(this);
         var me = this,
             config = me.get('config'),
             div = document.createElement('div'),
@@ -253,6 +256,16 @@
             me.fireEvent('render', null, me);
         }
         return tpl.childNodes.item(0);
+    };
+
+    /**
+     *
+     * @param view
+     * @param selector
+     */
+    View.prototype.addChild = function (view, selector) {
+        view.appendTo(this, selector);
+        this.fireEvent('elementAdded', this, view);
     };
 
     /**
@@ -337,4 +350,5 @@
         }
     };
 
+    window.yamvc.View = View;
 }(window));

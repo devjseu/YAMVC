@@ -1,14 +1,15 @@
-Base.onReady(function (){
+yamvc.Base.onReady(function () {
     "use script";
 
-    var model, liker, ctr;
+    var model, liker, ctr, app = {views: {}, ctr: {}};
 
     model = {
         likes: 0
     };
 
-    liker = new Liker({
+    app.views.liker = new Liker({
         config: {
+            autoCreate: true,
             models: model,
             id: 'test-liker',
             tpl: 'tpl-liker',
@@ -16,22 +17,20 @@ Base.onReady(function (){
         }
     });
 
-    ctr = new Controller({
+    app.ctr.main = new yamvc.Controller({
         config: {
             name: 'Main',
             views: {
-                likeBtn: liker
+                likeBtn: yamvc.ViewManager.get('test-liker')
             },
-            events : {
-                '#liker' : {
-                    click : function () {
-                        this.incrementLikes();
+            events: {
+                '#liker': {
+                    click: function (view, e) {
+                        view.incrementLikes();
                     }
                 }
             }
         }
     });
-
-    liker.render();
 
 });
