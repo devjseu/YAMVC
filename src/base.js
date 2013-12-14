@@ -246,6 +246,25 @@
         };
 
         /**
+         *
+         * @param obj
+         */
+        Base.mixin = function (obj) {
+            var Class = this,
+                method;
+
+            if (typeof obj === 'function')
+                obj = obj.prototype;
+
+            for (method in obj) {
+                if (obj.hasOwnProperty(method)) {
+                    Class.prototype[method] = obj[method];
+                }
+            }
+
+        };
+
+        /**
          * extend passed function
          *
          * @static
@@ -268,6 +287,7 @@
         };
         return Base;
     }());
+
     yamvc.Base = Base;
     window.yamvc = yamvc;
 }(window));

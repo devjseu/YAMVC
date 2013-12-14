@@ -1,4 +1,4 @@
-Base.onReady(function () {
+yamvc.Base.onReady(function () {
     "use strict";
     var model, liker, ctr;
 
@@ -13,6 +13,7 @@ Base.onReady(function () {
 
         liker = new Liker({
             config: {
+                autoCreate: true,
                 models: model,
                 id: 'test-liker',
                 tpl: 'tpl-liker',
@@ -20,23 +21,21 @@ Base.onReady(function () {
             }
         });
 
-        ctr = new Controller({
+        ctr = new yamvc.Controller({
             config: {
                 name: 'Main',
                 views: {
                     likeBtn: liker
                 },
-                control : {
-                    '#liker' : {
-                        click : function () {
-                            this.incrementLikes();
+                events: {
+                    '#liker': {
+                        click: function (view, e) {
+                            view.incrementLikes();
                         }
                     }
                 }
             }
         });
-
-        liker.render();
 
         ok(liker.getModels().likes === 0, "Likes should be equal 0");
     });

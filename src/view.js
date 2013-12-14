@@ -120,7 +120,7 @@
      * Allows to get proper with by id
      * @type {{views: {}, i: number, add: Function, get: Function}}
      */
-    VM = yamvc.ViewManager = {
+    VM = {
         views: {},
         i: 0,
         add: function (id, view) {
@@ -151,7 +151,7 @@
      * @params opts Object with configuration properties
      * @type {function}
      */
-    View = yamvc.Base.extend(function (opts) {
+    View = yamvc.Base.extend(function () {
         yamvc.Base.apply(this, arguments);
     });
 
@@ -171,6 +171,7 @@
         this.initConfig();
         VM.add(id, this);
     };
+
 
     /**
      * Initialize view config
@@ -350,5 +351,7 @@
         }
     };
 
+    yamvc.ViewManager = VM;
+    window.yamvc = yamvc;
     window.yamvc.View = View;
 }(window));
