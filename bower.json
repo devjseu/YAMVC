@@ -1,6 +1,6 @@
 {
-    "name": "jsMVC",
-    "version": "0.1.0",
+    "name": "YAMVC",
+    "version": "0.1.2",
     "dependencies": {
         "jquery": ">= 1.9.0",
         "qunit" : ">=1.12.0"

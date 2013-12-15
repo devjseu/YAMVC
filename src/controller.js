@@ -75,8 +75,8 @@
      *
      * @type {*}
      */
-    Controller = yamvc.Base.extend(function(opts) {
-        yamvc.Base.apply(this, arguments);
+    Controller = yamvc.Core.extend(function(opts) {
+        yamvc.Core.apply(this, arguments);
     });
 
     /**
@@ -106,7 +106,7 @@
      *
      */
     Controller.prototype.initConfig = function () {
-        yamvc.Base.prototype.initConfig.apply(this);
+        yamvc.Core.prototype.initConfig.apply(this);
         var me = this,
             routes = me.get('routes'),
             events = me.get('events'),

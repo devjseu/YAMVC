@@ -1,4 +1,4 @@
-Base.onReady(function (){
+Core.onReady(function (){
     "use script";
 
     var model, bar, ctr;

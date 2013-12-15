@@ -1,6 +1,6 @@
 {
   "name": "YAMVC",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Simply MVC Framework for my own use",
   "main": "./distrib/YAMVC-all.js",
   "repository": {

@@ -1,16 +1,22 @@
-yamvc.Base.onReady(function () {
-    "use script";
+yamvc.Core.onReady(function () {
+    "use strict";
+    var models, liker, ctr, app = {views: {}, ctr: {}};
 
-    var model, liker, ctr, app = {views: {}, ctr: {}};
-
-    model = {
-        likes: 0
+    models = {
+        likes: new yamvc.Model({
+            config: {
+                namespace: 'likes'
+            },
+            data: {
+                count: 0
+            }
+        })
     };
 
     app.views.liker = new Liker({
         config: {
             autoCreate: true,
-            models: model,
+            models: models,
             id: 'test-liker',
             tpl: 'tpl-liker',
             renderTo: '#container'

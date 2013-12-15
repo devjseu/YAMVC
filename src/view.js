@@ -25,7 +25,7 @@
 /**
  *
  * ## View Manager usage
- * View Manager is singleton object and helps to get proper view instance based on passed id
+ * View Manager is singleton object and helps to get proper view instance Cored on passed id
  *
  *      @example
  *      VM
@@ -151,8 +151,8 @@
      * @params opts Object with configuration properties
      * @type {function}
      */
-    View = yamvc.Base.extend(function () {
-        yamvc.Base.apply(this, arguments);
+    View = yamvc.Core.extend(function () {
+        yamvc.Core.apply(this, arguments);
     });
 
 
@@ -161,15 +161,16 @@
      * @param opts
      */
     View.prototype.init = function (opts) {
-        var config, id;
+        yamvc.Core.prototype.init.apply(this);
+        var me = this, config, id;
         opts = opts || {};
         config = opts.config || {};
         config.id = id = config.id || 'view-' + VM.i;
         config.views = config.views || {};
-        this.set('initOpts', opts);
-        this.set('config', config);
-        this.initConfig();
-        VM.add(id, this);
+        me.set('initOpts', opts);
+        me.set('config', config);
+        me.initConfig();
+        VM.add(id, me);
     };
 
 
@@ -177,7 +178,12 @@
      * Initialize view config
      */
     View.prototype.initConfig = function () {
-        yamvc.Base.prototype.initConfig.apply(this);
+        yamvc.Core.prototype.initConfig.apply(this);
+        this.initTemplate();
+        this.initModels();
+    };
+
+    View.prototype.initTemplate = function () {
         var me = this,
             config = me.get('config'),
             div = document.createElement('div'),
@@ -195,6 +201,40 @@
         me.set('tpl', div);
     };
 
+    View.prototype.initModels = function () {
+        var me = this,
+            models,
+            model;
+        models = me.getModels();
+        for (model in models) {
+            if (models.hasOwnProperty(model)) {
+                me.setModel(model, models[model]);
+            }
+        }
+    };
+    /**
+     *
+     * @param namespace
+     * @param model
+     */
+    View.prototype.setModel = function (namespace, model) {
+        var me = this,
+            models = me.getModels();
+        models[model.getNamespace()] = model;
+        me.setModels(models);
+    };
+
+    /**
+     *
+     * @param namespace
+     * @returns {*}
+     */
+    View.prototype.getModel = function (namespace) {
+        var me = this,
+            models = me.getModels();
+        return models[namespace];
+    };
+
     /**
      * Render view to DOM
      * @param data
@@ -203,12 +243,14 @@
     View.prototype.render = function (data) {
         var me = this,
             tpl = me.get('tpl'),
+            parsedTpl = document.createElement('div'),
             config = me.get('config'),
             id = config.renderTo,
             model = data || config.models,
             parent = config.parent,
             parentView = config.parent,
             el,
+            headers,
             domToText;
 
         if (parent) {
@@ -225,25 +267,28 @@
 
         if (model) {
             domToText = tpl.innerHTML;
-            var headers = domToText.match(/\{\{(.*?)\}\}/gi);
+            headers = domToText.match(/\{\{(.*?)\}\}/gi);
             if (headers) {
                 for (var i = 0, len = headers.length; i < len; i++) {
                     var fullHeader = headers[i],
-                        header = fullHeader.substr(2, (fullHeader.length - 4));
-                    if (typeof model[header] !== 'undefined') {
-                        domToText = domToText.replace(fullHeader, model[header]);
+                        header = fullHeader.substr(2, (fullHeader.length - 4)).split('.');
+                    if (
+                        typeof model[header[0]] !== 'undefined' &&
+                            typeof model[header[0]] !== 'function'
+                        ) {
+                        domToText = domToText.replace(fullHeader, model[header[0]].$get(header[1]));
                     } else {
                         domToText = domToText.replace(fullHeader, "");
                     }
                 }
             }
-            tpl.innerHTML = domToText;
+            parsedTpl.innerHTML = domToText;
         }
         var j = 0;
         while (j < tpl.childNodes.length && tpl.childNodes.item(j).nodeType !== 1) {
             j++;
         }
-        el = tpl.childNodes.item(j);
+        el = parsedTpl.childNodes.item(j);
         el.setAttribute('yamvc-id', config.id);
         me.set('el', el);
         if (parent) {
@@ -256,7 +301,46 @@
             me.reAppendChildren();
             me.fireEvent('render', null, me);
         }
-        return tpl.childNodes.item(0);
+        return el;
+    };
+
+    /**
+     *
+     * @param selector
+     */
+    View.prototype.partialRender = function (selector) {
+        var me = this,
+            tpl = me.get('tpl'),
+            elementTpl = tpl.querySelector(selector),
+            element = me.queryEl(selector),
+            domToText = elementTpl.innerHTML,
+            model = me.getModels(),
+            headers;
+
+        headers = domToText.match(/\{\{(.*?)\}\}/gi);
+        if (headers) {
+            for (var i = 0, len = headers.length; i < len; i++) {
+                var fullHeader = headers[i],
+                    header = fullHeader.substr(2, (fullHeader.length - 4)).split('.');
+                if (
+                    typeof model[header[0]] !== 'undefined' &&
+                        typeof model[header[0]] !== 'function'
+                    ) {
+                    domToText = domToText.replace(fullHeader, model[header[0]].$get(header[1]));
+                } else {
+                    domToText = domToText.replace(fullHeader, "");
+                }
+            }
+        }
+        element.innerHTML = domToText;
+        me.fireEvent('partialRender', null, me, element);
+    };
+    /**
+     *
+     * @param selector
+     */
+    View.prototype.queryEl = function (selector) {
+        return this.get('el').querySelector(selector);
     };
 
     /**

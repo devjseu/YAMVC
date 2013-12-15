@@ -55,7 +55,7 @@ module.exports = function (grunt) {
                 banner: bannerContent
             },
             target: {
-                src: ['src/**/*.js'],
+                src: ['src/core.js', 'src/**/*.js'],
                 dest: devRelease
             }
         },

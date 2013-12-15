@@ -75,7 +75,11 @@
                         return me.get('config')[property];
                     };
                     me[setter] = function (property, value) {
-                        me.set(property, value);
+                        var oldVal = me.get('config')[property];
+                        if (value !== oldVal) {
+                            me.get('config')[property] = value;
+                            me.fireEvent(property + 'Change', this, value, oldVal);
+                        }
                     };
                 };
             for (property in config) {
@@ -481,6 +485,8 @@
 
     window.yamvc.Controller = Controller;
 }(window));
+
+
 /*
  The MIT License (MIT)
 
@@ -764,15 +770,16 @@
      * @param opts
      */
     View.prototype.init = function (opts) {
-        var config, id;
+        yamvc.Base.prototype.init.apply(this);
+        var me = this, config, id;
         opts = opts || {};
         config = opts.config || {};
         config.id = id = config.id || 'view-' + VM.i;
         config.views = config.views || {};
-        this.set('initOpts', opts);
-        this.set('config', config);
-        this.initConfig();
-        VM.add(id, this);
+        me.set('initOpts', opts);
+        me.set('config', config);
+        me.initConfig();
+        VM.add(id, me);
     };
 
 
@@ -796,6 +803,33 @@
         }
         div.innerHTML = VTM.get(config.tpl).innerHTML;
         me.set('tpl', div);
+        me.setViewModel(me.getModels());
+    };
+
+
+    /**
+     *
+     * @param model
+     */
+    View.prototype.setViewModel = function (model) {
+        var me = this;
+        if (!model instanceof Object) {
+            throw new Error("Model need to be instance of Object");
+        }
+
+        model.$set = function (property, value) {
+            var oldVal = me.getModels()[property];
+            if (value !== oldVal) {
+                me.getModels()[property] = value;
+                me.fireEvent('model' + property.charAt(0).toUpperCase() + property.slice(1) + 'Change', me, value, oldVal);
+            }
+        };
+
+        model.$get = function (property) {
+            return me.getModels()[property];
+        };
+
+        me.setModels(model);
     };
 
     /**
@@ -806,12 +840,14 @@
     View.prototype.render = function (data) {
         var me = this,
             tpl = me.get('tpl'),
+            parsedTpl = document.createElement('div'),
             config = me.get('config'),
             id = config.renderTo,
             model = data || config.models,
             parent = config.parent,
             parentView = config.parent,
             el,
+            headers,
             domToText;
 
         if (parent) {
@@ -828,25 +864,28 @@
 
         if (model) {
             domToText = tpl.innerHTML;
-            var headers = domToText.match(/\{\{(.*?)\}\}/gi);
+            headers = domToText.match(/\{\{(.*?)\}\}/gi);
             if (headers) {
                 for (var i = 0, len = headers.length; i < len; i++) {
                     var fullHeader = headers[i],
                         header = fullHeader.substr(2, (fullHeader.length - 4));
-                    if (typeof model[header] !== 'undefined') {
+                    if (
+                        typeof model[header] !== 'undefined' &&
+                            typeof model[header] !== 'function'
+                        ) {
                         domToText = domToText.replace(fullHeader, model[header]);
                     } else {
                         domToText = domToText.replace(fullHeader, "");
                     }
                 }
             }
-            tpl.innerHTML = domToText;
+            parsedTpl.innerHTML = domToText;
         }
         var j = 0;
         while (j < tpl.childNodes.length && tpl.childNodes.item(j).nodeType !== 1) {
             j++;
         }
-        el = tpl.childNodes.item(j);
+        el = parsedTpl.childNodes.item(j);
         el.setAttribute('yamvc-id', config.id);
         me.set('el', el);
         if (parent) {
@@ -859,7 +898,46 @@
             me.reAppendChildren();
             me.fireEvent('render', null, me);
         }
-        return tpl.childNodes.item(0);
+        return el;
+    };
+
+    /**
+     *
+     * @param selector
+     */
+    View.prototype.partialRender = function (selector) {
+        var me = this,
+            tpl = me.get('tpl'),
+            elementTpl = tpl.querySelector(selector),
+            element = me.queryEl(selector),
+            domToText = elementTpl.innerHTML,
+            model = me.getModels(),
+            headers;
+
+        headers = domToText.match(/\{\{(.*?)\}\}/gi);
+        if (headers) {
+            for (var i = 0, len = headers.length; i < len; i++) {
+                var fullHeader = headers[i],
+                    header = fullHeader.substr(2, (fullHeader.length - 4));
+                if (
+                    typeof model[header] !== 'undefined' &&
+                        typeof model[header] !== 'function'
+                    ) {
+                    domToText = domToText.replace(fullHeader, model[header]);
+                } else {
+                    domToText = domToText.replace(fullHeader, "");
+                }
+            }
+        }
+        element.innerHTML = domToText;
+        me.fireEvent('partialRender', null, me, element);
+    };
+    /**
+     *
+     * @param selector
+     */
+    View.prototype.queryEl = function (selector) {
+        return this.get('el').querySelector(selector);
     };
 
     /**

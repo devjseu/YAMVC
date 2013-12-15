@@ -37,8 +37,8 @@
      * @constructor
      * @type {function}
      */
-    Router = yamvc.Base.extend(function () {
-        yamvc.Base.apply(this);
+    Router = yamvc.Core.extend(function () {
+        yamvc.Core.apply(this);
     });
 
     /**

@@ -9,17 +9,19 @@
     });
 
     Liker.prototype.bindEvents = function () {
-        this.addListener('liked', this.updateLiker);
+        this.getModel('likes').addListener('propertyCountChange', this.updateLiker.bind(this));
     };
 
     Liker.prototype.incrementLikes = function () {
-        this.getModels().likes++;
-        this.fireEvent('liked', this);
+        this.getModel('likes')
+            .$set(
+                'count',
+                this.getModel('likes').$get('count') + 1
+            );
     };
 
     Liker.prototype.updateLiker = function () {
-        var liker = this.get('el').querySelector('#liker');
-        liker.innerHTML = this.getModels().likes;
+        this.partialRender('#liker');
     };
 
     window.Liker = Liker;

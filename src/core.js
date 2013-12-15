@@ -26,7 +26,7 @@
     "use strict";
 
     var yamvc = window.yamvc || {},
-        Base,
+        Core,
         onReadyCallbacks = [],
         readyStateCheckInterval;
 
@@ -36,14 +36,14 @@
         }
     }
 
-    Base = yamvc.Base || (function () {
+    Core = yamvc.Core || (function () {
 
         /**
          *
          * @constructor
          *
          */
-        function Base() {
+        function Core() {
             this.set('listeners', {});
             this.set('suspendEvents', false);
             this.bindMethods.apply(this, arguments);
@@ -51,16 +51,16 @@
         }
 
         /**
-         * abstract method
          *
          */
-        Base.prototype.init = function () {
+        Core.prototype.init = function () {
+
         };
 
         /**
          *
          */
-        Base.prototype.initConfig = function () {
+        Core.prototype.initConfig = function () {
             var me = this,
                 config = me.get('config'),
                 getter,
@@ -73,7 +73,11 @@
                         return me.get('config')[property];
                     };
                     me[setter] = function (property, value) {
-                        me.set(property, value);
+                        var oldVal = me.get('config')[property];
+                        if (value !== oldVal) {
+                            me.get('config')[property] = value;
+                            me.fireEvent(property + 'Change', this, value, oldVal);
+                        }
                     };
                 };
             for (property in config) {
@@ -87,7 +91,7 @@
          * binds custom methods from config object to class instance
          *
          */
-        Base.prototype.bindMethods = function (initOpts) {
+        Core.prototype.bindMethods = function (initOpts) {
             for (var property in initOpts) {
                 if (initOpts.hasOwnProperty(property) && typeof initOpts[property] === 'function') {
                     this[property] = initOpts[property].bind(this);
@@ -102,7 +106,7 @@
          * @returns {this}
          *
          */
-        Base.prototype.set = function (property, value) {
+        Core.prototype.set = function (property, value) {
             var p = "_" + property,
                 oldVal = this[p];
             if (value !== oldVal) {
@@ -118,8 +122,13 @@
          * @returns {*}
          *
          */
-        Base.prototype.get = function (property) {
+        Core.prototype.get = function (property) {
             return this["_" + property];
+        };
+
+
+        Core.prototype.init = function () {
+
         };
 
         /**
@@ -128,7 +137,10 @@
          * @returns {boolean}
          *
          */
-        Base.prototype.fireEvent = function (evName /** param1, ... */) {
+        Core.prototype.fireEvent = function (evName /** param1, ... */) {
+            if(!this._listeners){
+                this._listeners = [];
+            }
             if (this._suspendEvents)
                 return true;
             var ret = true,
@@ -150,7 +162,10 @@
          * @returns {this}
          *
          */
-        Base.prototype.addListener = function (evName, callback) {
+        Core.prototype.addListener = function (evName, callback) {
+            if(!this._listeners){
+                this._listeners = [];
+            }
             var listeners = this._listeners[evName] || [];
             listeners.push(callback);
             this._listeners[evName] = listeners;
@@ -164,7 +179,7 @@
          * @returns {this}
          *
          */
-        Base.prototype.removeListener = function (evName, callback) {
+        Core.prototype.removeListener = function (evName, callback) {
             var listeners = this._listeners,
                 index;
             if (listeners) {
@@ -187,13 +202,23 @@
         };
 
         /**
+         * suspend all events
+         * @param {Boolean} suspend
+         */
+        Core.prototype.suspendEvents = function (suspend) {
+            suspend = suspend || true;
+            this.set('suspendEvents', suspend);
+            return this;
+        };
+
+        /**
          * add callback to property change event
          * @param property
          * @param callback
          * @returns {this}
          *
          */
-        Base.prototype.onChange = function (property, callback) {
+        Core.prototype.onChange = function (property, callback) {
             this.addListener(property + 'Change', callback);
             return this;
         };
@@ -206,7 +231,7 @@
          * @returns {this}
          *
          */
-        Base.prototype.unbindOnChange = function (property, callback) {
+        Core.prototype.unbindOnChange = function (property, callback) {
             var listeners = this._listeners[property + 'Change'] || [];
             for (var i = 0, len = listeners.length; i < len; i++) {
                 if (listeners[i] === callback) {
@@ -218,22 +243,11 @@
         };
 
         /**
-         * suspend all events
-         * @param {Boolean} suspend
-         */
-        Base.prototype.suspendEvents = function (suspend) {
-            suspend = suspend || true;
-            this.set('suspendEvents', suspend);
-            return this;
-        };
-
-
-        /**
          * provide way to execute all necessary code after DOM is ready
          *
          * @param callback
          */
-        Base.onReady = function (callback) {
+        Core.onReady = function (callback) {
             onReadyCallbacks.push(callback);
             if (!readyStateCheckInterval && document.readyState !== "complete") {
                 readyStateCheckInterval = setInterval(function () {
@@ -248,17 +262,23 @@
         /**
          *
          * @param obj
+         * @param mixin
          */
-        Base.mixin = function (obj) {
-            var Class = this,
-                method;
+        Core.mixin = function (obj, mixin) {
+            var prototype,
+                property;
 
-            if (typeof obj === 'function')
-                obj = obj.prototype;
+            if(mixin){
+                prototype = typeof obj === 'function' ? obj.prototype : obj;
+            }else{
+                mixin = typeof obj === 'function' ? obj.prototype : obj;
+                prototype = this.prototype;
 
-            for (method in obj) {
-                if (obj.hasOwnProperty(method)) {
-                    Class.prototype[method] = obj[method];
+            }
+
+            for (property in mixin) {
+                if (mixin.hasOwnProperty(property)) {
+                    prototype[property] = mixin[property];
                 }
             }
 
@@ -272,7 +292,7 @@
          * @returns {Function}
          *
          */
-        Base.extend = function (Func) {
+        Core.extend = function (Func) {
             var Parent = this,
                 Class = function () {
                     Func.prototype.constructor.apply(this, arguments);
@@ -282,12 +302,14 @@
                     Class.prototype[method] = Parent.prototype[method];
                 }
             }
-            Class.extend = Base.extend;
+            Class.extend = Core.extend;
+            Class.mixin = Core.mixin;
             return Class;
         };
-        return Base;
+
+        return Core;
     }());
 
-    yamvc.Base = Base;
+    yamvc.Core = Core;
     window.yamvc = yamvc;
 }(window));
