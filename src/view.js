@@ -205,12 +205,17 @@
         var me = this,
             models,
             model;
+        if(!me.getModels){
+            return me;
+        }
+
         models = me.getModels();
         for (model in models) {
             if (models.hasOwnProperty(model)) {
                 me.setModel(model, models[model]);
             }
         }
+        return me;
     };
     /**
      *
@@ -222,6 +227,7 @@
             models = me.getModels();
         models[model.getNamespace()] = model;
         me.setModels(models);
+        return me;
     };
 
     /**
@@ -246,7 +252,7 @@
             parsedTpl = document.createElement('div'),
             config = me.get('config'),
             id = config.renderTo,
-            model = data || config.models,
+            models = data || config.models,
             parent = config.parent,
             parentView = config.parent,
             el,
@@ -265,7 +271,7 @@
             }
         }
 
-        if (model) {
+        if (models) {
             domToText = tpl.innerHTML;
             headers = domToText.match(/\{\{(.*?)\}\}/gi);
             if (headers) {
@@ -273,10 +279,10 @@
                     var fullHeader = headers[i],
                         header = fullHeader.substr(2, (fullHeader.length - 4)).split('.');
                     if (
-                        typeof model[header[0]] !== 'undefined' &&
-                            typeof model[header[0]] !== 'function'
+                        typeof models[header[0]] !== 'undefined' &&
+                            typeof models[header[0]] !== 'function'
                         ) {
-                        domToText = domToText.replace(fullHeader, model[header[0]].$get(header[1]));
+                        domToText = domToText.replace(fullHeader, models[header[0]].$get(header[1]));
                     } else {
                         domToText = domToText.replace(fullHeader, "");
                     }
@@ -314,7 +320,7 @@
             elementTpl = tpl.querySelector(selector),
             element = me.queryEl(selector),
             domToText = elementTpl.innerHTML,
-            model = me.getModels(),
+            models = me.getModels(),
             headers;
 
         headers = domToText.match(/\{\{(.*?)\}\}/gi);
@@ -323,10 +329,10 @@
                 var fullHeader = headers[i],
                     header = fullHeader.substr(2, (fullHeader.length - 4)).split('.');
                 if (
-                    typeof model[header[0]] !== 'undefined' &&
-                        typeof model[header[0]] !== 'function'
+                    typeof models[header[0]] !== 'undefined' &&
+                        typeof models[header[0]] !== 'function'
                     ) {
-                    domToText = domToText.replace(fullHeader, model[header[0]].$get(header[1]));
+                   domToText = domToText.replace(fullHeader, models[header[0]].$get(header[1]));
                 } else {
                     domToText = domToText.replace(fullHeader, "");
                 }
@@ -334,6 +340,7 @@
         }
         element.innerHTML = domToText;
         me.fireEvent('partialRender', null, me, element);
+        return me;
     };
     /**
      *
@@ -349,8 +356,10 @@
      * @param selector
      */
     View.prototype.addChild = function (view, selector) {
-        view.appendTo(this, selector);
-        this.fireEvent('elementAdded', this, view);
+        var me = this;
+        view.appendTo(me, selector);
+        me.fireEvent('elementAdded', me, view);
+        return me;
     };
 
     /**
@@ -374,6 +383,7 @@
             el.parentNode.removeChild(el);
             me.set('isInDOM', false);
         }
+        return me;
     };
 
     /**
@@ -419,6 +429,7 @@
         }
         views[id] = me;
         config.parent = parent;
+        return me;
     };
 
 

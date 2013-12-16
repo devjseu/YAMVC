@@ -22,9 +22,10 @@
         if(!config.model){
             throw new Error("Set model type for collection");
         }
+        if(! config.model instanceof yamvc.Model){
+            throw new Error("Set proper model type for collection");
+        }
     };
-
-
 
     window.yamvc = yamvc;
     window.yamvc.Collection = Collection;

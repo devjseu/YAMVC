@@ -1,4 +1,4 @@
-yamvc.Core.onReady(function () {
+yamvc.onReady(function () {
     "use strict";
     var models, liker, ctr, app = {views: {}, ctr: {}};
 

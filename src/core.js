@@ -30,6 +30,23 @@
         onReadyCallbacks = [],
         readyStateCheckInterval;
 
+    /**
+     * provide way to execute all necessary code after DOM is ready
+     *
+     * @param callback
+     */
+    yamvc.onReady = function (callback) {
+        onReadyCallbacks.push(callback);
+        if (!readyStateCheckInterval && document.readyState !== "complete") {
+            readyStateCheckInterval = setInterval(function () {
+                if (document.readyState === "complete") {
+                    clearInterval(readyStateCheckInterval);
+                    run();
+                }
+            }, 10);
+        }
+    };
+
     function run() {
         for (var i = 0, l = onReadyCallbacks.length; i < l; i++) {
             onReadyCallbacks[i]();
@@ -44,8 +61,6 @@
          *
          */
         function Core() {
-            this.set('listeners', {});
-            this.set('suspendEvents', false);
             this.bindMethods.apply(this, arguments);
             this.init.apply(this, arguments);
         }
@@ -54,7 +69,6 @@
          *
          */
         Core.prototype.init = function () {
-
         };
 
         /**
@@ -100,118 +114,6 @@
         };
 
         /**
-         *
-         * @param property
-         * @param value
-         * @returns {this}
-         *
-         */
-        Core.prototype.set = function (property, value) {
-            var p = "_" + property,
-                oldVal = this[p];
-            if (value !== oldVal) {
-                this[p] = value;
-                this.fireEvent(property + 'Change', this, value, oldVal);
-            }
-            return this;
-        };
-
-        /**
-         *
-         * @param property
-         * @returns {*}
-         *
-         */
-        Core.prototype.get = function (property) {
-            return this["_" + property];
-        };
-
-
-        Core.prototype.init = function () {
-
-        };
-
-        /**
-         * fire event
-         * @param evName
-         * @returns {boolean}
-         *
-         */
-        Core.prototype.fireEvent = function (evName /** param1, ... */) {
-            if(!this._listeners){
-                this._listeners = [];
-            }
-            if (this._suspendEvents)
-                return true;
-            var ret = true,
-                shift = Array.prototype.shift;
-            shift.call(arguments);
-            for (var i = 0, li = this._listeners[evName] || [], len = li.length; i < len; i++) {
-                if (ret) {
-                    var scope = shift.call(arguments);
-                    ret = li[i].apply(scope, arguments);
-                }
-            }
-            return ret;
-        };
-
-        /**
-         * fire event
-         * @param evName
-         * @param callback
-         * @returns {this}
-         *
-         */
-        Core.prototype.addListener = function (evName, callback) {
-            if(!this._listeners){
-                this._listeners = [];
-            }
-            var listeners = this._listeners[evName] || [];
-            listeners.push(callback);
-            this._listeners[evName] = listeners;
-            return this;
-        };
-
-        /**
-         * fire event
-         * @param evName
-         * @param callback
-         * @returns {this}
-         *
-         */
-        Core.prototype.removeListener = function (evName, callback) {
-            var listeners = this._listeners,
-                index;
-            if (listeners) {
-                if (callback) {
-                    if (typeof callback === "function") {
-                        for (var i = 0, len = listeners.length; i < len; i++) {
-                            if (listeners[i] === callback) {
-                                index = i;
-                            }
-                        }
-                    } else {
-                        index = callback;
-                    }
-                    listeners.splice(index, 1);
-                } else {
-                    this._listeners = [];
-                }
-            }
-            return this;
-        };
-
-        /**
-         * suspend all events
-         * @param {Boolean} suspend
-         */
-        Core.prototype.suspendEvents = function (suspend) {
-            suspend = suspend || true;
-            this.set('suspendEvents', suspend);
-            return this;
-        };
-
-        /**
          * add callback to property change event
          * @param property
          * @param callback
@@ -243,24 +145,8 @@
         };
 
         /**
-         * provide way to execute all necessary code after DOM is ready
          *
-         * @param callback
-         */
-        Core.onReady = function (callback) {
-            onReadyCallbacks.push(callback);
-            if (!readyStateCheckInterval && document.readyState !== "complete") {
-                readyStateCheckInterval = setInterval(function () {
-                    if (document.readyState === "complete") {
-                        clearInterval(readyStateCheckInterval);
-                        run();
-                    }
-                }, 10);
-            }
-        };
-
-        /**
-         *
+         * @static
          * @param obj
          * @param mixin
          */
@@ -268,21 +154,34 @@
             var prototype,
                 property;
 
-            if(mixin){
+            if (mixin) {
                 prototype = typeof obj === 'function' ? obj.prototype : obj;
-            }else{
+            } else {
                 mixin = typeof obj === 'function' ? obj.prototype : obj;
                 prototype = this.prototype;
 
             }
 
             for (property in mixin) {
+                if (property === 'init') {
+                    if (typeof this === 'function') {
+                        this._mixins.push(mixin.init);
+                    }
+                    continue;
+                }
                 if (mixin.hasOwnProperty(property)) {
                     prototype[property] = mixin[property];
                 }
             }
 
         };
+
+        /**
+         *
+         * @type {Array}
+         * @private
+         */
+        Core._mixins = [];
 
         /**
          * extend passed function
@@ -294,18 +193,40 @@
          */
         Core.extend = function (Func) {
             var Parent = this,
-                Class = function () {
-                    Func.prototype.constructor.apply(this, arguments);
+                Class,
+                __hasProp = {}.hasOwnProperty,
+                __extends = function (child, parent) {
+                    for (var key in parent) {
+                        if (__hasProp.call(parent, key)) child[key] = parent[key];
+                    }
+                    function Instance() {
+                        var mixins, i, l;
+                        this.constructor = child;
+                        mixins = child._mixins.reverse();
+                        for (i = 0, l = mixins.length; i < l; i++) {
+                            mixins[i].call(this);
+                        }
+                    }
+
+                    Instance.prototype = parent.prototype;
+                    child.prototype = new Instance();
+                    child.__super__ = parent.prototype;
+                    return child;
                 };
-            for (var method in Parent.prototype) {
-                if (Parent.prototype.hasOwnProperty(method)) {
-                    Class.prototype[method] = Parent.prototype[method];
-                }
-            }
+
+            Class = (function (_super) {
+                __extends(Func, _super);
+                return Func;
+            }(Parent));
+
             Class.extend = Core.extend;
             Class.mixin = Core.mixin;
+            Class._mixins = [];
             return Class;
         };
+
+        Core.mixin(yamvc.mixins.GetSet);
+        Core.mixin(yamvc.mixins.Observable);
 
         return Core;
     }());

@@ -36,7 +36,6 @@ yamvc.Base.onReady(function () {
                 }
             }
         });
-
         ok(liker.getModels().likes === 0, "Likes should be equal 0");
     });
 
@@ -49,7 +48,7 @@ yamvc.Base.onReady(function () {
         expect(1);
 
         expectation = function () {
-            equal(parseInt(linkerBtn.innerHTML), 1);
+            equal(parseInt(linkerBtn.innerHTML, 1), 1);
             start();
         };
 

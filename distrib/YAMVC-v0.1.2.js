@@ -1,4 +1,4 @@
-/*! YAMVC v0.1.2 - 2013-12-15 
+/*! YAMVC v0.1.2 - 2013-12-16 
  *  License:  */
 /*
  The MIT License (MIT)
@@ -31,6 +31,23 @@
         Core,
         onReadyCallbacks = [],
         readyStateCheckInterval;
+
+    /**
+     * provide way to execute all necessary code after DOM is ready
+     *
+     * @param callback
+     */
+    yamvc.onReady = function (callback) {
+        onReadyCallbacks.push(callback);
+        if (!readyStateCheckInterval && document.readyState !== "complete") {
+            readyStateCheckInterval = setInterval(function () {
+                if (document.readyState === "complete") {
+                    clearInterval(readyStateCheckInterval);
+                    run();
+                }
+            }, 10);
+        }
+    };
 
     function run() {
         for (var i = 0, l = onReadyCallbacks.length; i < l; i++) {
@@ -140,7 +157,7 @@
          *
          */
         Core.prototype.fireEvent = function (evName /** param1, ... */) {
-            if(!this._listeners){
+            if (!this._listeners) {
                 this._listeners = [];
             }
             if (this._suspendEvents)
@@ -165,7 +182,7 @@
          *
          */
         Core.prototype.addListener = function (evName, callback) {
-            if(!this._listeners){
+            if (!this._listeners) {
                 this._listeners = [];
             }
             var listeners = this._listeners[evName] || [];
@@ -245,23 +262,6 @@
         };
 
         /**
-         * provide way to execute all necessary code after DOM is ready
-         *
-         * @param callback
-         */
-        Core.onReady = function (callback) {
-            onReadyCallbacks.push(callback);
-            if (!readyStateCheckInterval && document.readyState !== "complete") {
-                readyStateCheckInterval = setInterval(function () {
-                    if (document.readyState === "complete") {
-                        clearInterval(readyStateCheckInterval);
-                        run();
-                    }
-                }, 10);
-            }
-        };
-
-        /**
          *
          * @param obj
          * @param mixin
@@ -270,9 +270,9 @@
             var prototype,
                 property;
 
-            if(mixin){
+            if (mixin) {
                 prototype = typeof obj === 'function' ? obj.prototype : obj;
-            }else{
+            } else {
                 mixin = typeof obj === 'function' ? obj.prototype : obj;
                 prototype = this.prototype;
 
@@ -296,14 +296,27 @@
          */
         Core.extend = function (Func) {
             var Parent = this,
-                Class = function () {
-                    Func.prototype.constructor.apply(this, arguments);
+                Class,
+                __hasProp = {}.hasOwnProperty,
+                __extends = function (child, parent) {
+                    for (var key in parent) {
+                        if (__hasProp.call(parent, key)) child[key] = parent[key];
+                    }
+                    function Ctor() {
+                        this.constructor = child;
+                    }
+
+                    Ctor.prototype = parent.prototype;
+                    child.prototype = new Ctor();
+                    child.__super__ = parent.prototype;
+                    return child;
                 };
-            for (var method in Parent.prototype) {
-                if (Parent.prototype.hasOwnProperty(method)) {
-                    Class.prototype[method] = Parent.prototype[method];
-                }
-            }
+
+            Class = (function (_super) {
+                __extends(Func, _super);
+                return Func;
+            }(Parent));
+
             Class.extend = Core.extend;
             Class.mixin = Core.mixin;
             return Class;
@@ -339,9 +352,10 @@
         if(!config.model){
             throw new Error("Set model type for collection");
         }
+        if(! config.model instanceof yamvc.Model){
+            throw new Error("Set proper model type for collection");
+        }
     };
-
-
 
     window.yamvc = yamvc;
     window.yamvc.Collection = Collection;
@@ -749,10 +763,10 @@
         for (key in params) i++;
 
         if (
-            i === 0 ||
+            i === 0 &&
                 typeof data[idProperty] === 'undefined'
             )
-            throw new Error('You need to pass at least one property value to load model');
+            throw new Error('You need to pass at least one condition to load model');
 
         if (i === 0) {
             params[idProperty] = data[idProperty];
@@ -761,8 +775,8 @@
         callback = function () {
             if (me.getProxy().getStatus() === 'success') {
                 me.set('isDirty', false);
-                me.set('data', me.getProxy().getResult());
-                me.fireEvent('loaded', me, me.getProxy().getResult());
+                me.set('data', me.getProxy().getResponse());
+                me.fireEvent('loaded', me, me.getProxy().getResponse(), 'read');
             } else {
                 me.fireEvent('error', me, 'read');
             }
@@ -776,12 +790,16 @@
             idProperty = me.get('idProperty'),
             callback,
             type;
-
+        if (me.get('isProcessing')) {
+            return false;
+        }
+        me.set('isProcessing', true);
         callback = function () {
+            me.set('isProcessing', false);
             if (me.getProxy().getStatus() === 'success') {
                 me.set('isDirty', false);
-                me.set('data', me.getProxy().getResult());
-                me.fireEvent('saved', me, me.getProxy().getResult());
+                me.set('data', me.getProxy().getResponse());
+                me.fireEvent('saved', me, me.getProxy().getResponse(), type);
             } else {
                 me.fireEvent('error', me, type);
             }
@@ -794,27 +812,29 @@
             type = 'update';
             me.getProxy().update(me.getNamespace(), data, callback);
         }
+        return true;
     };
 
-    Model.prototype.destroy = function () {
+    Model.prototype.remove = function () {
         var me = this,
             data = me.get('data'),
             idProperty = me.get('idProperty'),
-            callback,
-            params = {};
+            callback;
 
-        params[idProperty] = data[idProperty];
+        if (typeof data[idProperty] === 'undefined')
+            throw new Error('Can not remove empty model');
 
         callback = function () {
             if (me.getProxy().getStatus() === 'success') {
+                delete data[idProperty];
                 me.set('isDirty', false);
-                me.set('data', me.getProxy().getResult());
-                me.fireEvent('loaded', me, me.getProxy().getResult());
+                me.set('data', {});
+                me.fireEvent('removed', me, 'destroy');
             } else {
-                me.fireEvent('error', me, 'read');
+                me.fireEvent('error', me, 'destroy');
             }
         };
-        me.getProxy().read(me.getNamespace(), params, callback);
+        me.getProxy().destroy(me.getNamespace(), data, callback);
     };
 
     window.yamvc = yamvc;
@@ -1148,12 +1168,17 @@
         var me = this,
             models,
             model;
+        if(!me.getModels){
+            return me;
+        }
+
         models = me.getModels();
         for (model in models) {
             if (models.hasOwnProperty(model)) {
                 me.setModel(model, models[model]);
             }
         }
+        return me;
     };
     /**
      *
@@ -1165,6 +1190,7 @@
             models = me.getModels();
         models[model.getNamespace()] = model;
         me.setModels(models);
+        return me;
     };
 
     /**
@@ -1189,7 +1215,7 @@
             parsedTpl = document.createElement('div'),
             config = me.get('config'),
             id = config.renderTo,
-            model = data || config.models,
+            models = data || config.models,
             parent = config.parent,
             parentView = config.parent,
             el,
@@ -1208,7 +1234,7 @@
             }
         }
 
-        if (model) {
+        if (models) {
             domToText = tpl.innerHTML;
             headers = domToText.match(/\{\{(.*?)\}\}/gi);
             if (headers) {
@@ -1216,10 +1242,10 @@
                     var fullHeader = headers[i],
                         header = fullHeader.substr(2, (fullHeader.length - 4)).split('.');
                     if (
-                        typeof model[header[0]] !== 'undefined' &&
-                            typeof model[header[0]] !== 'function'
+                        typeof models[header[0]] !== 'undefined' &&
+                            typeof models[header[0]] !== 'function'
                         ) {
-                        domToText = domToText.replace(fullHeader, model[header[0]].$get(header[1]));
+                        domToText = domToText.replace(fullHeader, models[header[0]].$get(header[1]));
                     } else {
                         domToText = domToText.replace(fullHeader, "");
                     }
@@ -1257,7 +1283,7 @@
             elementTpl = tpl.querySelector(selector),
             element = me.queryEl(selector),
             domToText = elementTpl.innerHTML,
-            model = me.getModels(),
+            models = me.getModels(),
             headers;
 
         headers = domToText.match(/\{\{(.*?)\}\}/gi);
@@ -1266,10 +1292,10 @@
                 var fullHeader = headers[i],
                     header = fullHeader.substr(2, (fullHeader.length - 4)).split('.');
                 if (
-                    typeof model[header[0]] !== 'undefined' &&
-                        typeof model[header[0]] !== 'function'
+                    typeof models[header[0]] !== 'undefined' &&
+                        typeof models[header[0]] !== 'function'
                     ) {
-                    domToText = domToText.replace(fullHeader, model[header[0]].$get(header[1]));
+                   domToText = domToText.replace(fullHeader, models[header[0]].$get(header[1]));
                 } else {
                     domToText = domToText.replace(fullHeader, "");
                 }
@@ -1277,6 +1303,7 @@
         }
         element.innerHTML = domToText;
         me.fireEvent('partialRender', null, me, element);
+        return me;
     };
     /**
      *
@@ -1292,8 +1319,10 @@
      * @param selector
      */
     View.prototype.addChild = function (view, selector) {
-        view.appendTo(this, selector);
-        this.fireEvent('elementAdded', this, view);
+        var me = this;
+        view.appendTo(me, selector);
+        me.fireEvent('elementAdded', me, view);
+        return me;
     };
 
     /**
@@ -1317,6 +1346,7 @@
             el.parentNode.removeChild(el);
             me.set('isInDOM', false);
         }
+        return me;
     };
 
     /**
@@ -1362,6 +1392,7 @@
         }
         views[id] = me;
         config.parent = parent;
+        return me;
     };
 
 

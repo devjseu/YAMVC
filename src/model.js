@@ -76,10 +76,10 @@
         for (key in params) i++;
 
         if (
-            i === 0 ||
+            i === 0 &&
                 typeof data[idProperty] === 'undefined'
             )
-            throw new Error('You need to pass at least one property value to load model');
+            throw new Error('You need to pass at least one condition to load model');
 
         if (i === 0) {
             params[idProperty] = data[idProperty];
@@ -88,8 +88,8 @@
         callback = function () {
             if (me.getProxy().getStatus() === 'success') {
                 me.set('isDirty', false);
-                me.set('data', me.getProxy().getResult());
-                me.fireEvent('loaded', me, me.getProxy().getResult());
+                me.set('data', me.getProxy().getResponse());
+                me.fireEvent('loaded', me, me.getProxy().getResponse(), 'read');
             } else {
                 me.fireEvent('error', me, 'read');
             }
@@ -103,12 +103,16 @@
             idProperty = me.get('idProperty'),
             callback,
             type;
-
+        if (me.get('isProcessing')) {
+            return false;
+        }
+        me.set('isProcessing', true);
         callback = function () {
+            me.set('isProcessing', false);
             if (me.getProxy().getStatus() === 'success') {
                 me.set('isDirty', false);
-                me.set('data', me.getProxy().getResult());
-                me.fireEvent('saved', me, me.getProxy().getResult());
+                me.set('data', me.getProxy().getResponse());
+                me.fireEvent('saved', me, me.getProxy().getResponse(), type);
             } else {
                 me.fireEvent('error', me, type);
             }
@@ -121,27 +125,29 @@
             type = 'update';
             me.getProxy().update(me.getNamespace(), data, callback);
         }
+        return true;
     };
 
-    Model.prototype.destroy = function () {
+    Model.prototype.remove = function () {
         var me = this,
             data = me.get('data'),
             idProperty = me.get('idProperty'),
-            callback,
-            params = {};
+            callback;
 
-        params[idProperty] = data[idProperty];
+        if (typeof data[idProperty] === 'undefined')
+            throw new Error('Can not remove empty model');
 
         callback = function () {
             if (me.getProxy().getStatus() === 'success') {
+                delete data[idProperty];
                 me.set('isDirty', false);
-                me.set('data', me.getProxy().getResult());
-                me.fireEvent('loaded', me, me.getProxy().getResult());
+                me.set('data', {});
+                me.fireEvent('removed', me, 'destroy');
             } else {
-                me.fireEvent('error', me, 'read');
+                me.fireEvent('error', me, 'destroy');
             }
         };
-        me.getProxy().read(me.getNamespace(), params, callback);
+        me.getProxy().destroy(me.getNamespace(), data, callback);
     };
 
     window.yamvc = yamvc;
