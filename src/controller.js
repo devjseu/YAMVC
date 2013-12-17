@@ -75,7 +75,7 @@
      *
      * @type {*}
      */
-    Controller = yamvc.Core.extend(function(opts) {
+    Controller = yamvc.Core.extend(function (opts) {
         yamvc.Core.apply(this, arguments);
     });
 
@@ -110,7 +110,10 @@
         var me = this,
             routes = me.get('routes'),
             events = me.get('events'),
-            views = me.get('views');
+            views = me.get('views'),
+            query,
+            rx = /(^\$|,$)/,
+            view;
         if (routes) {
             for (var k in routes) {
                 if (routes.hasOwnProperty(k)) {
@@ -120,9 +123,25 @@
             }
         }
         if (events && views) {
-            for (var view in views) {
+            for (view in views) {
                 if (views.hasOwnProperty(view)) {
                     views[view].addListener('render', me.resolveEvents.bind(me));
+                }
+            }
+
+            for (query in events) {
+                if (events.hasOwnProperty(query)) {
+                    if (rx.test(query)) {
+                        view = views[query.substr(1)];
+                        if (view) {
+                            for (var event in events[query]) {
+                                if (events[query].hasOwnProperty(event)) {
+                                    view.addListener(event, events[query][event].bind(me, view));
+                                }
+                            }
+                        }
+                        delete events[query];
+                    }
                 }
             }
         }
@@ -147,7 +166,8 @@
      */
     Controller.prototype.resolveEvents = function (view) {
         var events = this.get('events'),
-            viewEvents;
+            viewEvents,
+            scope;
         for (var query in events) {
             if (events.hasOwnProperty(query)) {
                 viewEvents = events[query];
@@ -155,7 +175,10 @@
                 for (var i = 0, l = elements.length; i < l; i++) {
                     for (var event in viewEvents) {
                         if (viewEvents.hasOwnProperty(event)) {
-                            elements[i].addEventListener(event, viewEvents[event].bind(this, view));
+                            scope = (function (func, scope, arg) {
+                                return func.bind(scope, arg);
+                            }(viewEvents[event], this, view));
+                            elements[i].addEventListener(event, scope);
                         }
                     }
                 }

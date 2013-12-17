@@ -16,9 +16,6 @@
          *
          */
         fireEvent: function (evName /** param1, ... */) {
-            if (!this._listeners) {
-                this._listeners = [];
-            }
             if (this._suspendEvents)
                 return true;
             var ret = true,
@@ -28,6 +25,7 @@
                 if (ret) {
                     var scope = shift.call(arguments);
                     ret = li[i].apply(scope, arguments);
+                    ret = typeof ret === 'undefined' ? true : ret;
                 }
             }
             return ret;
@@ -41,9 +39,6 @@
          *
          */
         addListener: function (evName, callback) {
-            if (!this._listeners) {
-                this._listeners = [];
-            }
             var listeners = this._listeners[evName] || [];
             listeners.push(callback);
             this._listeners[evName] = listeners;

@@ -183,13 +183,16 @@
         this.initModels();
     };
 
+    /**
+     * initialize template
+     */
     View.prototype.initTemplate = function () {
         var me = this,
             config = me.get('config'),
             div = document.createElement('div'),
             _tpl;
         if (!config.tpl) {
-            throw new Error('no tpl set');
+            throw new Error(config.id + ': no tpl set');
         }
         if (!VTM.get(config.tpl)) {
             _tpl = document.getElementById(config.tpl);
@@ -205,7 +208,7 @@
         var me = this,
             models,
             model;
-        if(!me.getModels){
+        if (!me.getModels) {
             return me;
         }
 
@@ -260,19 +263,19 @@
             domToText;
 
         if (parent) {
-            if (id) {
-                parent = parent.querySelectorAll(id).item(0);
+            if (id && parent.queryEl(id)) {
+                parent = parent.queryEl(id);
             } else {
                 parent = parent.get('el');
             }
         } else {
             if (id) {
-                parent = document.querySelectorAll(id).item(0);
+                parent = document.querySelector(id);
             }
         }
 
+        domToText = tpl.innerHTML;
         if (models) {
-            domToText = tpl.innerHTML;
             headers = domToText.match(/\{\{(.*?)\}\}/gi);
             if (headers) {
                 for (var i = 0, len = headers.length; i < len; i++) {
@@ -288,8 +291,8 @@
                     }
                 }
             }
-            parsedTpl.innerHTML = domToText;
         }
+        parsedTpl.innerHTML = domToText;
         var j = 0;
         while (j < tpl.childNodes.length && tpl.childNodes.item(j).nodeType !== 1) {
             j++;
@@ -332,7 +335,7 @@
                     typeof models[header[0]] !== 'undefined' &&
                         typeof models[header[0]] !== 'function'
                     ) {
-                   domToText = domToText.replace(fullHeader, models[header[0]].$get(header[1]));
+                    domToText = domToText.replace(fullHeader, models[header[0]].$get(header[1]));
                 } else {
                     domToText = domToText.replace(fullHeader, "");
                 }
@@ -342,12 +345,34 @@
         me.fireEvent('partialRender', null, me, element);
         return me;
     };
+
     /**
      *
      * @param selector
      */
     View.prototype.queryEl = function (selector) {
         return this.get('el').querySelector(selector);
+    };
+
+    /**
+     *
+     * @param selector
+     */
+    View.prototype.queryEls = function (selector) {
+        return this.get('el').querySelectorAll(selector);
+    };
+
+    /**
+     *
+     * @param id
+     * @returns {*}
+     */
+    View.prototype.getChild = function (id) {
+        var me = this,
+            config = me.get('config');
+        if (config.views && !config.views[id] || !config.view)
+            return false;
+        return config.views[id];
     };
 
     /**
@@ -413,7 +438,10 @@
             config.renderTo = selector;
         }
 
-        if (config.parent && config.parent.get('config').id !== parent.get('config').id) {
+        if (!config.parent) {
+            config.parent = parent;
+        }
+        else if (config.parent && config.parent.get('config').id !== parent.get('config').id) {
             delete config.parent.get('config').views[id];
         }
 
@@ -444,6 +472,31 @@
                 views[key].appendTo(this);
             }
         }
+    };
+
+
+    /**
+     * show element
+     * @returns {View}
+     */
+    View.prototype.show = function () {
+        var me = this,
+            style = me.get('el').style;
+        style.display = 'block';
+        me.fireEvent('show', me, style);
+        return me;
+    };
+
+    /**
+     * hide element
+     * @returns {View}
+     */
+    View.prototype.hide = function () {
+        var me = this,
+            style = me.get('el').style;
+        style.display = 'hide';
+        me.fireEvent('hide', me, style);
+        return me;
     };
 
     yamvc.ViewManager = VM;

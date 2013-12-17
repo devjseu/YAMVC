@@ -32,7 +32,7 @@
             opts = me.get('initOpts'),
             config = me.get('config');
         me.set('data', opts.data || {});
-        me.set('idProperty', config.idProperty || '_id');
+        me.set('idProperty', config.idProperty || 'id');
     };
 
     Model.prototype.$set = function (property, value) {
@@ -43,7 +43,7 @@
         if (value !== oldVal) {
             data[property] = value;
             me.set('isDirty', true);
-            me.fireEvent('property' + property.charAt(0).toUpperCase() + property.slice(1) + 'Change', me, value, oldVal);
+            me.fireEvent('data' + property.charAt(0).toUpperCase() + property.slice(1) + 'Change', me, value, oldVal);
         }
     };
 

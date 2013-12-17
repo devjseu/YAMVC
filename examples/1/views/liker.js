@@ -21,7 +21,8 @@
     };
 
     Liker.prototype.updateLiker = function () {
-        this.partialRender('#liker');
+        console.log('updateLiker',this._config.id);
+        this.partialRender('.liker');
     };
 
     window.Liker = Liker;

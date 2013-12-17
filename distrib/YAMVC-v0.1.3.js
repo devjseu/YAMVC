@@ -1,5 +1,136 @@
 /*! YAMVC v0.1.3 - 2013-12-16 
  *  License:  */
+(function (window, undefined) {
+    "use strict";
+    var yamvc = window.yamvc || {},
+        mixins = yamvc.mixins || {},
+        GetSet;
+
+    GetSet = {
+        /**
+         *
+         * @param property
+         * @param value
+         * @returns {this}
+         *
+         */
+        set: function (property, value) {
+            var p = "_" + property,
+                oldVal = this[p];
+            if (value !== oldVal) {
+                this[p] = value;
+                this.fireEvent(property + 'Change', this, value, oldVal);
+            }
+            return this;
+        },
+        /**
+         *
+         * @param property
+         * @returns {*}
+         *
+         */
+        get: function (property) {
+            return this["_" + property];
+        }
+    };
+
+    mixins.GetSet = GetSet;
+    window.yamvc = yamvc;
+    window.yamvc.mixins = mixins;
+}(window));
+
+(function (window, undefined) {
+    "use strict";
+    var yamvc = window.yamvc || {},
+        mixins = yamvc.mixins || {},
+        Observable;
+
+    Observable = {
+        init: function () {
+            this.set('listeners', {});
+            this.set('suspendEvents', false);
+        },
+        /**
+         * fire event
+         * @param evName
+         * @returns {boolean}
+         *
+         */
+        fireEvent: function (evName /** param1, ... */) {
+            if (this._suspendEvents)
+                return true;
+            var ret = true,
+                shift = Array.prototype.shift;
+            shift.call(arguments);
+            for (var i = 0, li = this._listeners[evName] || [], len = li.length; i < len; i++) {
+                if (ret) {
+                    var scope = shift.call(arguments);
+                    ret = li[i].apply(scope, arguments);
+                    ret = typeof ret === 'undefined' ? true : ret;
+                }
+            }
+            return ret;
+        },
+
+        /**
+         * fire event
+         * @param evName
+         * @param callback
+         * @returns {this}
+         *
+         */
+        addListener: function (evName, callback) {
+            var listeners = this._listeners[evName] || [];
+            listeners.push(callback);
+            this._listeners[evName] = listeners;
+            return this;
+        },
+
+        /**
+         * fire event
+         * @param evName
+         * @param callback
+         * @returns {this}
+         *
+         */
+        removeListener: function (evName, callback) {
+            var listeners = this._listeners,
+                index;
+            if (listeners) {
+                if (callback) {
+                    if (typeof callback === "function") {
+                        for (var i = 0, len = listeners.length; i < len; i++) {
+                            if (listeners[i] === callback) {
+                                index = i;
+                            }
+                        }
+                    } else {
+                        index = callback;
+                    }
+                    listeners.splice(index, 1);
+                } else {
+                    this._listeners = [];
+                }
+            }
+            return this;
+        },
+
+        /**
+         * suspend all events
+         * @param {Boolean} suspend
+         */
+        suspendEvents: function (suspend) {
+            suspend = suspend || true;
+            this.set('suspendEvents', suspend);
+            return this;
+        }
+    };
+
+    mixins.Observable = Observable;
+    window.yamvc = yamvc;
+    window.yamvc.mixins = mixins;
+}(window));
+
 /*
  The MIT License (MIT)
 
@@ -63,6 +194,7 @@
          *
          */
         function Core() {
+            this.set('listeners', {});
             this.bindMethods.apply(this, arguments);
             this.init.apply(this, arguments);
         }
@@ -202,12 +334,7 @@
                         if (__hasProp.call(parent, key)) child[key] = parent[key];
                     }
                     function Instance() {
-                        var mixins, i, l;
                         this.constructor = child;
-                        mixins = child._mixins.reverse();
-                        for (i = 0, l = mixins.length; i < l; i++) {
-                            mixins[i].call(this);
-                        }
                     }
 
                     Instance.prototype = parent.prototype;
@@ -241,7 +368,7 @@
     var yamvc = window.yamvc || {},
         Collection;
 
-    Collection = yamvc.Core.extend(function (){
+    Collection = yamvc.Core.extend(function () {
         yamvc.Core.apply(this, arguments);
     });
 
@@ -252,17 +379,60 @@
         config = opts.config || {};
         me.set('initOpts', opts);
         me.set('config', config);
+        me.set('set', []);
+        me.set('cache', []);
         me.initConfig();
     };
 
     Collection.prototype.initConfig = function () {
         yamvc.Core.prototype.initConfig.apply(this);
-        if(!config.model){
+        if (!config.model) {
             throw new Error("Set model type for collection");
         }
-        if(! config.model instanceof yamvc.Model){
+        if (!config.model instanceof yamvc.Model) {
             throw new Error("Set proper model type for collection");
         }
+    };
+
+    Collection.prototype.load = function (params) {
+        var me = this,
+            data = me.get('data'),
+            idProperty = me.get('idProperty'),
+            callback,
+            key, i = 0;
+
+        for (key in params) i++;
+
+        if (
+            i === 0
+            )
+            throw new Error('You need to pass at least one condition to load model collection');
+
+        callback = function () {
+            if (me.getProxy().getStatus() === 'success') {
+                me.set('isDirty', false);
+                me.prepareData();
+                me.fireEvent('loaded', me, me.getProxy().getResponse(), 'read');
+            } else {
+                me.fireEvent('error', me, 'read');
+            }
+        };
+        me.getProxy().read(me.getNamespace(), params, callback);
+    };
+
+    Collection.prototype.prepareData = function () {
+        var me = this,
+            ModelInstance = me.getModel(),
+            results = me.getProxy().getResult(),
+            rows = results.rows,
+            models = [];
+        for (var i = 0, l = rows.length; i < l; i++) {
+            models.push(new ModelInstance({
+                data : rows[i]
+            }));
+        }
+        me.set('set', models);
+        me.set('total', results.total);
     };
 
     window.yamvc = yamvc;
@@ -346,7 +516,7 @@
      *
      * @type {*}
      */
-    Controller = yamvc.Core.extend(function(opts) {
+    Controller = yamvc.Core.extend(function (opts) {
         yamvc.Core.apply(this, arguments);
     });
 
@@ -381,7 +551,10 @@
         var me = this,
             routes = me.get('routes'),
             events = me.get('events'),
-            views = me.get('views');
+            views = me.get('views'),
+            query,
+            rx = /(^\$|,$)/,
+            view;
         if (routes) {
             for (var k in routes) {
                 if (routes.hasOwnProperty(k)) {
@@ -391,9 +564,25 @@
             }
         }
         if (events && views) {
-            for (var view in views) {
+            for (view in views) {
                 if (views.hasOwnProperty(view)) {
                     views[view].addListener('render', me.resolveEvents.bind(me));
+                }
+            }
+
+            for (query in events) {
+                if (events.hasOwnProperty(query)) {
+                    if (rx.test(query)) {
+                        view = views[query.substr(1)];
+                        if (view) {
+                            for (var event in events[query]) {
+                                if (events[query].hasOwnProperty(event)) {
+                                    view.addListener(event, events[query][event].bind(me, view));
+                                }
+                            }
+                        }
+                        delete events[query];
+                    }
                 }
             }
         }
@@ -418,7 +607,8 @@
      */
     Controller.prototype.resolveEvents = function (view) {
         var events = this.get('events'),
-            viewEvents;
+            viewEvents,
+            scope;
         for (var query in events) {
             if (events.hasOwnProperty(query)) {
                 viewEvents = events[query];
@@ -426,7 +616,10 @@
                 for (var i = 0, l = elements.length; i < l; i++) {
                     for (var event in viewEvents) {
                         if (viewEvents.hasOwnProperty(event)) {
-                            elements[i].addEventListener(event, viewEvents[event].bind(this, view));
+                            scope = (function (func, scope, arg) {
+                                return func.bind(scope, arg);
+                            }(viewEvents[event], this, view));
+                            elements[i].addEventListener(event, scope);
                         }
                     }
                 }
@@ -596,142 +789,6 @@
 (function (window, undefined) {
     "use strict";
     var yamvc = window.yamvc || {},
-        mixins = yamvc.mixins || {},
-        GetSet;
-
-    GetSet = {
-        /**
-         *
-         * @param property
-         * @param value
-         * @returns {this}
-         *
-         */
-        set: function (property, value) {
-            var p = "_" + property,
-                oldVal = this[p];
-            if (value !== oldVal) {
-                this[p] = value;
-                this.fireEvent(property + 'Change', this, value, oldVal);
-            }
-            return this;
-        },
-        /**
-         *
-         * @param property
-         * @returns {*}
-         *
-         */
-        get: function (property) {
-            return this["_" + property];
-        }
-    };
-
-    mixins.GetSet = GetSet;
-    window.yamvc = yamvc;
-    window.yamvc.mixins = mixins;
-}(window));
-
-(function (window, undefined) {
-    "use strict";
-    var yamvc = window.yamvc || {},
-        mixins = yamvc.mixins || {},
-        Observable;
-
-    Observable = {
-        init: function () {
-            this.set('listeners', {});
-            this.set('suspendEvents', false);
-        },
-        /**
-         * fire event
-         * @param evName
-         * @returns {boolean}
-         *
-         */
-        fireEvent: function (evName /** param1, ... */) {
-            if (!this._listeners) {
-                this._listeners = [];
-            }
-            if (this._suspendEvents)
-                return true;
-            var ret = true,
-                shift = Array.prototype.shift;
-            shift.call(arguments);
-            for (var i = 0, li = this._listeners[evName] || [], len = li.length; i < len; i++) {
-                if (ret) {
-                    var scope = shift.call(arguments);
-                    ret = li[i].apply(scope, arguments);
-                }
-            }
-            return ret;
-        },
-
-        /**
-         * fire event
-         * @param evName
-         * @param callback
-         * @returns {this}
-         *
-         */
-        addListener: function (evName, callback) {
-            if (!this._listeners) {
-                this._listeners = [];
-            }
-            var listeners = this._listeners[evName] || [];
-            listeners.push(callback);
-            this._listeners[evName] = listeners;
-            return this;
-        },
-
-        /**
-         * fire event
-         * @param evName
-         * @param callback
-         * @returns {this}
-         *
-         */
-        removeListener: function (evName, callback) {
-            var listeners = this._listeners,
-                index;
-            if (listeners) {
-                if (callback) {
-                    if (typeof callback === "function") {
-                        for (var i = 0, len = listeners.length; i < len; i++) {
-                            if (listeners[i] === callback) {
-                                index = i;
-                            }
-                        }
-                    } else {
-                        index = callback;
-                    }
-                    listeners.splice(index, 1);
-                } else {
-                    this._listeners = [];
-                }
-            }
-            return this;
-        },
-
-        /**
-         * suspend all events
-         * @param {Boolean} suspend
-         */
-        suspendEvents: function (suspend) {
-            suspend = suspend || true;
-            this.set('suspendEvents', suspend);
-            return this;
-        }
-    };
-
-    mixins.Observable = Observable;
-    window.yamvc = yamvc;
-    window.yamvc.mixins = mixins;
-}(window));
-
-(function (window, undefined) {
-    "use strict";
-    var yamvc = window.yamvc || {},
         Model;
 
     Model = yamvc.Core.extend(function () {
@@ -763,7 +820,7 @@
             opts = me.get('initOpts'),
             config = me.get('config');
         me.set('data', opts.data || {});
-        me.set('idProperty', config.idProperty || '_id');
+        me.set('idProperty', config.idProperty || 'id');
     };
 
     Model.prototype.$set = function (property, value) {
@@ -774,7 +831,7 @@
         if (value !== oldVal) {
             data[property] = value;
             me.set('isDirty', true);
-            me.fireEvent('property' + property.charAt(0).toUpperCase() + property.slice(1) + 'Change', me, value, oldVal);
+            me.fireEvent('data' + property.charAt(0).toUpperCase() + property.slice(1) + 'Change', me, value, oldVal);
         }
     };
 
@@ -1212,7 +1269,7 @@
         var me = this,
             models,
             model;
-        if(!me.getModels){
+        if (!me.getModels) {
             return me;
         }
 
@@ -1267,19 +1324,19 @@
             domToText;
 
         if (parent) {
-            if (id) {
-                parent = parent.querySelectorAll(id).item(0);
+            if (id && parent.queryEl(id)) {
+                parent = parent.queryEl(id);
             } else {
                 parent = parent.get('el');
             }
         } else {
             if (id) {
-                parent = document.querySelectorAll(id).item(0);
+                parent = document.querySelector(id);
             }
         }
 
+        domToText = tpl.innerHTML;
         if (models) {
-            domToText = tpl.innerHTML;
             headers = domToText.match(/\{\{(.*?)\}\}/gi);
             if (headers) {
                 for (var i = 0, len = headers.length; i < len; i++) {
@@ -1295,8 +1352,8 @@
                     }
                 }
             }
-            parsedTpl.innerHTML = domToText;
         }
+        parsedTpl.innerHTML = domToText;
         var j = 0;
         while (j < tpl.childNodes.length && tpl.childNodes.item(j).nodeType !== 1) {
             j++;
@@ -1339,7 +1396,7 @@
                     typeof models[header[0]] !== 'undefined' &&
                         typeof models[header[0]] !== 'function'
                     ) {
-                   domToText = domToText.replace(fullHeader, models[header[0]].$get(header[1]));
+                    domToText = domToText.replace(fullHeader, models[header[0]].$get(header[1]));
                 } else {
                     domToText = domToText.replace(fullHeader, "");
                 }
@@ -1349,12 +1406,34 @@
         me.fireEvent('partialRender', null, me, element);
         return me;
     };
+
     /**
      *
      * @param selector
      */
     View.prototype.queryEl = function (selector) {
         return this.get('el').querySelector(selector);
+    };
+
+    /**
+     *
+     * @param selector
+     */
+    View.prototype.queryEls = function (selector) {
+        return this.get('el').querySelectorAll(selector);
+    };
+
+    /**
+     *
+     * @param id
+     * @returns {*}
+     */
+    View.prototype.getChild = function (id) {
+        var me = this,
+            config = me.get('config');
+        if(config.views && !config.views[id] || !config.view)
+            return false;
+        return config.views[id];
     };
 
     /**
@@ -1420,7 +1499,10 @@
             config.renderTo = selector;
         }
 
-        if (config.parent && config.parent.get('config').id !== parent.get('config').id) {
+        if(!config.parent){
+            config.parent = parent;
+        }
+        else if (config.parent && config.parent.get('config').id !== parent.get('config').id) {
             delete config.parent.get('config').views[id];
         }
 

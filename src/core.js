@@ -61,6 +61,7 @@
          *
          */
         function Core() {
+            this.set('listeners', {});
             this.bindMethods.apply(this, arguments);
             this.init.apply(this, arguments);
         }
@@ -200,12 +201,7 @@
                         if (__hasProp.call(parent, key)) child[key] = parent[key];
                     }
                     function Instance() {
-                        var mixins, i, l;
                         this.constructor = child;
-                        mixins = child._mixins.reverse();
-                        for (i = 0, l = mixins.length; i < l; i++) {
-                            mixins[i].call(this);
-                        }
                     }
 
                     Instance.prototype = parent.prototype;
