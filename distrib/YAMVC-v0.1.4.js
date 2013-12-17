@@ -1545,8 +1545,12 @@
      */
     View.prototype.show = function () {
         var me = this,
-            style = me.get('el').style;
+            style;
+        if (!me.isInDOM())
+            return me;
+        style = me.get('el').style;
         style.display = 'block';
+        me.set('visible', true);
         me.fireEvent('show', me, style);
         return me;
     };
@@ -1557,11 +1561,25 @@
      */
     View.prototype.hide = function () {
         var me = this,
-            style = me.get('el').style;
-        style.display = 'hide';
+            style;
+        if (!me.isInDOM())
+            return me;
+        style = me.get('el').style;
+        style.display = 'none';
+        me.set('visible', false);
         me.fireEvent('hide', me, style);
         return me;
     };
+
+    /**
+     * hide element
+     * @returns {View}
+     */
+    View.prototype.isVisible = function () {
+        var me = this;
+        return me.get('visible') && me.isInDOM();
+    };
+
 
     yamvc.ViewManager = VM;
     window.yamvc = yamvc;
