@@ -1,4 +1,4 @@
-/*! YAMVC v0.1.4 - 2013-12-17 
+/*! YAMVC v0.1.4 - 2013-12-18 
  *  License:  */
 (function (window, undefined) {
     "use strict";
@@ -539,6 +539,7 @@
         me.set('views', config.views || {});
         me.initConfig();
         me.renderViews();
+        me.restoreRouter();
         return me;
     };
 
@@ -627,13 +628,22 @@
         }
     };
 
-
     /**
      *
      * @returns {window.Router}
      */
     Controller.prototype.getRouter = function () {
         return router;
+    };
+
+    /**
+     *
+     * @returns {Controller}
+     */
+    Controller.prototype.restoreRouter = function () {
+        var me = this;
+        me.getRouter().restore();
+        return me;
     };
 
     /**
@@ -848,6 +858,20 @@
         for (key in newData) {
             if (newData.hasOwnProperty(key)) {
                 me.$set(key, newData[key]);
+            }
+        }
+
+        me.fireEvent('dataChange', me, data);
+    };
+
+    Model.prototype.clear = function (newData) {
+        var me = this,
+            data = me.get('data'),
+            key;
+
+        for (key in newData) {
+            if (newData.hasOwnProperty(key)) {
+                me.$set(key, null);
             }
         }
 
@@ -1434,7 +1458,7 @@
     View.prototype.getChild = function (id) {
         var me = this,
             config = me.get('config');
-        if (config.views && !config.views[id] || !config.view)
+        if (!config.views || config.views && !config.views[id])
             return false;
         return config.views[id];
     };

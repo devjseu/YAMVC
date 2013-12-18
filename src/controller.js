@@ -98,6 +98,7 @@
         me.set('views', config.views || {});
         me.initConfig();
         me.renderViews();
+        me.restoreRouter();
         return me;
     };
 
@@ -186,13 +187,22 @@
         }
     };
 
-
     /**
      *
      * @returns {window.Router}
      */
     Controller.prototype.getRouter = function () {
         return router;
+    };
+
+    /**
+     *
+     * @returns {Controller}
+     */
+    Controller.prototype.restoreRouter = function () {
+        var me = this;
+        me.getRouter().restore();
+        return me;
     };
 
     /**

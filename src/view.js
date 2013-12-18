@@ -370,7 +370,7 @@
     View.prototype.getChild = function (id) {
         var me = this,
             config = me.get('config');
-        if (config.views && !config.views[id] || !config.view)
+        if (!config.views || config.views && !config.views[id])
             return false;
         return config.views[id];
     };
