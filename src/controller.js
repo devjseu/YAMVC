@@ -168,6 +168,9 @@
     Controller.prototype.resolveEvents = function (view) {
         var events = this.get('events'),
             viewEvents,
+            newScope = function (func, scope, arg) {
+                return func.bind(scope, arg);
+            },
             scope;
         for (var query in events) {
             if (events.hasOwnProperty(query)) {
@@ -176,9 +179,7 @@
                 for (var i = 0, l = elements.length; i < l; i++) {
                     for (var event in viewEvents) {
                         if (viewEvents.hasOwnProperty(event)) {
-                            scope = (function (func, scope, arg) {
-                                return func.bind(scope, arg);
-                            }(viewEvents[event], this, view));
+                            scope = newScope(viewEvents[event], this, view);
                             elements[i].addEventListener(event, scope);
                         }
                     }

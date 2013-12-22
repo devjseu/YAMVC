@@ -11,18 +11,21 @@
 <script src="../assets/js/lib/qunit/qunit/qunit.js"></script>
 
 <!-- Use latest versionless copy of current release -->
-<script src="../src/base.js"></script>
+<script src="../src/mixins/getset.js"></script>
+<script src="../src/mixins/observable.js"></script>
+<script src="../src/core.js"></script>
 <script src="../src/controller.js"></script>
+<script src="../src/collection.js"></script>
 <script src="../src/router.js"></script>
 <script src="../src/view.js"></script>
-<script src="tests.js"></script>
+<script src="../src/model.js"></script>
+<script src="../src/data/proxy.js"></script>
+<script src="../src/data/proxy/localstorage.js"></script>
+<script src="collection.js"></script>
+<script src="dataProxy.js"></script>
+<script src="dataProxyLocalstorage.js"></script>
 <div id="container" style="display: none">
 
 </div>
-<x-template id="test">
-    <div>
-        <p id="app-name">{{app}}</p>
-    </div>
-</x-template>
 </body>
 </html>

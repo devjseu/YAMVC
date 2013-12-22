@@ -61,11 +61,24 @@ module.exports = function (grunt) {
         },
         jshint: {
             options: {
-                trailing: true,
                 eqeqeq: true
             },
             target: {
                 src: ['src/**/*.js', 'test/**/*.js']
+            }
+        },
+        watch: {
+            default: {
+                files: [
+                    'src/**/*.js',
+                    'src/*.js',
+                    'test/**/*.js',
+                    'test/*.js'
+                ],
+                tasks: ['jshint', 'qunit'],
+                options: {
+                    spawn: true
+                }
             }
         }
     });
@@ -75,6 +88,8 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-qunit');
+    grunt.loadNpmTasks('grunt-contrib-watch');
 
+    grunt.registerTask("tdd", ["watch:default"]);
     grunt.registerTask('default', ['jshint', 'concat', 'uglify', 'copy']);
 };

@@ -21,11 +21,15 @@
 
     Collection.prototype.initConfig = function () {
         yamvc.Core.prototype.initConfig.apply(this);
+        var me = this,
+            config = me.get('config'),
+            testModel;
         if (!config.model) {
-            throw new Error("Set model type for collection");
+            throw new Error("Set model for collection");
         }
-        if (!config.model instanceof yamvc.Model) {
-            throw new Error("Set proper model type for collection");
+        testModel = new (config.model)({config: {namespace: 'test'}});
+        if (!(testModel instanceof yamvc.Model)) {
+            throw new Error("Set proper model for collection");
         }
     };
 
@@ -63,11 +67,15 @@
             models = [];
         for (var i = 0, l = rows.length; i < l; i++) {
             models.push(new ModelInstance({
-                data : rows[i]
+                data: rows[i]
             }));
         }
         me.set('set', models);
         me.set('total', results.total);
+    };
+
+    Collection.prototype.getRawData = function () {
+
     };
 
     window.yamvc = yamvc;

@@ -15,6 +15,7 @@
         config = opts.config || {};
         me.set('initOpts', opts);
         me.set('config', config);
+        me.initDefaults();
         me.initConfig();
     };
 
@@ -25,15 +26,31 @@
     };
 
     /**
-     * abstract
+     *
      */
-    Proxy.prototype.read = function () {
+    Proxy.prototype.initDefaults = function () {
+        var me = this,
+            config = me.get('config');
+        config.propertyResults = 'results';
     };
 
     /**
      * abstract
      */
-    Proxy.prototype.create = function () {
+    Proxy.prototype.read = function (namespace, data, callback) {
+        if (!namespace)
+            throw new Error('namespace should be set');
+
+    };
+
+    /**
+     * abstract
+     */
+    Proxy.prototype.create = function (namespace, data, callback) {
+        if (!namespace)
+            throw new Error('namespace should be set');
+        if (!data || typeof data !== 'object')
+            throw new Error('Data should be pass as object');
     };
 
     /**
@@ -56,12 +73,14 @@
 
     };
 
-    /**
-     * abstract
-     */
-    Proxy.prototype.getResult = function () {
-        var me = this;
-        return me.get('lastResponse');
+
+    Proxy.prototype.setResponse = function (response) {
+        return this.set('response', response);
+    };
+
+
+    Proxy.prototype.getResponse = function () {
+        return this.get('response');
     };
 
     window.yamvc = yamvc;
