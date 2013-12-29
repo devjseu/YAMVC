@@ -62,7 +62,7 @@
     Collection.prototype.prepareData = function () {
         var me = this,
             ModelInstance = me.getModel(),
-            results = me.getProxy().getResult(),
+            results = me.getRawData(),
             rows = results.rows,
             models = [];
         for (var i = 0, l = rows.length; i < l; i++) {
@@ -75,7 +75,12 @@
     };
 
     Collection.prototype.getRawData = function () {
+        return this.get('raw');
+    };
 
+    Collection.prototype.setRawData = function (data) {
+        this.set('raw', data);
+        return this;
     };
 
     window.yamvc = yamvc;
