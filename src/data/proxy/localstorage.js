@@ -77,8 +77,17 @@
             operator,
             property,
             sorter,
+            sorterFn,
             order,
             len;
+
+        sorterFn = function (a, b) {
+            var va = "" + a[property],
+                vb = "" + b[property],
+                alc = va.name.toLowerCase(), blc = vb.name.toLowerCase();
+            return (alc > blc ? 1 : alc < blc ? -1 : va.name > vb.name ? 1 : va.name < vb.name ? -1 : 0) * (order.toLowerCase() === 'desc' ? -1 : 1);
+        };
+
         if (localStorage[namespace]) {
             records = JSON.parse(localStorage[namespace]);
 
@@ -113,13 +122,7 @@
                 sorter = sorters[len];
                 property = sorter[0];
                 order = sorter[1] || 'ASC';
-                records.sort(function (a, b) {
-                    var va = "" + a[property],
-                        vb = "" + b[property],
-                        alc = va.name.toLowerCase(), blc = vb.name.toLowerCase();
-                    return (alc > blc ? 1 : alc < blc ? -1 : va.name > vb.name ? 1 : va.name < vb.name ? -1 : 0)
-                        * (order.toLowerCase() === 'desc' ? -1 : 1);
-                });
+                records.sort(sorterFn);
             }
             if (!limit) {
                 limit = records.length - offset;
