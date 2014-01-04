@@ -3,27 +3,26 @@
     var yamvc = window.yamvc,
         Liker;
 
-    Liker = yamvc.View.extend(function (opts) {
-        yamvc.View.apply(this, arguments);
-        this.bindEvents();
+    Liker = yamvc.View.extend({
+        init: function () {
+            Liker.Parent.init.apply(this, arguments);
+            this.bindEvents();
+        },
+        bindEvents: function () {
+            this.getModel('likes')
+                .addListener('dataCountChange', this.updateLiker.bind(this));
+        },
+        incrementLikes: function () {
+            this.getModel('likes')
+                .property(
+                    'count',
+                    this.getModel('likes').property('count') + 1
+                );
+        },
+        updateLiker: function () {
+            this.partialRender('.liker');
+        }
     });
-
-    Liker.prototype.bindEvents = function () {
-        this.getModel('likes').addListener('propertyCountChange', this.updateLiker.bind(this));
-    };
-
-    Liker.prototype.incrementLikes = function () {
-        this.getModel('likes')
-            .$set(
-                'count',
-                this.getModel('likes').$get('count') + 1
-            );
-    };
-
-    Liker.prototype.updateLiker = function () {
-        console.log('updateLiker',this._config.id);
-        this.partialRender('.liker');
-    };
 
     window.Liker = Liker;
 

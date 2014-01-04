@@ -45,10 +45,6 @@ yamvc.onReady(function () {
         }
     });
 
-    app.views.liker2.addListener('test', function test() {
-
-    });
-
     app.ctr.main = new yamvc.Controller({
         config: {
             name: 'Main',
@@ -64,7 +60,12 @@ yamvc.onReady(function () {
                 },
                 $likeBtn : {
                     render : function (view) {
-
+                        alert('btn rendered!');
+                    }
+                },
+                $likeBtn2 : {
+                    render : function (view) {
+                        alert('btn 2 rendered!');
                     }
                 }
             }

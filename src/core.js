@@ -53,6 +53,15 @@
         }
     }
 
+    function merge(obj1, obj2) {
+        for (var property in obj2) {
+            if (obj2.hasOwnProperty(property)) {
+                obj1[property] = obj2[property];
+            }
+        }
+        return obj1;
+    }
+
     Core = yamvc.Core || (function () {
 
         /**
@@ -67,7 +76,7 @@
         }
 
         /**
-         *
+         * @abstract
          */
         Core.prototype.init = function () {
         };
@@ -87,7 +96,7 @@
                     me[getter] = function () {
                         return me.get('config')[property];
                     };
-                    me[setter] = function (property, value) {
+                    me[setter] = function (value) {
                         var oldVal = me.get('config')[property];
                         if (value !== oldVal) {
                             me.get('config')[property] = value;
@@ -110,6 +119,7 @@
             for (var property in initOpts) {
                 if (initOpts.hasOwnProperty(property) && typeof initOpts[property] === 'function') {
                     this[property] = initOpts[property].bind(this);
+                    delete initOpts[property];
                 }
             }
         };
@@ -166,7 +176,7 @@
             for (property in mixin) {
                 if (property === 'init') {
                     if (typeof this === 'function') {
-                        this._mixins.push(mixin.init);
+                        this.__mixins__.push(mixin.init);
                     }
                     continue;
                 }
@@ -174,7 +184,6 @@
                     prototype[property] = mixin[property];
                 }
             }
-
         };
 
         /**
@@ -182,7 +191,7 @@
          * @type {Array}
          * @private
          */
-        Core._mixins = [];
+        Core.__mixins__ = [];
 
         /**
          * extend passed function
@@ -192,11 +201,25 @@
          * @returns {Function}
          *
          */
-        Core.extend = function (Func) {
+        Core.extend = function (opts) {
+            opts = opts || {};
             var Parent = this,
-                Class,
+                Class = function () {
+                    var key;
+                    //
+                    this._config = {};
+                    // defaults
+                    for (key in defaults) {
+                        if (__hasProp.call(defaults, key)) this._config[key] = defaults[key];
+                    }
+                    Core.apply(this, arguments);
+                },
+                defaults = opts.defaults || {},
+                mixins = opts.mixins || [],
+                statics = opts.static || {},
                 __hasProp = {}.hasOwnProperty,
                 __extends = function (child, parent) {
+                    // inherited
                     for (var key in parent) {
                         if (__hasProp.call(parent, key)) child[key] = parent[key];
                     }
@@ -205,19 +228,39 @@
                     }
 
                     Instance.prototype = parent.prototype;
+                    child.Parent = parent.prototype;
                     child.prototype = new Instance();
-                    child.__super__ = parent.prototype;
+                    child.extend = Core.extend;
+                    child.mixin = Core.mixin;
+                    child.__mixins__ = [];
+
+                    // class methods
+                    for (var method in opts) {
+                        if (
+                            __hasProp.call(opts, method) &&
+                                typeof opts[method] === 'function'
+                            ) {
+                            child.prototype[method] = opts[method];
+                        }
+                    }
+
+                    //mixins
+                    while (mixins.length) {
+                        child.mixin(mixins.pop());
+                    }
+
+                    //static
+                    for (var stat in statics) {
+                        if (__hasProp.call(statics, stat)) {
+                            child['$' + stat] = statics[stat];
+                        }
+                    }
+
                     return child;
                 };
 
-            Class = (function (_super) {
-                __extends(Func, _super);
-                return Func;
-            }(Parent));
+            __extends(Class, Parent);
 
-            Class.extend = Core.extend;
-            Class.mixin = Core.mixin;
-            Class._mixins = [];
             return Class;
         };
 
@@ -228,5 +271,6 @@
     }());
 
     yamvc.Core = Core;
+    yamvc.merge = merge;
     window.yamvc = yamvc;
 }(window));

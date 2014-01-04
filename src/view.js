@@ -151,131 +151,141 @@
      * @params opts Object with configuration properties
      * @type {function}
      */
-    View = yamvc.Core.extend(function () {
-        yamvc.Core.apply(this, arguments);
-    });
+    View = yamvc.Core.extend({
+        init: function (opts) {
+            yamvc.Core.prototype.init.apply(this);
+            var me = this, config, id;
+            opts = opts || {};
+            config = yamvc.merge(me._config, opts.config);
+            config.id = id = config.id || 'view-' + VM.i;
+            config.views = config.views || {};
+            me.set('initOpts', opts);
+            me.set('config', config);
+            me.initConfig();
+            VM.add(id, me);
+        },
+        initConfig: function () {
+            yamvc.Core.prototype.initConfig.apply(this);
+            this.initTemplate();
+            this.initModels();
+        },
+        initTemplate: function () {
+            var me = this,
+                config = me.get('config'),
+                div = document.createElement('div'),
+                _tpl;
+            if (!config.tpl) {
+                throw new Error(config.id + ': no tpl set');
+            }
+            if (!VTM.get(config.tpl)) {
+                _tpl = document.getElementById(config.tpl);
+                if (!_tpl)
+                    throw new Error('no tpl ' + config.tpl + ' found');
+                VTM.add(config.tpl, _tpl.parentNode.removeChild(_tpl));
+            }
+            div.innerHTML = VTM.get(config.tpl).innerHTML;
+            me.set('tpl', div);
+        },
+        initModels: function () {
+            var me = this,
+                models,
+                model;
+            if (!me.getModels) {
+                return me;
+            }
 
-
-    /**
-     * Initialize view
-     * @param opts
-     */
-    View.prototype.init = function (opts) {
-        yamvc.Core.prototype.init.apply(this);
-        var me = this, config, id;
-        opts = opts || {};
-        config = opts.config || {};
-        config.id = id = config.id || 'view-' + VM.i;
-        config.views = config.views || {};
-        me.set('initOpts', opts);
-        me.set('config', config);
-        me.initConfig();
-        VM.add(id, me);
-    };
-
-
-    /**
-     * Initialize view config
-     */
-    View.prototype.initConfig = function () {
-        yamvc.Core.prototype.initConfig.apply(this);
-        this.initTemplate();
-        this.initModels();
-    };
-
-    /**
-     * initialize template
-     */
-    View.prototype.initTemplate = function () {
-        var me = this,
-            config = me.get('config'),
-            div = document.createElement('div'),
-            _tpl;
-        if (!config.tpl) {
-            throw new Error(config.id + ': no tpl set');
-        }
-        if (!VTM.get(config.tpl)) {
-            _tpl = document.getElementById(config.tpl);
-            if (!_tpl)
-                throw new Error('no tpl ' + config.tpl + ' found');
-            VTM.add(config.tpl, _tpl.parentNode.removeChild(_tpl));
-        }
-        div.innerHTML = VTM.get(config.tpl).innerHTML;
-        me.set('tpl', div);
-    };
-
-    View.prototype.initModels = function () {
-        var me = this,
-            models,
-            model;
-        if (!me.getModels) {
+            models = me.getModels();
+            for (model in models) {
+                if (models.hasOwnProperty(model)) {
+                    me.setModel(model, models[model]);
+                }
+            }
             return me;
-        }
+        },
+        setModel: function (namespace, model) {
+            var me = this,
+                models = me.getModels();
+            models[model.getNamespace()] = model;
+            me.setModels(models);
+            return me;
+        },
+        getModel: function (namespace) {
+            var me = this,
+                models = me.getModels();
+            return models[namespace];
+        },
+        render: function (data) {
+            var me = this,
+                tpl = me.get('tpl'),
+                parsedTpl = document.createElement('div'),
+                config = me.get('config'),
+                id = config.renderTo,
+                models = data || config.models,
+                parent = config.parent,
+                parentView = config.parent,
+                el,
+                headers,
+                domToText;
 
-        models = me.getModels();
-        for (model in models) {
-            if (models.hasOwnProperty(model)) {
-                me.setModel(model, models[model]);
-            }
-        }
-        return me;
-    };
-    /**
-     *
-     * @param namespace
-     * @param model
-     */
-    View.prototype.setModel = function (namespace, model) {
-        var me = this,
-            models = me.getModels();
-        models[model.getNamespace()] = model;
-        me.setModels(models);
-        return me;
-    };
-
-    /**
-     *
-     * @param namespace
-     * @returns {*}
-     */
-    View.prototype.getModel = function (namespace) {
-        var me = this,
-            models = me.getModels();
-        return models[namespace];
-    };
-
-    /**
-     * Render view to DOM
-     * @param data
-     * @returns {Node}
-     */
-    View.prototype.render = function (data) {
-        var me = this,
-            tpl = me.get('tpl'),
-            parsedTpl = document.createElement('div'),
-            config = me.get('config'),
-            id = config.renderTo,
-            models = data || config.models,
-            parent = config.parent,
-            parentView = config.parent,
-            el,
-            headers,
-            domToText;
-
-        if (parent) {
-            if (id && parent.queryEl(id)) {
-                parent = parent.queryEl(id);
+            if (parent) {
+                if (id && parent.queryEl(id)) {
+                    parent = parent.queryEl(id);
+                } else {
+                    parent = parent.get('el');
+                }
             } else {
-                parent = parent.get('el');
+                if (id) {
+                    parent = document.querySelector(id);
+                }
             }
-        } else {
-            if (id) {
-                parent = document.querySelector(id);
-            }
-        }
 
-        domToText = tpl.innerHTML;
-        if (models) {
+            domToText = tpl.innerHTML;
+            if (models) {
+                headers = domToText.match(/\{\{(.*?)\}\}/gi);
+                if (headers) {
+                    for (var i = 0, len = headers.length; i < len; i++) {
+                        var fullHeader = headers[i],
+                            header = fullHeader.substr(2, (fullHeader.length - 4)).split('.');
+                        if (
+                            typeof models[header[0]] !== 'undefined' &&
+                                typeof models[header[0]] !== 'function'
+                            ) {
+                            domToText = domToText.replace(fullHeader, models[header[0]].property(header[1]));
+                        } else {
+                            domToText = domToText.replace(fullHeader, "");
+                        }
+                    }
+                }
+            }
+            parsedTpl.innerHTML = domToText;
+            var j = 0;
+            while (j < tpl.childNodes.length && tpl.childNodes.item(j).nodeType !== 1) {
+                j++;
+            }
+            el = parsedTpl.childNodes.item(j);
+            el.setAttribute('yamvc-id', config.id);
+            me.set('el', el);
+            if (parent) {
+                parent.appendChild(el);
+                if (parentView) {
+                    parentView.views = parentView.views || {};
+                    parentView.views[config.id] = me;
+                }
+                me.set('isInDOM', true);
+                me.reAppendChildren();
+                me.fireEvent('render', null, me);
+            }
+            return el;
+        },
+        partialRender: function (selector) {
+            var me = this,
+                tpl = me.get('tpl'),
+                elementTpl = tpl.querySelector(selector),
+                element = me.queryEl(selector),
+                domToText = elementTpl.innerHTML,
+                models = me.getModels(),
+                headers;
+
             headers = domToText.match(/\{\{(.*?)\}\}/gi);
             if (headers) {
                 for (var i = 0, len = headers.length; i < len; i++) {
@@ -285,236 +295,119 @@
                         typeof models[header[0]] !== 'undefined' &&
                             typeof models[header[0]] !== 'function'
                         ) {
-                        domToText = domToText.replace(fullHeader, models[header[0]].$get(header[1]));
+                        domToText = domToText.replace(fullHeader, models[header[0]].property(header[1]));
                     } else {
                         domToText = domToText.replace(fullHeader, "");
                     }
                 }
             }
-        }
-        parsedTpl.innerHTML = domToText;
-        var j = 0;
-        while (j < tpl.childNodes.length && tpl.childNodes.item(j).nodeType !== 1) {
-            j++;
-        }
-        el = parsedTpl.childNodes.item(j);
-        el.setAttribute('yamvc-id', config.id);
-        me.set('el', el);
-        if (parent) {
-            parent.appendChild(el);
-            if (parentView) {
-                parentView.views = parentView.views || {};
-                parentView.views[config.id] = me;
+            element.innerHTML = domToText;
+            me.fireEvent('partialRender', null, me, element);
+            return me;
+        },
+        queryEl: function (selector) {
+            return this.get('el').querySelector(selector);
+        },
+        queryEls: function (selector) {
+            return this.get('el').querySelectorAll(selector);
+        },
+        getChild: function (id) {
+            var me = this,
+                config = me.get('config');
+            if (!config.views || config.views && !config.views[id])
+                return false;
+            return config.views[id];
+        },
+        addChild: function (view, selector) {
+            var me = this;
+            view.appendTo(me, selector);
+            me.fireEvent('elementAdded', me, view);
+            return me;
+        },
+        removeChildren: function () {
+            var views = this.get('config').views || [];
+            for (var i = 0, len = views.length; i < len; i++) {
+                views[i].clear();
             }
-            me.set('isInDOM', true);
-            me.reAppendChildren();
-            me.fireEvent('render', null, me);
-        }
-        return el;
-    };
+        },
+        clear: function () {
+            var me = this, el = me.get('el');
+            if (me.isInDOM()) {
+                el.parentNode.removeChild(el);
+                me.set('isInDOM', false);
+            }
+            return me;
+        },
+        isInDOM: function () {
+            return this._isInDOM;
+        },
+        appendTo: function (parent, selector) {
+            var me = this,
+                config = me.get('config'),
+                id = config.id,
+                views = parent.get('config').views,
+                parentEl = selector ? parent.get('el').querySelector(selector) : parent.get('el');
 
-    /**
-     *
-     * @param selector
-     */
-    View.prototype.partialRender = function (selector) {
-        var me = this,
-            tpl = me.get('tpl'),
-            elementTpl = tpl.querySelector(selector),
-            element = me.queryEl(selector),
-            domToText = elementTpl.innerHTML,
-            models = me.getModels(),
-            headers;
+            if (selector) {
+                config.renderTo = selector;
+            }
 
-        headers = domToText.match(/\{\{(.*?)\}\}/gi);
-        if (headers) {
-            for (var i = 0, len = headers.length; i < len; i++) {
-                var fullHeader = headers[i],
-                    header = fullHeader.substr(2, (fullHeader.length - 4)).split('.');
-                if (
-                    typeof models[header[0]] !== 'undefined' &&
-                        typeof models[header[0]] !== 'function'
-                    ) {
-                    domToText = domToText.replace(fullHeader, models[header[0]].$get(header[1]));
+            if (!config.parent) {
+                config.parent = parent;
+            }
+            else if (config.parent && config.parent.get('config').id !== parent.get('config').id) {
+                delete config.parent.get('config').views[id];
+            }
+
+            if (!me.isInDOM() && parent.isInDOM()) {
+                if (!me.get('el')) {
+                    me.render();
                 } else {
-                    domToText = domToText.replace(fullHeader, "");
+                    parentEl.appendChild(me.get('el'));
+                    me.set('isInDOM', true);
+                    me.reAppendChildren();
+                    me.fireEvent('render', null, me);
                 }
             }
-        }
-        element.innerHTML = domToText;
-        me.fireEvent('partialRender', null, me, element);
-        return me;
-    };
-
-    /**
-     *
-     * @param selector
-     */
-    View.prototype.queryEl = function (selector) {
-        return this.get('el').querySelector(selector);
-    };
-
-    /**
-     *
-     * @param selector
-     */
-    View.prototype.queryEls = function (selector) {
-        return this.get('el').querySelectorAll(selector);
-    };
-
-    /**
-     *
-     * @param id
-     * @returns {*}
-     */
-    View.prototype.getChild = function (id) {
-        var me = this,
-            config = me.get('config');
-        if (!config.views || config.views && !config.views[id])
-            return false;
-        return config.views[id];
-    };
-
-    /**
-     *
-     * @param view
-     * @param selector
-     */
-    View.prototype.addChild = function (view, selector) {
-        var me = this;
-        view.appendTo(me, selector);
-        me.fireEvent('elementAdded', me, view);
-        return me;
-    };
-
-    /**
-     * Remove all children from DOM
-     *
-     */
-    View.prototype.removeChildren = function () {
-        var views = this.get('config').views || [];
-        for (var i = 0, len = views.length; i < len; i++) {
-            views[i].clear();
-        }
-    };
-
-    /**
-     * Remove view from DOM
-     *
-     */
-    View.prototype.clear = function () {
-        var me = this, el = me.get('el');
-        if (me.isInDOM()) {
-            el.parentNode.removeChild(el);
-            me.set('isInDOM', false);
-        }
-        return me;
-    };
-
-    /**
-     * Return if view is in DOM
-     * @returns {Boolean}
-     *
-     */
-    View.prototype.isInDOM = function () {
-        return this._isInDOM;
-    };
-
-    /**
-     * Append view to proper element in passed parent
-     *
-     * @param parent
-     * @param selector
-     *
-     */
-    View.prototype.appendTo = function (parent, selector) {
-        var me = this,
-            config = me.get('config'),
-            id = config.id,
-            views = parent.get('config').views,
-            parentEl = selector ? parent.get('el').querySelector(selector) : parent.get('el');
-
-        if (selector) {
-            config.renderTo = selector;
-        }
-
-        if (!config.parent) {
+            views[id] = me;
             config.parent = parent;
-        }
-        else if (config.parent && config.parent.get('config').id !== parent.get('config').id) {
-            delete config.parent.get('config').views[id];
-        }
-
-        if (!me.isInDOM() && parent.isInDOM()) {
-            if (!me.get('el')) {
-                me.render();
-            } else {
-                parentEl.appendChild(me.get('el'));
-                me.set('isInDOM', true);
-                me.reAppendChildren();
-                me.fireEvent('render', null, me);
-            }
-        }
-        views[id] = me;
-        config.parent = parent;
-        return me;
-    };
-
-
-    /**
-     * Force reapend when parent was render to DOM
-     *
-     */
-    View.prototype.reAppendChildren = function () {
-        var views = this.get('config').views;
-        for (var key in views) {
-            if (views.hasOwnProperty(key)) {
-                views[key].appendTo(this);
-            }
-        }
-    };
-
-
-    /**
-     * show element
-     * @returns {View}
-     */
-    View.prototype.show = function () {
-        var me = this,
-            style;
-        if (!me.isInDOM())
             return me;
-        style = me.get('el').style;
-        style.display = 'block';
-        me.set('visible', true);
-        me.fireEvent('show', me, style);
-        return me;
-    };
-
-    /**
-     * hide element
-     * @returns {View}
-     */
-    View.prototype.hide = function () {
-        var me = this,
-            style;
-        if (!me.isInDOM())
+        },
+        reAppendChildren: function () {
+            var views = this.get('config').views;
+            for (var key in views) {
+                if (views.hasOwnProperty(key)) {
+                    views[key].appendTo(this);
+                }
+            }
+        },
+        show: function () {
+            var me = this,
+                style;
+            if (!me.isInDOM())
+                return me;
+            style = me.get('el').style;
+            style.display = 'block';
+            me.set('visible', true);
+            me.fireEvent('show', me, style);
             return me;
-        style = me.get('el').style;
-        style.display = 'none';
-        me.set('visible', false);
-        me.fireEvent('hide', me, style);
-        return me;
-    };
-
-    /**
-     * hide element
-     * @returns {View}
-     */
-    View.prototype.isVisible = function () {
-        var me = this;
-        return me.get('visible') && me.isInDOM();
-    };
+        },
+        hide: function () {
+            var me = this,
+                style;
+            if (!me.isInDOM())
+                return me;
+            style = me.get('el').style;
+            style.display = 'none';
+            me.set('visible', false);
+            me.fireEvent('hide', me, style);
+            return me;
+        },
+        isVisible: function () {
+            var me = this;
+            return me.get('visible') && me.isInDOM();
+        }
+    });
 
 
     yamvc.ViewManager = VM;

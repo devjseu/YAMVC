@@ -15,25 +15,30 @@ test("initialize", function () {
 test("collection has model", function () {
     var collection,
         ModelDefinition,
-        modelInstance;
+        modelInstance,
+        namespace;
 
     collection = new yamvc.Collection({
         config: {
-            model: yamvc.Model
+            model: yamvc.Model,
+            modelConfig: {
+                namespace : 'test'
+            }
         }
     });
 
-    ModelDefinition = collection.get('config').model;
+    ModelDefinition = collection.getModel();
+    namespace = collection.getModelConfig().namespace;
 
     modelInstance = new ModelDefinition(
         {
             config: {
-                namespace: 'test'
+                namespace: namespace
             }
         }
     );
 
-    ok(modelInstance instanceof  yamvc.Model);
+    ok(modelInstance instanceof yamvc.Model);
 });
 
 test("has data and record is turned into model", function () {
@@ -49,7 +54,10 @@ test("has data and record is turned into model", function () {
 
     collection = new yamvc.Collection({
         config: {
-            model: yamvc.Model
+            model: yamvc.Model,
+            modelConfig: {
+                namespace : 'test2'
+            }
         },
         data: data
     });
@@ -75,7 +83,10 @@ test("is countable", function () {
 
     collection = new yamvc.Collection({
         config: {
-            model: yamvc.Model
+            model: yamvc.Model,
+            modelConfig: {
+                namespace : 'test3'
+            }
         },
         data: data
     });
@@ -97,23 +108,26 @@ test("we are able to filter the collection by custom function", function () {
 
     collection = new yamvc.Collection({
         config: {
-            model: yamvc.Model
+            model: yamvc.Model,
+            modelConfig: {
+                namespace : 'test4'
+            }
         },
         data: data
     });
 
     filterFn = function (model) {
-        var age = model.$get('age');
+        var age = model.property('age');
         if (age > 22) {
             return true;
         }
     };
 
-    collection.filterBy(filterFn);
+    collection.filterFn(filterFn);
 
     equal(collection.count(), 1, "Filtered collection length should be equal 1");
 
-    equal(collection.getAt(0).$get('id'), 0, "Available record after filter should have id 0");
+    equal(collection.getAt(0).property('id'), 0, "Available record after filter should have id 0");
 });
 
 test("we are able to clear filters from collection", function () {
@@ -129,23 +143,26 @@ test("we are able to clear filters from collection", function () {
 
     collection = new yamvc.Collection({
         config: {
-            model: yamvc.Model
+            model: yamvc.Model,
+            modelConfig: {
+                namespace : 'test5'
+            }
         },
         data: data
     });
 
     filterFn = function (model) {
-        var age = model.$get('age');
+        var age = model.property('age');
         if (age > 22) {
             return true;
         }
     };
 
-    collection.filterBy(filterFn);
+    collection.filterFn(filterFn);
 
     equal(collection.count(), 1, "Filtered collection length should be equal 1");
 
-    collection.clear();
+    collection.clearFilterFn();
 
     equal(collection.count(), 3, "After clearing filter collection should have 3 records");
 
@@ -156,6 +173,15 @@ test("we are able to set proxy for collection", function () {
         proxy;
 
     proxy = new yamvc.data.Proxy();
+
+    collection = new yamvc.Collection({
+        config: {
+            model: yamvc.Model,
+            modelConfig: {
+                namespace : 'test6'
+            }
+        }
+    });
 
     collection.setProxy(proxy);
 

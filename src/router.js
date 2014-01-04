@@ -37,84 +37,51 @@
      * @constructor
      * @type {function}
      */
-    Router = yamvc.Core.extend(function () {
-        yamvc.Core.apply(this);
-    });
+    Router = yamvc.Core.extend({
+        init: function () {
+            this.set('routing', {});
+            this.bindEvents();
+        },
+        bindEvents: function () {
+            window.onhashchange = this.onHashChange.bind(this);
+            return this;
+        },
+        onHashChange: function () {
+            var routing = this.get('routing'),
+                hash = window.location.hash.substr(1),
+                paths = hash.split("/"),
+                action = paths.shift();
 
-    /**
-     * Initialize router
-     */
-    Router.prototype.init = function () {
-        this.set('routing', {});
-        this.bindEvents();
-    };
-
-    /**
-     * Bind all necessary events
-     * @returns {Router}
-     *
-     */
-    Router.prototype.bindEvents = function () {
-        window.onhashchange = this.onHashChange.bind(this);
-        return this;
-    };
-
-    /**
-     * When hash change occurs match routes and run proper callback
-     * @returns {Router}
-     *
-     */
-    Router.prototype.onHashChange = function () {
-        var routing = this.get('routing'),
-            hash = window.location.hash.substr(1),
-            paths = hash.split("/"),
-            action = paths.shift();
-
-        if (routing[action]) {
-            var args = [];
-            if (routing[action].params) {
-                for (var i = 0, len = routing[action].params.length; i < len; i++) {
-                    var param = routing[action].params[i],
-                        hashParam = paths[i],
-                        regEx = new RegExp(param.substr(1, param.length - 2));
-                    args.push(hashParam.match(regEx).input);
+            if (routing[action]) {
+                var args = [];
+                if (routing[action].params) {
+                    for (var i = 0, len = routing[action].params.length; i < len; i++) {
+                        var param = routing[action].params[i],
+                            hashParam = paths[i],
+                            regEx = new RegExp(param.substr(1, param.length - 2));
+                        args.push(hashParam.match(regEx).input);
+                    }
                 }
+                routing[action].callback.apply(null, args);
             }
-            routing[action].callback.apply(null, args);
+            return this;
+        },
+        restore: function () {
+            this.onHashChange();
+            return this;
+        },
+        when: function (path, callback) {
+            var routing = this.get('routing'),
+                paths = path.split("/"),
+                action = paths.shift();
+            routing[action] = {
+                callback: callback,
+                params: paths
+            };
+            this.set('routing', routing);
+            return this;
         }
-        return this;
-    };
-
-    /**
-     * Restore state
-     *
-     * @returns {Router}
-     *
-     */
-    Router.prototype.restore = function () {
-        this.onHashChange();
-        return this;
-    };
-
-    /**
-     * Define new route
-     *
-     * @param path
-     * @param callback
-     * @returns {Router}
-     *
-     */
-    Router.prototype.when = function (path, callback) {
-        var routing = this.get('routing'),
-            paths = path.split("/"),
-            action = paths.shift();
-        routing[action] = {
-            callback: callback,
-            params: paths
-        };
-        this.set('routing', routing);
-        return this;
-    };
+    });
 
     window.yamvc.Router = Router;
 }(window));
