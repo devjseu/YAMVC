@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>controller.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="collection.html">
+                collection.js
+              </a>
+            
+              
+              <a class="source" href="controller.html">
+                controller.js
+              </a>
+            
+              
+              <a class="source" href="core.html">
+                core.js
+              </a>
+            
+              
+              <a class="source" href="model.html">
+                model.js
+              </a>
+            
+              
+              <a class="source" href="router.html">
+                router.js
+              </a>
+            
+              
+              <a class="source" href="view.html">
+                view.js
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>controller.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-comment">/**
+ * ## Basic controller usage
+ *
+ *     @example
+ *     var ctl = new Controller({
+ *         config: {
+ *             name: 'Main',
+ *             views: {
+ *                 layout: ViewManager.get('view-0')
+ *             },
+ *             routes: {
+ *                 "page/{\\d+}": 'changePage'
+ *             },
+ *         },
+ *         bindElements : function (){
+ *             var me = this;
+ *             me.set('$arrowRight', document.querySelector('#arrow-right'));
+ *             me.set('$arrowLeft', document.querySelector('#arrow-left'));
+ *         },
+ *         bindEvents: function () {
+ *             var me = this;
+ *             me.get('$arrowRight').addEventListener('click', this.nextPage.bind(this));
+ *             me.get('$arrowLeft').addEventListener('click', this.prevPage.bind(this));
+ *         },
+ *         changePage: function (id) {
+ *             // changing page mechanism
+ *         },
+ *         nextPage: function () {
+ *             // changing page mechanism
+ *         },
+ *         prevPage: function () {
+ *             // changing page mechanism
+ *         }
+ *     });
+ *
+ * ## Configuration properties
+ *
+ * @cfg config.name {String} Name of the controller
+ * @cfg config.routes {Object} Object with defined routes and callbacks
+ * @cfg config.views {Object} List of views connected with controller
+ *
+ */</span>
+(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(window, undefined)</span> {</span>
+<span class="hljs-pi">    "use strict"</span>;
+
+    <span class="hljs-keyword">var</span> yamvc = window.yamvc || {},
+        Controller,
+        router;
+
+    <span class="hljs-comment">/**
+     *
+     * @type {*}
+     */</span>
+    Controller = yamvc.Core.extend({
+        init: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(opts)</span> {</span>
+            <span class="hljs-keyword">var</span> config,
+                me = <span class="hljs-keyword">this</span>;
+            opts = opts || {};
+            config = opts.config || {};
+            router = router || <span class="hljs-keyword">new</span> yamvc.Router();
+            me.set(<span class="hljs-string">'initOpts'</span>, opts);
+            me.set(<span class="hljs-string">'config'</span>, config);
+            me.set(<span class="hljs-string">'routes'</span>, config.routes || {});
+            me.set(<span class="hljs-string">'events'</span>, config.events || {});
+            me.set(<span class="hljs-string">'views'</span>, config.views || {});
+            me.initConfig();
+            me.renderViews();
+            me.restoreRouter();
+            <span class="hljs-keyword">return</span> me;
+        },
+        initConfig: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+            yamvc.Core.prototype.initConfig.apply(<span class="hljs-keyword">this</span>);
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>,
+                routes = me.get(<span class="hljs-string">'routes'</span>),
+                events = me.get(<span class="hljs-string">'events'</span>),
+                views = me.get(<span class="hljs-string">'views'</span>),
+                query,
+                rx = <span class="hljs-regexp">/(^\$|,$)/</span>,
+                view;
+            <span class="hljs-keyword">if</span> (routes) {
+                <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> k <span class="hljs-keyword">in</span> routes) {
+                    <span class="hljs-keyword">if</span> (routes.hasOwnProperty(k)) {
+                        <span class="hljs-keyword">var</span> callback = me[routes[k]].bind(me);
+                        router.when(k, callback);
+                    }
+                }
+            }
+            <span class="hljs-keyword">if</span> (events &amp;&amp; views) {
+                <span class="hljs-keyword">for</span> (view <span class="hljs-keyword">in</span> views) {
+                    <span class="hljs-keyword">if</span> (views.hasOwnProperty(view)) {
+                        views[view].addListener(<span class="hljs-string">'render'</span>, me.resolveEvents.bind(me));
+                    }
+                }
+
+                <span class="hljs-keyword">for</span> (query <span class="hljs-keyword">in</span> events) {
+                    <span class="hljs-keyword">if</span> (events.hasOwnProperty(query)) {
+                        <span class="hljs-keyword">if</span> (rx.test(query)) {
+                            view = views[query.substr(<span class="hljs-number">1</span>)];
+                            <span class="hljs-keyword">if</span> (view) {
+                                <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> event <span class="hljs-keyword">in</span> events[query]) {
+                                    <span class="hljs-keyword">if</span> (events[query].hasOwnProperty(event)) {
+                                        view.addListener(event, events[query][event].bind(me, view));
+                                    }
+                                }
+                            }
+                            <span class="hljs-keyword">delete</span> events[query];
+                        }
+                    }
+                }
+            }
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;
+        },
+        renderViews: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>,
+                views = me.get(<span class="hljs-string">'views'</span>);
+            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> view <span class="hljs-keyword">in</span> views) {
+                <span class="hljs-keyword">if</span> (views.hasOwnProperty(view)) {
+                    <span class="hljs-keyword">if</span> (views[view].getAutoCreate &amp;&amp; views[view].getAutoCreate()) {
+                        views[view].render();
+                    }
+                }
+            }
+        },
+        resolveEvents: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(view)</span> {</span>
+            <span class="hljs-keyword">var</span> events = <span class="hljs-keyword">this</span>.get(<span class="hljs-string">'events'</span>),
+                viewEvents,
+                newScope = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(func, scope, arg)</span> {</span>
+                    <span class="hljs-keyword">return</span> func.bind(scope, arg);
+                },
+                scope;
+            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> query <span class="hljs-keyword">in</span> events) {
+                <span class="hljs-keyword">if</span> (events.hasOwnProperty(query)) {
+                    viewEvents = events[query];
+                    <span class="hljs-keyword">var</span> elements = view.get(<span class="hljs-string">'el'</span>).querySelectorAll(query);
+                    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>, l = elements.length; i &lt; l; i++) {
+                        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> event <span class="hljs-keyword">in</span> viewEvents) {
+                            <span class="hljs-keyword">if</span> (viewEvents.hasOwnProperty(event)) {
+                                scope = newScope(viewEvents[event], <span class="hljs-keyword">this</span>, view);
+                                elements[i].addEventListener(event, scope);
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        getRouter: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+            <span class="hljs-keyword">return</span> router;
+        },
+        restoreRouter: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>;
+            me.getRouter().restore();
+            <span class="hljs-keyword">return</span> me;
+        }, redirectTo: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(path)</span> {</span>
+            window.location.hash = path;
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;
+        }
+    });
+
+    window.yamvc.Controller = Controller;
+}(window));</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

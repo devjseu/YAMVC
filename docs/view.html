@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>view.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="collection.html">
+                collection.js
+              </a>
+            
+              
+              <a class="source" href="controller.html">
+                controller.js
+              </a>
+            
+              
+              <a class="source" href="core.html">
+                core.js
+              </a>
+            
+              
+              <a class="source" href="model.html">
+                model.js
+              </a>
+            
+              
+              <a class="source" href="router.html">
+                router.js
+              </a>
+            
+              
+              <a class="source" href="view.html">
+                view.js
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>view.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-comment">/**
+ *
+ * ## View Manager usage
+ * View Manager is singleton object and helps to get proper view instance Cored on passed id
+ *
+ *      @example
+ *      VM
+ *          .get('layout')
+ *          .render();
+ *
+ * ## Basic view
+ * Views are an excellent way to bind template with the data from proper models.
+ *
+ *     @example
+ *     var view = new View({
+ *         config: {
+ *             id: 'users',
+ *             tpl: 'user-lists',
+ *             models : window.users
+ *             renderTo: '#body'
+ *         }
+ *     });
+ *
+ * ## Configuration properties
+ *
+ * @cfg config.id {String} Unique id of the view. If not passed id will be assigned automatically
+ * @cfg config.tpl {String} Id of the template
+ * @cfg config.models {String} Simple object storing appropriate data
+ * @cfg config.renderTo {String} Selector to which view should be rendered
+ *
+ * ## Extending views
+ * Views are easily expendable, so you can fell free to add more awesome functionality to it.
+ *
+ *     @example
+ *     window.OverlayView = View.extend(function OverlayView(opts) {
+ *         View.prototype.constructor.call(this, opts);
+ *     });
+ *     OverlayView.prototype.show = function (callback) {
+ *         var me = this,
+ *             dom = me.get('el'),
+ *         config = me.get('config');
+ *         if (me.get('isAnimated')) {
+ *             jQuery(dom).stop();
+ *         }
+ *         me.set('isAnimated', true);
+ *         jQuery(dom).css({
+ *             display: 'block',
+ *             opacity: 0
+ *         }).animate({
+ *             opacity: 1
+ *         }, config.showDuration || 500, function () {
+ *             me.set('isAnimated', false);
+ *             if (callback)
+ *                 callback(me, this);
+ *             });
+ *     };
+ *
+ *     OverlayView.prototype.hide = function (callback) {
+ *             var me = this,
+ *                 dom = me.get('el'),
+ *                 config = me.get('config');
+ *             if (me.get('isAnimated')) {
+ *                 jQuery(dom).stop();
+ *             }
+ *             me.set('isAnimated', true);
+ *             jQuery(dom).animate({
+ *                 opacity: 0
+ *             }, config.hideDuration || 500, function () {
+ *                 jQuery(dom).css({
+ *                     display: 'none'
+ *                 });
+ *                 me.set('isAnimated', false);
+ *                 if (callback)
+ *                     callback(me, this);
+ *             });
+ *     };
+ *     var overlay = new OverlayView({
+ *       config: {
+ *          tpl: 'container',
+ *          renderTo: '#body',
+ *          models: window.models
+ *     });
+ *     overlay.render();
+ *     overlay.show();
+ *
+ *
+ */</span>
+(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(window, undefined)</span> {</span>
+<span class="hljs-pi">    "use strict"</span>;
+
+    <span class="hljs-keyword">var</span> yamvc = window.yamvc || {},
+        VM,
+        VTM,
+        View;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Object that stores all views</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-comment">/**
+     * @type {{views: {}, i: number, add: Function, get: Function}}
+     */</span>
+    VM = {
+        views: {},
+        i: <span class="hljs-number">0</span>,</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Add view to manager</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-comment">/**
+         * @param id
+         * @param view
+         */</span>
+        add: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(id, view)</span> {</span>
+            <span class="hljs-keyword">this</span>.views[id] = view;
+            <span class="hljs-keyword">this</span>.i++;
+        },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Get view by its id</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-comment">/**
+         * @param id
+         * @returns {View}
+         */</span>
+        get: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(id)</span> {</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.views[id];
+        }
+    };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Private object, keeps all templates in one place</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-comment">/**
+     * @type {{tpl: {}, add: Function, get: Function}}
+     */</span>
+    VTM = {
+        tpl: {},
+        add: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(id, view)</span> {</span>
+            <span class="hljs-keyword">this</span>.tpl[id] = view;
+        },
+        get: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(id)</span> {</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.tpl[id];
+        }
+    };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Definition of View object</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-comment">/**
+     * @constructor
+     * @params opts Object with configuration properties
+     * @type {function}
+     */</span>
+    View = yamvc.Core.extend({</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Initializing function in which we call parent method, merge previous
+configuration with new one, set id of component, initialize config
+and save reference to component in View Manager.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-comment">/**
+         *
+         * @param opts
+         * @returns {View}
+         */</span>
+        init: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(opts)</span> {</span>
+            yamvc.Core.prototype.init.apply(<span class="hljs-keyword">this</span>);
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>, config, id;
+            opts = opts || {};
+            config = yamvc.merge(me._config, opts.config);
+            config.id = id = config.id || <span class="hljs-string">'view-'</span> + VM.i;
+            config.views = config.views || {};
+            me.set(<span class="hljs-string">'initOpts'</span>, opts);
+            me.set(<span class="hljs-string">'config'</span>, config);
+            me.initConfig();
+            VM.add(id, me);
+            <span class="hljs-keyword">return</span> me;
+        },
+        <span class="hljs-comment">/**
+         * @returns {View}
+         */</span>
+        initConfig: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+            yamvc.Core.prototype.initConfig.apply(<span class="hljs-keyword">this</span>);
+            <span class="hljs-keyword">this</span>.initTemplate();
+            <span class="hljs-keyword">this</span>.initModels();
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;
+        },
+        <span class="hljs-comment">/**
+         * @returns {View}
+         */</span>
+        initTemplate: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>,
+                config = me.get(<span class="hljs-string">'config'</span>),
+                div = document.createElement(<span class="hljs-string">'div'</span>),
+                _tpl;
+            <span class="hljs-keyword">if</span> (!config.tpl) {
+                <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(config.id + <span class="hljs-string">': no tpl set'</span>);
+            }
+            <span class="hljs-keyword">if</span> (!VTM.get(config.tpl)) {
+                _tpl = document.getElementById(config.tpl);
+                <span class="hljs-keyword">if</span> (!_tpl)
+                    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'no tpl '</span> + config.tpl + <span class="hljs-string">' found'</span>);
+                VTM.add(config.tpl, _tpl.parentNode.removeChild(_tpl));
+            }
+            div.innerHTML = VTM.get(config.tpl).innerHTML;
+            me.set(<span class="hljs-string">'tpl'</span>, div);
+            <span class="hljs-keyword">return</span> me;
+        },
+        <span class="hljs-comment">/**
+         * @returns {View}
+         */</span>
+        initModels: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>,
+                models,
+                model;
+            <span class="hljs-keyword">if</span> (!me.getModels) {
+                <span class="hljs-keyword">return</span> me;
+            }
+
+            models = me.getModels();
+            <span class="hljs-keyword">for</span> (model <span class="hljs-keyword">in</span> models) {
+                <span class="hljs-keyword">if</span> (models.hasOwnProperty(model)) {
+                    me.setModel(model, models[model]);
+                }
+            }
+            <span class="hljs-keyword">return</span> me;
+        },
+        <span class="hljs-comment">/**
+         * @returns {View}
+         */</span>
+        setModel: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(namespace, model)</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>,
+                models = me.getModels();
+            models[model.getNamespace()] = model;
+            me.setModels(models);
+            <span class="hljs-keyword">return</span> me;
+        },
+        <span class="hljs-comment">/**
+         * @param namespace
+         * @returns {yamvc.Model}
+         */</span>
+        getModel: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(namespace)</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>,
+                models = me.getModels();
+            <span class="hljs-keyword">return</span> models[namespace];
+        },
+        <span class="hljs-comment">/**
+         * @param data
+         * @returns {Node}
+         */</span>
+        render: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(data)</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>,
+                tpl = me.get(<span class="hljs-string">'tpl'</span>),
+                parsedTpl = document.createElement(<span class="hljs-string">'div'</span>),
+                config = me.get(<span class="hljs-string">'config'</span>),
+                id = config.renderTo,
+                models = data || config.models,
+                parent = config.parent,
+                parentView = config.parent,
+                el,
+                headers,
+                domToText;
+
+            <span class="hljs-keyword">if</span> (parent) {
+                <span class="hljs-keyword">if</span> (id &amp;&amp; parent.queryEl(id)) {
+                    parent = parent.queryEl(id);
+                } <span class="hljs-keyword">else</span> {
+                    parent = parent.get(<span class="hljs-string">'el'</span>);
+                }
+            } <span class="hljs-keyword">else</span> {
+                <span class="hljs-keyword">if</span> (id) {
+                    parent = document.querySelector(id);
+                }
+            }
+
+            domToText = tpl.innerHTML;
+            <span class="hljs-keyword">if</span> (models) {
+                headers = domToText.match(<span class="hljs-regexp">/\{\{(.*?)\}\}/gi</span>);
+                <span class="hljs-keyword">if</span> (headers) {
+                    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>, len = headers.length; i &lt; len; i++) {
+                        <span class="hljs-keyword">var</span> fullHeader = headers[i],
+                            header = fullHeader.substr(<span class="hljs-number">2</span>, (fullHeader.length - <span class="hljs-number">4</span>)).split(<span class="hljs-string">'.'</span>);
+                        <span class="hljs-keyword">if</span> (
+                            <span class="hljs-keyword">typeof</span> models[header[<span class="hljs-number">0</span>]] !== <span class="hljs-string">'undefined'</span> &amp;&amp;
+                                <span class="hljs-keyword">typeof</span> models[header[<span class="hljs-number">0</span>]] !== <span class="hljs-string">'function'</span>
+                            ) {
+                            domToText = domToText.replace(fullHeader, models[header[<span class="hljs-number">0</span>]].data(header[<span class="hljs-number">1</span>]));
+                        } <span class="hljs-keyword">else</span> {
+                            domToText = domToText.replace(fullHeader, <span class="hljs-string">""</span>);
+                        }
+                    }
+                }
+            }
+            parsedTpl.innerHTML = domToText;
+            <span class="hljs-keyword">var</span> j = <span class="hljs-number">0</span>;
+            <span class="hljs-keyword">while</span> (j &lt; tpl.childNodes.length &amp;&amp; tpl.childNodes.item(j).nodeType !== <span class="hljs-number">1</span>) {
+                j++;
+            }
+            el = parsedTpl.childNodes.item(j);
+            el.setAttribute(<span class="hljs-string">'yamvc-id'</span>, config.id);
+            me.set(<span class="hljs-string">'el'</span>, el);
+            <span class="hljs-keyword">if</span> (parent) {
+                parent.appendChild(el);
+                <span class="hljs-keyword">if</span> (parentView) {
+                    parentView.views = parentView.views || {};
+                    parentView.views[config.id] = me;
+                }
+                me.set(<span class="hljs-string">'isInDOM'</span>, <span class="hljs-literal">true</span>);
+                me.reAppendChildren();
+                me.fireEvent(<span class="hljs-string">'render'</span>, <span class="hljs-literal">null</span>, me);
+            }
+            <span class="hljs-keyword">return</span> el;
+        },
+        <span class="hljs-comment">/**
+         * @param selector
+         * @returns {Node}
+         */</span>
+        partialRender: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(selector)</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>,
+                tpl = me.get(<span class="hljs-string">'tpl'</span>),
+                elementTpl = tpl.querySelector(selector),
+                element = me.queryEl(selector),
+                domToText = elementTpl.innerHTML,
+                models = me.getModels(),
+                headers;
+
+            headers = domToText.match(<span class="hljs-regexp">/\{\{(.*?)\}\}/gi</span>);
+            <span class="hljs-keyword">if</span> (headers) {
+                <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>, len = headers.length; i &lt; len; i++) {
+                    <span class="hljs-keyword">var</span> fullHeader = headers[i],
+                        header = fullHeader.substr(<span class="hljs-number">2</span>, (fullHeader.length - <span class="hljs-number">4</span>)).split(<span class="hljs-string">'.'</span>);
+                    <span class="hljs-keyword">if</span> (
+                        <span class="hljs-keyword">typeof</span> models[header[<span class="hljs-number">0</span>]] !== <span class="hljs-string">'undefined'</span> &amp;&amp;
+                            <span class="hljs-keyword">typeof</span> models[header[<span class="hljs-number">0</span>]] !== <span class="hljs-string">'function'</span>
+                        ) {
+                        domToText = domToText.replace(fullHeader, models[header[<span class="hljs-number">0</span>]].data(header[<span class="hljs-number">1</span>]));
+                    } <span class="hljs-keyword">else</span> {
+                        domToText = domToText.replace(fullHeader, <span class="hljs-string">""</span>);
+                    }
+                }
+            }
+            element.innerHTML = domToText;
+            me.fireEvent(<span class="hljs-string">'partialRender'</span>, <span class="hljs-literal">null</span>, me, element);
+            <span class="hljs-keyword">return</span> element;
+        },
+        <span class="hljs-comment">/**
+         * @param selector
+         * @returns {Node}
+         */</span>
+        queryEl: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(selector)</span> {</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.get(<span class="hljs-string">'el'</span>).querySelector(selector);
+        },
+        <span class="hljs-comment">/**
+         * @param selector
+         * @returns {NodeList}
+         */</span>
+        queryEls: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(selector)</span> {</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.get(<span class="hljs-string">'el'</span>).querySelectorAll(selector);
+        },
+        <span class="hljs-comment">/**
+         * @param id
+         * @returns {View||Boolean}
+         */</span>
+        getChild: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(id)</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>,
+                config = me.get(<span class="hljs-string">'config'</span>);
+            <span class="hljs-keyword">if</span> (!config.views || config.views &amp;&amp; !config.views[id])
+                <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+            <span class="hljs-keyword">return</span> config.views[id];
+        },
+        <span class="hljs-comment">/**
+         * @param view
+         * @param selector
+         * @returns {View}
+         */</span>
+        addChild: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(view, selector)</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>;
+            view.appendTo(me, selector);
+            me.fireEvent(<span class="hljs-string">'elementAdded'</span>, me, view);
+            <span class="hljs-keyword">return</span> me;
+        },
+        <span class="hljs-comment">/**
+         * @returns {View}
+         */</span>
+        removeChildren: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+            <span class="hljs-keyword">var</span> views = <span class="hljs-keyword">this</span>.get(<span class="hljs-string">'config'</span>).views || [];
+            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>, len = views.length; i &lt; len; i++) {
+                views[i].clear();
+            }
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;
+        },
+        <span class="hljs-comment">/**
+         * @returns {View}
+         */</span>
+        clear: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>, el = me.get(<span class="hljs-string">'el'</span>);
+            <span class="hljs-keyword">if</span> (me.isInDOM()) {
+                el.parentNode.removeChild(el);
+                me.set(<span class="hljs-string">'isInDOM'</span>, <span class="hljs-literal">false</span>);
+            }
+            <span class="hljs-keyword">return</span> me;
+        },
+        <span class="hljs-comment">/**
+         * @returns {Boolean}
+         */</span>
+        isInDOM: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>._isInDOM;
+        },
+        <span class="hljs-comment">/**
+         * @param parent
+         * @param selector
+         * @returns {View}
+         */</span>
+        appendTo: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(parent, selector)</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>,
+                config = me.get(<span class="hljs-string">'config'</span>),
+                id = config.id,
+                views = parent.get(<span class="hljs-string">'config'</span>).views,
+                parentEl = selector ? parent.get(<span class="hljs-string">'el'</span>).querySelector(selector) : parent.get(<span class="hljs-string">'el'</span>);
+
+            <span class="hljs-keyword">if</span> (selector) {
+                config.renderTo = selector;
+            }
+
+            <span class="hljs-keyword">if</span> (!config.parent) {
+                config.parent = parent;
+            }
+            <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (config.parent &amp;&amp; config.parent.get(<span class="hljs-string">'config'</span>).id !== parent.get(<span class="hljs-string">'config'</span>).id) {
+                <span class="hljs-keyword">delete</span> config.parent.get(<span class="hljs-string">'config'</span>).views[id];
+            }
+
+            <span class="hljs-keyword">if</span> (!me.isInDOM() &amp;&amp; parent.isInDOM()) {
+                <span class="hljs-keyword">if</span> (!me.get(<span class="hljs-string">'el'</span>)) {
+                    me.render();
+                } <span class="hljs-keyword">else</span> {
+                    parentEl.appendChild(me.get(<span class="hljs-string">'el'</span>));
+                    me.set(<span class="hljs-string">'isInDOM'</span>, <span class="hljs-literal">true</span>);
+                    me.reAppendChildren();
+                    me.fireEvent(<span class="hljs-string">'render'</span>, <span class="hljs-literal">null</span>, me);
+                }
+            }
+            views[id] = me;
+            config.parent = parent;
+            <span class="hljs-keyword">return</span> me;
+        },
+        <span class="hljs-comment">/**
+         * @returns {View}
+         */</span>
+        reAppendChildren: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+            <span class="hljs-keyword">var</span> views = <span class="hljs-keyword">this</span>.get(<span class="hljs-string">'config'</span>).views;
+            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> key <span class="hljs-keyword">in</span> views) {
+                <span class="hljs-keyword">if</span> (views.hasOwnProperty(key)) {
+                    views[key].appendTo(<span class="hljs-keyword">this</span>);
+                }
+            }
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;
+        },
+        <span class="hljs-comment">/**
+         * @returns {View}
+         */</span>
+        show: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>,
+                style;
+            <span class="hljs-keyword">if</span> (!me.isInDOM())
+                <span class="hljs-keyword">return</span> me;
+            style = me.get(<span class="hljs-string">'el'</span>).style;
+            style.display = <span class="hljs-string">'block'</span>;
+            me.set(<span class="hljs-string">'visible'</span>, <span class="hljs-literal">true</span>);
+            me.fireEvent(<span class="hljs-string">'show'</span>, me, style);
+            <span class="hljs-keyword">return</span> me;
+        },
+        <span class="hljs-comment">/**
+         * @returns {View}
+         */</span>
+        hide: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>,
+                style;
+            <span class="hljs-keyword">if</span> (!me.isInDOM())
+                <span class="hljs-keyword">return</span> me;
+            style = me.get(<span class="hljs-string">'el'</span>).style;
+            style.display = <span class="hljs-string">'none'</span>;
+            me.set(<span class="hljs-string">'visible'</span>, <span class="hljs-literal">false</span>);
+            me.fireEvent(<span class="hljs-string">'hide'</span>, me, style);
+            <span class="hljs-keyword">return</span> me;
+        },
+        <span class="hljs-comment">/**
+         * @returns {Boolean}
+         */</span>
+        isVisible: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.get(<span class="hljs-string">'visible'</span>) &amp;&amp; <span class="hljs-keyword">this</span>.isInDOM();
+        }
+    });
+
+
+    yamvc.ViewManager = VM;
+    window.yamvc = yamvc;
+    window.yamvc.View = View;
+}(window));</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

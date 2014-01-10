@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>model.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="collection.html">
+                collection.js
+              </a>
+            
+              
+              <a class="source" href="controller.html">
+                controller.js
+              </a>
+            
+              
+              <a class="source" href="core.html">
+                core.js
+              </a>
+            
+              
+              <a class="source" href="model.html">
+                model.js
+              </a>
+            
+              
+              <a class="source" href="router.html">
+                router.js
+              </a>
+            
+              
+              <a class="source" href="view.html">
+                view.js
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>model.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(window, undefined)</span> {</span>
+<span class="hljs-pi">    "use strict"</span>;
+    <span class="hljs-keyword">var</span> yamvc = window.yamvc || {},
+        Model,
+        config;
+
+    Model = yamvc.Core.extend({
+        <span class="hljs-comment">/**
+         * @defaults
+         */</span>
+        defaults: {
+            idProperty: <span class="hljs-string">'id'</span>
+        },
+        <span class="hljs-comment">/**
+         *
+         * @param opts
+         */</span>
+        init: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(opts)</span> {</span>
+            yamvc.Core.prototype.init.apply(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">arguments</span>);
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>, config;
+            opts = opts || {};
+            config = opts.config || {};
+            me.set(<span class="hljs-string">'initOpts'</span>, opts);
+            me.set(<span class="hljs-string">'config'</span>, config);
+            me.initConfig();
+            me.initData();
+        },
+        <span class="hljs-comment">/**
+         *
+         * @returns {Model}
+         */</span>
+        initConfig: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>,
+                config = me.get(<span class="hljs-string">'config'</span>);
+            yamvc.Core.prototype.initConfig.apply(<span class="hljs-keyword">this</span>);
+            <span class="hljs-keyword">if</span> (!config.namespace)
+                <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">"Model need to have namespace property in your model configuration"</span>);
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;
+        },
+        <span class="hljs-comment">/**
+         *
+         */</span>
+        initData: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>,
+                opts = me.get(<span class="hljs-string">'initOpts'</span>),
+                config = me.get(<span class="hljs-string">'config'</span>);
+            me.set(<span class="hljs-string">'data'</span>, opts.data || {});
+        },
+        <span class="hljs-comment">/**
+         *
+         * @param property
+         * @param value
+         */</span>
+        setDataProperty: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(property, value)</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>,
+                data = me._data,
+                oldVal = data[property];
+            <span class="hljs-keyword">if</span> (value !== oldVal) {
+                data[property] = value;
+                me.set(<span class="hljs-string">'isDirty'</span>, <span class="hljs-literal">true</span>);
+                me.fireEvent(<span class="hljs-string">'data'</span> + property.charAt(<span class="hljs-number">0</span>).toUpperCase() + property.slice(<span class="hljs-number">1</span>) + <span class="hljs-string">'Change'</span>, me, value, oldVal);
+            }
+        },
+        <span class="hljs-comment">/**
+         *
+         * @param property
+         * @returns {*}
+         */</span>
+        getDataProperty: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(property)</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>;
+            <span class="hljs-keyword">return</span> me.get(<span class="hljs-string">'data'</span>)[property];
+        },
+        <span class="hljs-comment">/**
+         * alias for set and get data property
+         * if two arguments are passed data will be set
+         * in other case data will be returned
+         * @param property name of property in data
+         * @param data Optional | if passed data will be set
+         * @returns {*}
+         *
+         */</span>
+        data: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(property, data)</span> {</span>
+            <span class="hljs-keyword">var</span> len = <span class="hljs-built_in">arguments</span>.length;
+            <span class="hljs-keyword">if</span> (len &gt; <span class="hljs-number">1</span>) {
+                <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.setDataProperty.apply(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">arguments</span>);
+            } <span class="hljs-keyword">else</span> {
+                <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.getDataProperty.apply(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">arguments</span>);
+            }
+        },
+        <span class="hljs-comment">/**
+         *
+         * @param newData
+         */</span>
+        setData: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(newData)</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>,
+                data = me.get(<span class="hljs-string">'data'</span>),
+                key;
+
+            <span class="hljs-keyword">for</span> (key <span class="hljs-keyword">in</span> newData) {
+                <span class="hljs-keyword">if</span> (newData.hasOwnProperty(key)) {
+                    me.data(key, newData[key]);
+                }
+            }
+
+            me.fireEvent(<span class="hljs-string">'dataChange'</span>, me, data);
+        },
+        <span class="hljs-comment">/**
+         *
+         */</span>
+        clear: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>,
+                data = me.get(<span class="hljs-string">'data'</span>),
+                key;
+
+            <span class="hljs-keyword">for</span> (key <span class="hljs-keyword">in</span> data) {
+                <span class="hljs-keyword">if</span> (data.hasOwnProperty(key)) {
+                    me.data(key, <span class="hljs-literal">null</span>);
+                }
+            }
+            me.set(<span class="hljs-string">'data'</span>, {});
+            me.fireEvent(<span class="hljs-string">'dataChange'</span>, me, data);
+        },
+        <span class="hljs-comment">/**
+         *
+         * @param params
+         */</span>
+        load: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(params)</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>,
+                data = me.get(<span class="hljs-string">'data'</span>),
+                idProperty = me.get(<span class="hljs-string">'idProperty'</span>),
+                callback,
+                key, i = <span class="hljs-number">0</span>;
+
+            <span class="hljs-keyword">for</span> (key <span class="hljs-keyword">in</span> params) i++;
+
+            <span class="hljs-keyword">if</span> (
+                i === <span class="hljs-number">0</span> &amp;&amp;
+                    <span class="hljs-keyword">typeof</span> data[idProperty] === <span class="hljs-string">'undefined'</span>
+                )
+                <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'You need to pass at least one condition to load model'</span>);
+
+            <span class="hljs-keyword">if</span> (i === <span class="hljs-number">0</span>) {
+                params[idProperty] = data[idProperty];
+            }
+
+            callback = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+                <span class="hljs-keyword">if</span> (me.getProxy().getStatus() === <span class="hljs-string">'success'</span>) {
+                    me.set(<span class="hljs-string">'isDirty'</span>, <span class="hljs-literal">false</span>);
+                    me.set(<span class="hljs-string">'data'</span>, me.getProxy().getResponse());
+                    me.fireEvent(<span class="hljs-string">'loaded'</span>, me, me.getProxy().getResponse(), <span class="hljs-string">'read'</span>);
+                } <span class="hljs-keyword">else</span> {
+                    me.fireEvent(<span class="hljs-string">'error'</span>, me, <span class="hljs-string">'read'</span>);
+                }
+            };
+            me.getProxy().read(me.getNamespace(), params, callback);
+        },
+        <span class="hljs-comment">/**
+         *
+         * @returns {boolean}
+         */</span>
+        save: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>,
+                data = me.get(<span class="hljs-string">'data'</span>),
+                idProperty = me.get(<span class="hljs-string">'idProperty'</span>),
+                callback,
+                type;
+            <span class="hljs-keyword">if</span> (me.get(<span class="hljs-string">'isProcessing'</span>)) {
+                <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+            }
+            me.set(<span class="hljs-string">'isProcessing'</span>, <span class="hljs-literal">true</span>);
+            callback = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+                me.set(<span class="hljs-string">'isProcessing'</span>, <span class="hljs-literal">false</span>);
+                <span class="hljs-keyword">if</span> (me.getProxy().getStatus() === <span class="hljs-string">'success'</span>) {
+                    me.set(<span class="hljs-string">'isDirty'</span>, <span class="hljs-literal">false</span>);
+                    me.set(<span class="hljs-string">'data'</span>, me.getProxy().getResponse());
+                    me.fireEvent(<span class="hljs-string">'saved'</span>, me, me.getProxy().getResponse(), type);
+                } <span class="hljs-keyword">else</span> {
+                    me.fireEvent(<span class="hljs-string">'error'</span>, me, type);
+                }
+            };
+
+            <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> data[idProperty] === <span class="hljs-string">'undefined'</span>) {
+                type = <span class="hljs-string">'create'</span>;
+                me.getProxy().create(me.getNamespace(), data, callback);
+            } <span class="hljs-keyword">else</span> {
+                type = <span class="hljs-string">'update'</span>;
+                me.getProxy().update(me.getNamespace(), data, callback);
+            }
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+        },
+        <span class="hljs-comment">/**
+         *
+         */</span>
+        remove: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+            <span class="hljs-keyword">var</span> me = <span class="hljs-keyword">this</span>,
+                data = me.get(<span class="hljs-string">'data'</span>),
+                idProperty = me.get(<span class="hljs-string">'idProperty'</span>),
+                callback;
+
+            <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> data[idProperty] === <span class="hljs-string">'undefined'</span>)
+                <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'Can not remove empty model'</span>);
+
+            callback = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> {</span>
+                <span class="hljs-keyword">if</span> (me.getProxy().getStatus() === <span class="hljs-string">'success'</span>) {
+                    <span class="hljs-keyword">delete</span> data[idProperty];
+                    me.set(<span class="hljs-string">'isDirty'</span>, <span class="hljs-literal">false</span>);
+                    me.set(<span class="hljs-string">'data'</span>, {});
+                    me.fireEvent(<span class="hljs-string">'removed'</span>, me, <span class="hljs-string">'destroy'</span>);
+                } <span class="hljs-keyword">else</span> {
+                    me.fireEvent(<span class="hljs-string">'error'</span>, me, <span class="hljs-string">'destroy'</span>);
+                }
+            };
+            me.getProxy().destroy(me.getNamespace(), data, callback);
+        }
+    });
+
+    window.yamvc = yamvc;
+    window.yamvc.Model = Model;
+}(window));</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
