@@ -1,20 +1,18 @@
-Measure.init();
+Measure.module('Localstorage');
+
 /**
  * test 1
  */
-var filterFn = function (record) {
-    return record.age > 5000;
-};
-
-localStorage["users"] = {
-
-};
-
-Measure.suit('Localstorage - Serializing and filtering object', function () {
+Measure.suit('Saving object', function (start, stop) {
+    // make some preparation before tests
     var user = {};
 
+    localStorage["users"] = {
+
+    };
+
     /* save 10000 records */
-    for (var i = 0; i < 20000; i++) {
+    for (var i = 0; i < 10000; i++) {
         user['test' + i] = {
             id: 'test' + i,
             name: 'Sebastian' + i,
@@ -23,42 +21,34 @@ Measure.suit('Localstorage - Serializing and filtering object', function () {
         }
     }
 
-    localStorage["users"] = JSON.stringify(user);
+    user = JSON.stringify(user);
 
+    // start test
+    start();
+    /* save 10000 records */
+    for (var i = 0; i < 100; i++) {
 
-    /* read 10000 records */
-    user = JSON.parse(localStorage["users"]);
+        localStorage["users"] = user;
 
-    /* using conditions */
-    var results = [];
-    for (var id in user) {
-        if (user.hasOwnProperty(id)) {
-            if (filterFn(user[id])) {
-                results.push(user[id]);
-            }
-        }
     }
 
-    /* by id */
-    var result = {};
-    result = user['test999'];
+    stop();
 
-    console.log('Object - results len should be equal 5000: ', results.length);
 });
 
-
 /**
- * test 7
+ * test 2
  */
-localStorage["users"] = {
-
-};
-
-Measure.suit('Localstorage - Serializing and filtering array', function () {
+Measure.suit('Saving array', function (start, stop) {
+    // make some preparation before tests
     var user = [];
 
+    localStorage["users"] = {
+
+    };
+
     /* save 10000 records */
-    for (var i = 0; i < 20000; i++) {
+    for (var i = 0; i < 10000; i++) {
         user.push({
             id: 'test' + i,
             name: 'Sebastian' + i,
@@ -67,24 +57,17 @@ Measure.suit('Localstorage - Serializing and filtering array', function () {
         });
     }
 
-    localStorage["users"] = JSON.stringify(user);
+    user = JSON.stringify(user);
 
-    user = JSON.parse(localStorage["users"]);
+    // start test
+    start();
+    /* save 10000 records */
+    for (var i = 0; i < 100; i++) {
 
-    var results = [];
-    for (var i = 0, l = user.length; i < l; i++) {
-        if (filterFn(user[i])) {
-            results.push(user[i]);
-        }
+        localStorage["users"] = user;
+
     }
 
-    /* by id */
-    var result = {};
-    for (var i = 0, l = user.length; i < l; i++) {
-        if (user[i].id === 'test999') {
-            result = user[i];
-        }
-    }
+    stop();
 
-    console.log('Array - results len should be equal 5000: ', results.length);
 });

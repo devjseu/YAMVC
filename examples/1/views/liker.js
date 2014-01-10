@@ -14,9 +14,9 @@
         },
         incrementLikes: function () {
             this.getModel('likes')
-                .property(
+                .data(
                     'count',
-                    this.getModel('likes').property('count') + 1
+                    this.getModel('likes').data('count') + 1
                 );
         },
         updateLiker: function () {

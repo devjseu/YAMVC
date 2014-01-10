@@ -1,3 +1,8 @@
-/**
- * Created by sebastian on 10.01.14.
- */
+module('Core');
+test("initialize", function () {
+    var core;
+
+    core = new yamvc.Core();
+
+    ok(core instanceof  yamvc.Core);
+});

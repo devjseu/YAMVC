@@ -117,7 +117,7 @@ test("we are able to filter the collection by custom function", function () {
     });
 
     filterFn = function (model) {
-        var age = model.property('age');
+        var age = model.data('age');
         if (age > 22) {
             return true;
         }
@@ -127,7 +127,7 @@ test("we are able to filter the collection by custom function", function () {
 
     equal(collection.count(), 1, "Filtered collection length should be equal 1");
 
-    equal(collection.getAt(0).property('id'), 0, "Available record after filter should have id 0");
+    equal(collection.getAt(0).data('id'), 0, "Available record after filter should have id 0");
 });
 
 test("we are able to clear filters from collection", function () {
@@ -152,7 +152,7 @@ test("we are able to clear filters from collection", function () {
     });
 
     filterFn = function (model) {
-        var age = model.property('age');
+        var age = model.data('age');
         if (age > 22) {
             return true;
         }

@@ -1,8 +1,8 @@
-module('Core');
+module('Controller');
 test("initialize", function () {
-    var core;
+    var controller;
 
-    core = new yamvc.Core();
+    controller = new yamvc.Controller();
 
-    ok(core instanceof  yamvc.Core);
+    ok(controller instanceof  yamvc.Controller);
 });

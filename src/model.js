@@ -79,7 +79,7 @@
          * @returns {*}
          *
          */
-        property: function (property, data) {
+        data: function (property, data) {
             var len = arguments.length;
             if (len > 1) {
                 return this.setDataProperty.apply(this, arguments);
@@ -98,7 +98,7 @@
 
             for (key in newData) {
                 if (newData.hasOwnProperty(key)) {
-                    me.property(key, newData[key]);
+                    me.data(key, newData[key]);
                 }
             }
 
@@ -114,7 +114,7 @@
 
             for (key in data) {
                 if (data.hasOwnProperty(key)) {
-                    me.property(key, null);
+                    me.data(key, null);
                 }
             }
             me.set('data', {});

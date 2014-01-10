@@ -250,7 +250,7 @@
                             typeof models[header[0]] !== 'undefined' &&
                                 typeof models[header[0]] !== 'function'
                             ) {
-                            domToText = domToText.replace(fullHeader, models[header[0]].property(header[1]));
+                            domToText = domToText.replace(fullHeader, models[header[0]].data(header[1]));
                         } else {
                             domToText = domToText.replace(fullHeader, "");
                         }
@@ -295,7 +295,7 @@
                         typeof models[header[0]] !== 'undefined' &&
                             typeof models[header[0]] !== 'function'
                         ) {
-                        domToText = domToText.replace(fullHeader, models[header[0]].property(header[1]));
+                        domToText = domToText.replace(fullHeader, models[header[0]].data(header[1]));
                     } else {
                         domToText = domToText.replace(fullHeader, "");
                     }

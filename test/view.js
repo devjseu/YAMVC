@@ -1,8 +1,12 @@
-module('Core');
+module('View');
 test("initialize", function () {
-    var core;
+    var view;
 
-    core = new yamvc.Core();
+    view = new yamvc.View({
+        config: {
+            tpl: 'container'
+        }
+    });
 
-    ok(core instanceof  yamvc.Core);
+    ok(view instanceof  yamvc.View);
 });

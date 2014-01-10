@@ -1,9 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title></title>
+    <meta charset="utf-8">
+    <title>Performance tests</title>
+    <link rel="stylesheet" href="../assets/js/lib/measure/measure.css">
 </head>
 <body>
+<div id="qunit"></div>
+<div id="qunit-fixture"></div>
+<script src="../assets/js/lib/measure/measure.js"></script>
 
+<!-- Use latest versionless copy of current release -->
+<script src="../src/mixins/getset.js"></script>
+<script src="../src/mixins/observable.js"></script>
+<script src="../src/core.js"></script>
+<script src="../src/controller.js"></script>
+<script src="../src/collection.js"></script>
+<script src="../src/router.js"></script>
+<script src="../src/view.js"></script>
+<script src="../src/model.js"></script>
+<script src="../src/data/proxy.js"></script>
+<script src="../src/data/proxy/localstorage.js"></script>
+<div id="container" style="display: none">
+
+</div>
+<script type="text/html" id="tpl-view">
+    <div class="container">
+
+    </div>
+</script>
+<script src="data.js"></script>
+<script src="localstorage.js"></script>
+<script src="DOM.js"></script>
 </body>
 </html>
