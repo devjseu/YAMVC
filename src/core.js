@@ -6,7 +6,7 @@
         onReadyCallbacks = [],
         readyStateCheckInterval;
 
-    // Provide way to execute all necessary code after DOM is ready
+    // Provide way to execute all necessary code after DOM is ready.
     /**
      * @param callback
      */
@@ -22,12 +22,14 @@
         }
     };
 
+    // Run all method when ready
     function run() {
         for (var i = 0, l = onReadyCallbacks.length; i < l; i++) {
             onReadyCallbacks[i]();
         }
     }
 
+    // Merge two objects.
     function merge(obj1, obj2) {
         for (var property in obj2) {
             if (obj2.hasOwnProperty(property)) {
@@ -37,7 +39,7 @@
         return obj1;
     }
 
-    // Definition of Core object
+    // Definition of Core object.
     Core = yamvc.Core || (function () {
 
         /**
@@ -87,7 +89,7 @@
             }
         };
 
-        // Binds custom methods from config object to class instance
+        // Binds custom methods from config object to class instance.
         /**
          * @param initOpts
          */
@@ -100,7 +102,7 @@
             }
         };
 
-        // Add callback to property change event
+        // Add callback to property change event.
         /**
          * @param property
          * @param callback
@@ -111,7 +113,7 @@
             return this;
         };
 
-        // Unbind callback
+        // Unbind callback.
         /**
          * @param property
          * @param callback
@@ -128,7 +130,7 @@
             return this;
         };
 
-        // Add mixin to object definition
+        // Add mixin to object definition.
         /**
          * @static
          * @param obj
@@ -159,14 +161,14 @@
             }
         };
 
-        // Stores all mixins initializing functions
+        // Stores all mixins initializing functions.
         /**
          * @type {Array}
          * @private
          */
         Core.__mixins__ = [];
 
-        // Extend object definition using passed options
+        // Extend object definition using passed options.
         /**
          * @static
          * @param opts Object
@@ -179,7 +181,7 @@
                     var key;
                     //
                     this._config = {};
-                    // defaults
+                    // Initialize defaults.
                     for (key in defaults) {
                         if (__hasProp.call(defaults, key)) this._config[key] = defaults[key];
                     }
@@ -205,7 +207,7 @@
                     child.mixin = Core.mixin;
                     child.__mixins__ = [];
 
-                    // class methods
+                    // Add methods to object definition.
                     for (var method in opts) {
                         if (
                             __hasProp.call(opts, method) &&
@@ -215,12 +217,12 @@
                         }
                     }
 
-                    //mixins
+                    // Add external mixins.
                     while (mixins.length) {
                         child.mixin(mixins.pop());
                     }
 
-                    //static
+                    // Make method static.
                     for (var stat in statics) {
                         if (__hasProp.call(statics, stat)) {
                             child['$' + stat] = statics[stat];
@@ -235,9 +237,10 @@
             return Class;
         };
 
-        // Add Getters and Setters
+        // Add Getters and Setters.
         Core.mixin(yamvc.mixins.GetSet);
-        // Add observable methods
+
+        // Add observable methods.
         Core.mixin(yamvc.mixins.Observable);
 
         return Core;
