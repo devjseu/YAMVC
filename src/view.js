@@ -1,27 +1,3 @@
-/*
- The MIT License (MIT)
-
- Copyright (c) 2013 Sebastian Widelak
-
- Permission is hereby granted, free of charge, to any person obtaining a copy of
- this software and associated documentation files (the "Software"), to deal in
- the Software without restriction, including without limitation the rights to
- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- the Software, and to permit persons to whom the Software is furnished to do so,
- subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in all
- copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
- */
 /**
  *
  * ## View Manager usage
@@ -116,25 +92,35 @@
         VM,
         VTM,
         View;
+
+    // Object that stores all views
     /**
-     * Allows to get proper with by id
      * @type {{views: {}, i: number, add: Function, get: Function}}
      */
     VM = {
         views: {},
         i: 0,
+        // Add view to manager
+        /**
+         * @param id
+         * @param view
+         */
         add: function (id, view) {
             this.views[id] = view;
             this.i++;
         },
+        // Get view by its id
+        /**
+         * @param id
+         * @returns {View}
+         */
         get: function (id) {
             return this.views[id];
         }
     };
+
+    //Private object, keeps all templates in one place
     /**
-     *
-     * Private object, keeping all templates in one place
-     *
      * @type {{tpl: {}, add: Function, get: Function}}
      */
     VTM = {
@@ -146,12 +132,21 @@
             return this.tpl[id];
         }
     };
+    // Definition of View object
     /**
      * @constructor
      * @params opts Object with configuration properties
      * @type {function}
      */
     View = yamvc.Core.extend({
+        // Initializing function in which we call parent method, merge previous
+        // configuration with new one, set id of component, initialize config
+        // and save reference to component in View Manager.
+        /**
+         *
+         * @param opts
+         * @returns {View}
+         */
         init: function (opts) {
             yamvc.Core.prototype.init.apply(this);
             var me = this, config, id;
@@ -163,12 +158,20 @@
             me.set('config', config);
             me.initConfig();
             VM.add(id, me);
+            return me;
         },
+        /**
+         * @returns {View}
+         */
         initConfig: function () {
             yamvc.Core.prototype.initConfig.apply(this);
             this.initTemplate();
             this.initModels();
+            return this;
         },
+        /**
+         * @returns {View}
+         */
         initTemplate: function () {
             var me = this,
                 config = me.get('config'),
@@ -185,7 +188,11 @@
             }
             div.innerHTML = VTM.get(config.tpl).innerHTML;
             me.set('tpl', div);
+            return me;
         },
+        /**
+         * @returns {View}
+         */
         initModels: function () {
             var me = this,
                 models,
@@ -202,6 +209,9 @@
             }
             return me;
         },
+        /**
+         * @returns {View}
+         */
         setModel: function (namespace, model) {
             var me = this,
                 models = me.getModels();
@@ -209,11 +219,19 @@
             me.setModels(models);
             return me;
         },
+        /**
+         * @param namespace
+         * @returns {yamvc.Model}
+         */
         getModel: function (namespace) {
             var me = this,
                 models = me.getModels();
             return models[namespace];
         },
+        /**
+         * @param data
+         * @returns {Node}
+         */
         render: function (data) {
             var me = this,
                 tpl = me.get('tpl'),
@@ -277,6 +295,10 @@
             }
             return el;
         },
+        /**
+         * @param selector
+         * @returns {Node}
+         */
         partialRender: function (selector) {
             var me = this,
                 tpl = me.get('tpl'),
@@ -303,14 +325,26 @@
             }
             element.innerHTML = domToText;
             me.fireEvent('partialRender', null, me, element);
-            return me;
+            return element;
         },
+        /**
+         * @param selector
+         * @returns {Node}
+         */
         queryEl: function (selector) {
             return this.get('el').querySelector(selector);
         },
+        /**
+         * @param selector
+         * @returns {NodeList}
+         */
         queryEls: function (selector) {
             return this.get('el').querySelectorAll(selector);
         },
+        /**
+         * @param id
+         * @returns {View||Boolean}
+         */
         getChild: function (id) {
             var me = this,
                 config = me.get('config');
@@ -318,18 +352,30 @@
                 return false;
             return config.views[id];
         },
+        /**
+         * @param view
+         * @param selector
+         * @returns {View}
+         */
         addChild: function (view, selector) {
             var me = this;
             view.appendTo(me, selector);
             me.fireEvent('elementAdded', me, view);
             return me;
         },
+        /**
+         * @returns {View}
+         */
         removeChildren: function () {
             var views = this.get('config').views || [];
             for (var i = 0, len = views.length; i < len; i++) {
                 views[i].clear();
             }
+            return this;
         },
+        /**
+         * @returns {View}
+         */
         clear: function () {
             var me = this, el = me.get('el');
             if (me.isInDOM()) {
@@ -338,9 +384,17 @@
             }
             return me;
         },
+        /**
+         * @returns {Boolean}
+         */
         isInDOM: function () {
             return this._isInDOM;
         },
+        /**
+         * @param parent
+         * @param selector
+         * @returns {View}
+         */
         appendTo: function (parent, selector) {
             var me = this,
                 config = me.get('config'),
@@ -373,6 +427,9 @@
             config.parent = parent;
             return me;
         },
+        /**
+         * @returns {View}
+         */
         reAppendChildren: function () {
             var views = this.get('config').views;
             for (var key in views) {
@@ -380,7 +437,11 @@
                     views[key].appendTo(this);
                 }
             }
+            return this;
         },
+        /**
+         * @returns {View}
+         */
         show: function () {
             var me = this,
                 style;
@@ -392,6 +453,9 @@
             me.fireEvent('show', me, style);
             return me;
         },
+        /**
+         * @returns {View}
+         */
         hide: function () {
             var me = this,
                 style;
@@ -403,9 +467,11 @@
             me.fireEvent('hide', me, style);
             return me;
         },
+        /**
+         * @returns {Boolean}
+         */
         isVisible: function () {
-            var me = this;
-            return me.get('visible') && me.isInDOM();
+            return this.get('visible') && this.isInDOM();
         }
     });
 
