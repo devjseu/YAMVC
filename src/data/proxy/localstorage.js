@@ -60,12 +60,12 @@
 
             Localstorage.Parent.read.apply(this, arguments);
 
-
             if (typeof data === 'object') {
                 me.readBy(namespace, data, callback);
             } else {
                 me.readById(namespace, data, callback);
             }
+            return me;
         },
         /**
          *
@@ -84,6 +84,7 @@
                 filtered = [],
                 records = [],
                 meet = true,
+                async,
                 operator,
                 property,
                 sorter,
@@ -98,55 +99,62 @@
                 return (alc > blc ? 1 : alc < blc ? -1 : va > vb ? 1 : va < vb ? -1 : 0) * (order.toLowerCase() === 'desc' ? -1 : 1);
             };
 
-            if (localStorage[namespace]) {
-                records = JSON.parse(localStorage[namespace]);
+            async = function () {
 
-                // firstly we need to filter records
-                for (var i = 0, l = records.length; i < l; i++) {
-                    meet = true;
-                    len = filters.length;
+                if (localStorage[namespace]) {
+                    records = JSON.parse(localStorage[namespace]);
+
+                    // firstly we need to filter records
+                    for (var i = 0, l = records.length; i < l; i++) {
+                        meet = true;
+                        len = filters.length;
+                        while (len--) {
+                            if (filters[len].length > 3) {
+                                operator = filters[len][0];
+                            } else {
+                                operator = '&&';
+                            }
+                            if (operator === '&&') {
+                                meet = me.executeCondition(records[i], filters[len]) && meet;
+                            } else if (operator === '||') {
+                                meet = me.executeCondition(records[i], filters[len]) || meet;
+                            }
+                        }
+
+                        if (meet) {
+                            filtered.push(records[i]);
+                        }
+
+                    }
+
+                    records = filtered;
+
+                    // next we do sorting
+                    len = sorters.length;
                     while (len--) {
-                        if (filters[len].length > 3) {
-                            operator = filters[len][0];
-                        } else {
-                            operator = '&&';
-                        }
-                        if (operator === '&&') {
-                            meet = me.executeCondition(records[i], filters[len]) && meet;
-                        } else if (operator === '||') {
-                            meet = me.executeCondition(records[i], filters[len]) || meet;
-                        }
+                        sorter = sorters[len];
+                        property = sorter[0];
+                        order = sorter[1] || 'ASC';
+                        records.sort(sorterFn);
+                    }
+                    // and take care about offset and limit
+                    if (!limit) {
+                        limit = records.length - offset;
                     }
 
-                    if (meet) {
-                        filtered.push(records[i]);
+                    if (offset > 0 || limit) {
+                        records = records.splice(offset, limit);
                     }
-
                 }
 
-                records = filtered;
+                response.success = true;
+                response.result = records;
+                callback(me, response);
 
-                // next we do sorting
-                len = sorters.length;
-                while (len--) {
-                    sorter = sorters[len];
-                    property = sorter[0];
-                    order = sorter[1] || 'ASC';
-                    records.sort(sorterFn);
-                }
-                // and take care about offset and limit
-                if (!limit) {
-                    limit = records.length - offset;
-                }
+            };
 
-                if (offset > 0 || limit) {
-                    records = records.splice(offset, limit);
-                }
-            }
+            setTimeout(async, 0);
 
-            response.success = true;
-            response.result = records;
-            callback(me, response);
             return me;
         },
         /**
@@ -157,25 +165,34 @@
          * @returns {Localstorage}
          */
         readById: function (namespace, id, callback) {
-            var me = this, records = [], result = {}, response = {};
-            if (localStorage[namespace]) {
-                records = JSON.parse(localStorage[namespace]);
-                for (var i = 0, l = records.length; i < l; i++) {
-                    if (records[i].id === id) {
-                        result = records[i];
+            var me = this, records = [], result = {}, response = {}, async;
+
+            async = function () {
+
+                if (localStorage[namespace]) {
+                    records = JSON.parse(localStorage[namespace]);
+                    for (var i = 0, l = records.length; i < l; i++) {
+                        if (records[i].id === id) {
+                            result = records[i];
+                        }
+                    }
+                    if (typeof result.id !== 'undefined') {
+                        me.setStatus(Localstorage.Status.SUCCESS);
+                        response.success = true;
+                        response.result = result;
+                        callback(me, response);
+                        return me;
                     }
                 }
-                if (typeof result.id !== 'undefined') {
-                    response.success = true;
-                    response.result = result;
-                    callback(me, response);
-                    return me;
-                }
-            }
 
-            response.success = false;
-            response.error = new Error("Not found");
-            callback(me, response);
+                me.setStatus(Localstorage.Status.FAIL);
+                response.success = false;
+                response.error = new Error("Not found");
+                callback(me, response);
+            };
+
+            setTimeout(async, 0);
+
             return me;
         },
         /**
@@ -240,7 +257,7 @@
          * @returns {Localstorage}
          */
         create: function (namespace, data, callback) {
-            var me = this, records = [], sequence = 0, response = {};
+            var me = this, records = [], sequence = 0, response = {}, async;
             Localstorage.Parent.create.apply(this, arguments);
             if (localStorage[namespace]) {
                 records = JSON.parse(localStorage[namespace]);
@@ -255,73 +272,86 @@
                 data.id = sequence++;
                 records.push(data);
             }
-            try {
-                localStorage[namespace] = JSON.stringify(records);
-                localStorage[namespace + "$Sequence"] = sequence;
-                response.success = true;
-                response.result = data;
-            } catch (e) {
-                response.success = false;
-                response.error = e;
-            }
-            me.setResponse(response);
-            callback(me, response);
+
+            async = function () {
+                try {
+                    me.setStatus(Localstorage.Status.SUCCESS);
+                    localStorage[namespace] = JSON.stringify(records);
+                    localStorage[namespace + "$Sequence"] = sequence;
+                    response.success = true;
+                    response.result = data;
+                } catch (e) {
+                    me.setStatus(Localstorage.Status.FAIL);
+                    response.success = false;
+                    response.error = e;
+                }
+                me.setResponse(response);
+                callback(me, response);
+            };
+
+            setTimeout(async, 0);
             return me;
         },
         /**
-         *
          * @param namespace
          * @param data
          * @param callback
          * @returns {Localstorage}
          */
-        update: function (namespace, data, callback) {
-            var me = this, records = [], result = {}, response = {}, id, l, l2;
+        update: function (namespace, data, callback) { //
+            var me = this, records = [], result = {}, response = {}, id, l, l2, async;
 
-            if (localStorage[namespace]) {
+            async = function () { // update record asynchronously
+                if (localStorage[namespace]) { // but only if namespace for saving object exist
 
-                records = JSON.parse(localStorage[namespace]);
+                    records = JSON.parse(localStorage[namespace]);
 
-                if (Array.isArray(data)) {
+                    if (Array.isArray(data)) {
 
-                    l = data.length;
-                    while (l--) {
-                        l2 = records.length;
-                        id = data[l].id;
-                        while (l2--) {
-                            if (records[l2].id === id) {
-                                records[l2] = data[l];
+                        l = data.length;
+                        while (l--) {
+                            l2 = records.length;
+                            id = data[l].id;
+                            while (l2--) {
+                                if (records[l2].id === id) {
+                                    records[l2] = data[l];
+                                }
                             }
                         }
-                    }
-                    result = records;
+                        result = records;
 
-                } else {
-                    l = records.length;
-                    id = data.id;
-                    while (l--) {
-                        if (records[l].id === id) {
-                            result = records[l] = data;
+                    } else {
+                        l = records.length;
+                        id = data.id;
+                        while (l--) {
+                            if (records[l].id === id) {
+                                result = records[l] = data;
+                            }
                         }
+
                     }
 
+                    try {
+                        me.setStatus(Localstorage.Status.SUCCESS);
+                        localStorage[namespace] = JSON.stringify(records);
+                        response.success = true;
+                        response.result = result;
+                    } catch (e) {
+                        me.setStatus(Localstorage.Status.FAIL);
+                        response.success = false;
+                        response.error = e;
+                    }
+                    callback(me, response);
+                    return me;
                 }
 
-                try {
-                    localStorage[namespace] = JSON.stringify(records);
-                    response.success = true;
-                    response.result = result;
-                } catch (e) {
-                    response.success = false;
-                    response.error = e;
-                }
+                me.setStatus(Localstorage.Status.FAIL); // in other case return error that record doesnt exist
+                response.success = false;
+                response.error = new Error("Not found");
                 callback(me, response);
-                return me;
-            }
+            };
 
-            response.success = false;
-            response.error = new Error("Not found");
-            callback(me, response);
+            setTimeout(async, 0);
             return me;
         },
         /**
@@ -332,51 +362,61 @@
          * @returns {Localstorage}
          */
         destroy: function (namespace, data, callback) {
-            var me = this, records = [], response = {}, id, l, l2;
+            var me = this, records = [], response = {}, id, l, l2, async;
 
-            if (localStorage[namespace]) {
+            async = function () {
 
-                records = JSON.parse(localStorage[namespace]);
+                if (localStorage[namespace]) {
 
-                if (Array.isArray(data)) {
+                    records = JSON.parse(localStorage[namespace]);
 
-                    l = data.length;
-                    while (l--) {
-                        l2 = records.length;
-                        id = data[l].id;
-                        while (l2--) {
-                            if (records[l2].id === id) {
-                                records.splice(l2, 1);
+                    if (Array.isArray(data)) {
+
+                        l = data.length;
+                        while (l--) {
+                            l2 = records.length;
+                            id = data[l].id;
+                            while (l2--) {
+                                if (records[l2].id === id) {
+                                    records.splice(l2, 1);
+                                }
                             }
                         }
-                    }
 
-                } else {
+                    } else {
 
-                    l = records.length;
-                    id = data.id;
-                    while (l--) {
-                        if (records[l].id === id) {
-                            records.splice(l, 1);
+                        l = records.length;
+                        id = data.id;
+                        while (l--) {
+                            if (records[l].id === id) {
+                                records.splice(l, 1);
+                            }
                         }
+
                     }
 
+                    try {
+                        me.setStatus(Localstorage.Status.SUCCESS);
+                        localStorage[namespace] = JSON.stringify(records);
+                        response.success = true;
+                    } catch (e) {
+                        me.setStatus(Localstorage.Status.FAIL);
+                        response.success = false;
+                        response.error = e;
+                    }
+                    callback(me, response);
+                    return me;
                 }
 
-                try {
-                    localStorage[namespace] = JSON.stringify(records);
-                    response.success = true;
-                } catch (e) {
-                    response.success = false;
-                    response.error = e;
-                }
+                me.setStatus(Localstorage.Status.FAIL);
+                response.success = false;
+                response.error = new Error("Not found");
                 callback(me, response);
-                return me;
-            }
 
-            response.success = false;
-            response.error = new Error("Not found");
-            callback(me, response);
+            };
+
+            setTimeout(async, 0);
+
             return me;
         }
     });

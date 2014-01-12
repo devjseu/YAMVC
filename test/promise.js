@@ -13,7 +13,7 @@ asyncTest("fulfill", function () {
         this._start = start;
         this.add = function (number) {
             var me = this,
-                deferred = new yamvc.Promise.deferred();
+                deferred = yamvc.Promise.deferred();
 
             setTimeout(function () {
                 me._start += number;
@@ -41,7 +41,7 @@ asyncTest("reject", function () {
         this._start = start;
         this.add = function (number) {
             var me = this,
-                deferred = new yamvc.Promise.deferred();
+                deferred = yamvc.Promise.deferred();
 
             setTimeout(function () {
                 me._start += number;
