@@ -61,7 +61,8 @@ module.exports = function (grunt) {
         },
         jshint: {
             options: {
-                eqeqeq: true
+                browser: true,
+                eqeqeq: false
             },
             target: {
                 src: ['src/**/*.js', 'test/**/*.js']

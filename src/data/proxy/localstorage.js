@@ -41,7 +41,7 @@
          */
         init: function (opts) {
             var me = this;
-            Localstorage.Parent.init.apply(this, arguments);
+            Localstorage.Parent.init.apply(me, arguments);
         },
         /**
          *

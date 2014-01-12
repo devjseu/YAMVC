@@ -1,11 +1,19 @@
 (function (window, undefined) {
     "use strict";
     var yamvc = window.yamvc || {},
-        Proxy;
+        Proxy,
+        Status;
+
+    Status = {
+        PENDING: 0,
+        SUCCESS: 1,
+        FAIL: 2
+    };
 
     Proxy = yamvc.Core.extend({
         defaults: {
-            propertyResults: 'results'
+            propertyResults: 'results',
+            status: Status.PENDING
         },
         init: function (opts) {
             var me = this, config;
@@ -45,6 +53,8 @@
         }
     });
 
+    // statics
+    Proxy.Status = Status;
 
     window.yamvc = yamvc;
     window.yamvc.data = window.yamvc.data || {};

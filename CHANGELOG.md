@@ -9,3 +9,6 @@ YAMVC - change log
 * Collection covered
 * Examples fixed
 
+##0.1.17
+* Promises arrived
+

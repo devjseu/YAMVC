@@ -149,12 +149,6 @@
             }
 
             for (property in mixin) {
-                if (property === 'init') {
-                    if (typeof this === 'function') {
-                        this.__mixins__.push(mixin.init);
-                    }
-                    continue;
-                }
                 if (mixin.hasOwnProperty(property)) {
                     prototype[property] = mixin[property];
                 }
@@ -167,6 +161,13 @@
          * @private
          */
         Core.__mixins__ = [];
+
+        // Stores all defaults.
+        /**
+         * @type {Object}
+         * @private
+         */
+        Core.__defaults__ = {};
 
         // Extend object definition using passed options.
         /**
@@ -181,13 +182,14 @@
                     var key;
                     //
                     this._config = {};
+
                     // Initialize defaults.
                     for (key in defaults) {
                         if (__hasProp.call(defaults, key)) this._config[key] = defaults[key];
                     }
                     Core.apply(this, arguments);
                 },
-                defaults = opts.defaults || {},
+                defaults = merge(opts.defaults || {}, Parent.__defaults__),
                 mixins = opts.mixins || [],
                 statics = opts.static || {},
                 __hasProp = {}.hasOwnProperty,
@@ -206,6 +208,7 @@
                     child.extend = Core.extend;
                     child.mixin = Core.mixin;
                     child.__mixins__ = [];
+                    child.__defaults__ = defaults;
 
                     // Add methods to object definition.
                     for (var method in opts) {

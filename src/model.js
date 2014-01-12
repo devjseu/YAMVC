@@ -9,7 +9,8 @@
          * @defaults
          */
         defaults: {
-            idProperty: 'id'
+            idProperty: 'id',
+            proxy : null
         },
         /**
          *
@@ -19,7 +20,7 @@
             yamvc.Core.prototype.init.apply(this, arguments);
             var me = this, config;
             opts = opts || {};
-            config = opts.config || {};
+            config = yamvc.merge(me._config, opts.config);
             me.set('initOpts', opts);
             me.set('config', config);
             me.initConfig();
@@ -70,10 +71,10 @@
             var me = this;
             return me.get('data')[property];
         },
+        // alias for set and get data property
+        // if two arguments are passed data will be set
+        // in other case data will be returned
         /**
-         * alias for set and get data property
-         * if two arguments are passed data will be set
-         * in other case data will be returned
          * @param property name of property in data
          * @param data Optional | if passed data will be set
          * @returns {*}

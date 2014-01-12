@@ -35,8 +35,8 @@
             me.prepareData(data);
             return me;
         },
+        // return number of records in collection
         /**
-         * return number of records in collection
          * @returns {Number}
          */
         count: function () {
@@ -100,7 +100,7 @@
                 )
                 throw new Error('You need to pass at least one condition to load model collection');
 
-            if (!me.getProxy)
+            if (!me.getProxy())
                 throw new Error('To load collection you need to set proxy');
 
 

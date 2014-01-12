@@ -1,6 +1,6 @@
 {
     "name": "YAMVC",
-    "version": "0.1.6",
+    "version": "0.1.7",
     "description": "Simply MVC Framework for my own use",
     "main": "./distrib/YAMVC-all.js",
     "repository": {
@@ -9,7 +9,8 @@
     },
     "keywords": [
         "MVC",
-        "library"
+        "library",
+        "YAMVC"
     ],
     "author": {
         "name": "Sebastian Widelak",
