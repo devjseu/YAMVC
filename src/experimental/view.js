@@ -244,7 +244,7 @@
             return el;
         },
         /**
-         * @version 0.1.8
+         * @version 0.1.18
          */
         resolveBindings: function () {
             var me = this,
