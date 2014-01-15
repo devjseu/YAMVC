@@ -11,16 +11,16 @@
         },
         /**
          * fire event
-         * @param evName
          * @returns {boolean}
          *
          */
-        fireEvent: function (evName /** param1, ... */) {
+        fireEvent: function (/** param1, ... */) {
             if (this._suspendEvents)
                 return true;
             var ret = true,
-                shift = Array.prototype.shift;
-            shift.call(arguments);
+                shift = Array.prototype.shift,
+                evName = shift.call(arguments);
+
             for (var i = 0, li = this._listeners[evName] || [], len = li.length; i < len; i++) {
                 if (ret) {
                     var scope = shift.call(arguments);
