@@ -1,18 +1,18 @@
 YAMVC - change log
 =============
 
-##0.1.15
+##0.1.5
 * Proxies introduced (Localstorage)
 
-##0.1.16
+##0.1.6
 * Rewritten class system
 * Collection covered
 * Examples fixed
 
-##0.1.17
+##0.1.7
 * Promises arrived
 
-##0.1.18
+##0.1.8
 * Rewritten rendering method in `yamvc.experimental.View`
 * In `yamvc.experimental.View` templates are now automatically bind to data
 * Asynchronous model methods now use promises
