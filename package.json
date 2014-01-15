@@ -1,7 +1,7 @@
 {
     "name": "YAMVC",
-    "version": "0.1.7",
-    "description": "Simply MVC Framework for my own use",
+    "version": "0.1.8",
+    "description": "Fast and ease extendable MVC Framework for one page desktop and mobile app",
     "main": "./distrib/YAMVC-all.js",
     "repository": {
         "type": "git",

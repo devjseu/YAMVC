@@ -1,11 +1,10 @@
 (function (window, undefined) {
     "use strict";
 
-    var elements = {},
-        ready = false,
-        measurements = {},
-        running = [],
-        startTime = 0,
+    var elements = {},// Cache pointers to html elements.
+        measurements = {},// Store measurement results.
+        tests = {},// Cache tests.
+        startTime = 0,// Using for polifill performance.now
         i = 0;
 
     startTime = (new Date()).getTime();
@@ -19,12 +18,26 @@
     }
 
     function createElements() {
-        var container,
-            header,
-            list;
     }
 
-    function runMeasurements() {
+
+    /**
+     * @param id
+     */
+    function recalculate(id) { // Calculate and return average result for execution time
+        var start, stop, loops, l, result = 0;
+
+        start = measurements[id].start;
+        stop = measurements[id].stop;
+        loops = l = start.length;
+
+        while (l--) {
+            result += stop[l] - start[l];
+        }
+
+        measurements[id].duration = result / loops;
+
+        Measure.log(id + ': ' + Measure.getMeasurements()[id].duration);
 
     }
 
@@ -32,56 +45,74 @@
         init: function () {
             bindElements();
             createElements();
-            runMeasurements();
         },
         start: function (id, description) {
-            id = id || 'measure-' + i++;
-            measurements[id] = {};
+
+            // When starting our first measurement we need to prepare object in which we will store all data.
+            measurements[id] = measurements[id] || {}; // After that, under it, we create empty object
+            measurements[id].start = measurements[id].start || []; // in which we will store start value
+            measurements[id].stop = measurements[id].stop || []; // and stop value for each of measurements.
+            measurements[id].loops = measurements[id].loops || 1; // We will also store number of loops which need to run.
             measurements[id].description = description || "";
-            measurements[id].start = performance.now();
+
+            measurements[id].start.push(performance.now());
+
             return id;
         },
         stop: function (id) {
-            var returned;
+            var returned, loops, start, stop;
+
             if (id) {
-                measurements[id].stop = performance.now();
-                measurements[id].duration = measurements[id].stop - measurements[id].start;
-                returned = measurements[id];
-            } else {
-                for (var i = 0, l = running.length; i < l; i++) {
-                    var key = running[i];
-                    measurements[key].stop = performance.now();
-                    measurements[key].duration = measurements[key].stop - measurements[running[i]].start;
+
+                loops = measurements[id].loops;
+                stop = measurements[id].stop;
+
+                stop.push(performance.now()); // Push result when finished.
+
+                if (loops === stop.length) {
+                    recalculate(id);
+                } else if (stop.length < loops) {
+
+                    start = function () {
+                        Measure.start(id);
+                    };
+                    stop = function () {
+                        Measure.stop(id);
+                    };
+                    loops = function (loops) {
+                    };
+
+                    tests[id](start, stop, loops);
                 }
-                returned = measurements;
+
+                returned = measurements[id];
+
             }
             return returned;
         },
+        loops: function (id, loops) {
+
+            measurements[id] = measurements[id] || {};
+            measurements[id].loops = loops;
+
+        },
         suit: function (id, callback) {
-            var start = function () {
+            var start = function () { // Run performance measurement, passed as argument to our suit.
                     Measure.start(id);
                 },
-                stop = function () {
+                stop = function () { // Stops performance measurement, passed as argument to our suit.
                     Measure.stop(id);
+                },
+                loops = function (loops) { // Specify number of reps of current test, passed as argument to our suit.
+                    Measure.loops(id, loops);
                 };
 
-            callback(start, stop);
-            Measure.log(id + ': ' + Measure.getMeasurements()[id].duration);
-        },
-        asyncSuit: function (id, callback) {
-            var expect = 0,
-                expectFn = function (counter) {
-                    expect = counter;
-                },
-                start = function () {
-                    expect--;
-                    if (expect < 1) {
-                        Measure.stop(id);
-                        console.log(id + ': ' + Measure.getMeasurements()[id].duration);
-                    }
-                };
-            Measure.start(id);
-            callback.call(callback, expectFn, start);
+            id = id || 'measure-' + i++; // Before we start, if not passed, we need to create unique id for our test.
+
+            tests[id] = callback; // Cache our tests.
+
+            callback(start, stop, loops); // Start first loop automatically.
+
         },
         getMeasurements: function () {
             return measurements;

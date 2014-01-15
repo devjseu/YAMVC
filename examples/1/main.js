@@ -8,7 +8,9 @@ yamvc.onReady(function () {
                 namespace: 'likes'
             },
             data: {
-                count: 0
+                text: 'Likes',
+                count: 0,
+                disabled : true
             }
         })
     };
@@ -19,7 +21,9 @@ yamvc.onReady(function () {
                 namespace: 'likes'
             },
             data: {
-                count: 0
+                text: 'Likes',
+                count: 0,
+                disabled : false
             }
         })
     };
@@ -60,12 +64,10 @@ yamvc.onReady(function () {
                 },
                 $likeBtn : {
                     render : function (view) {
-                        alert('btn rendered!');
                     }
                 },
                 $likeBtn2 : {
                     render : function (view) {
-                        alert('btn 2 rendered!');
                     }
                 }
             }

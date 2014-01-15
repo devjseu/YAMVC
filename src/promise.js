@@ -1,6 +1,6 @@
 /**
  * @author rhysbrettbowen
- * @contributed devjseu
+ * @contributed mkalafior
  */
 (function (window, undefined) {
     "use strict";
@@ -14,7 +14,7 @@
     /**
      * @type {{PENDING: number, FULFILLED: number, REJECTED: number}}
      */
-    State = {
+    State = { // Promise has 3 state, pending when initialized, fulfilled and rejected in case of result.
         PENDING: 0,
         FULFILLED: 1,
         REJECTED: 2

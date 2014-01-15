@@ -12,6 +12,7 @@
 <script src="../../src/controller.js"></script>
 <script src="../../src/router.js"></script>
 <script src="../../src/view.js"></script>
+<script src="../../src/experimental/view.js"></script>
 <script src="../../src/model.js"></script>
 <script src="../../examples/1/views/liker.js"></script>
 <script src="../../examples/1/main.js"></script>
@@ -25,7 +26,8 @@
 </div>
 <script type="text/html" id="tpl-liker">
     <div>
-        <button class="liker">{{likes.count}}</button>
+        <span>{{likes.text}}</span>
+        <button disabled="{{likes.disabled}}" class="liker">{{likes.count}}</button>
     </div>
 </script>
 </body>

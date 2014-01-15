@@ -91,7 +91,8 @@
     var yamvc = window.yamvc || {},
         VM,
         VTM,
-        View;
+        View,
+        bindingId = 0;
 
     // Object that stores all views
     /**
@@ -242,6 +243,7 @@
                 parent = config.parent,
                 parentView = config.parent,
                 el,
+                tag,
                 headers,
                 domToText;
 
@@ -268,7 +270,8 @@
                             typeof models[header[0]] !== 'undefined' &&
                                 typeof models[header[0]] !== 'function'
                             ) {
-                            domToText = domToText.replace(fullHeader, models[header[0]].data(header[1]));
+                            tag = models[header[0]].data(header[1]);
+                            domToText = domToText.replace(fullHeader, tag);
                         } else {
                             domToText = domToText.replace(fullHeader, "");
                         }
