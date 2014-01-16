@@ -123,7 +123,7 @@ test("we are able to filter the collection by custom function", function () {
         }
     };
 
-    collection.filterFn(filterFn);
+    collection.filter(filterFn);
 
     equal(collection.count(), 1, "Filtered collection length should be equal 1");
 
@@ -158,11 +158,11 @@ test("we are able to clear filters from collection", function () {
         }
     };
 
-    collection.filterFn(filterFn);
+    collection.filter(filterFn);
 
     equal(collection.count(), 1, "Filtered collection length should be equal 1");
 
-    collection.clearFilterFn();
+    collection.clearFilters();
 
     equal(collection.count(), 3, "After clearing filter collection should have 3 records");
 
@@ -187,4 +187,190 @@ test("we are able to set proxy for collection", function () {
 
     ok(collection.getProxy() instanceof yamvc.data.Proxy, "Proxy was set");
 
+});
+
+test("we are able to add records to collection", function () {
+    var collection,
+        proxy;
+
+    proxy = new yamvc.data.proxy.Localstorage();
+
+    collection = new yamvc.Collection({
+        config: {
+            model: yamvc.Model,
+            modelConfig: {
+                namespace : 'test8'
+            },
+            proxy : proxy
+        }
+    });
+
+    collection.add([{
+        age: 24,
+        name: 'Sebastian',
+        surname: 'Widelak'
+    },{
+        age: 21,
+        name: 'Sebastian 2',
+        surname: 'Widelak 2'
+    },{
+        age: 25,
+        name: 'Sebastian 3',
+        surname: 'Widelak 3'
+    }]);
+
+    equal(collection.count(), 3, "Collection should count 3 records");
+
+});
+
+test("we are able to get record from collection", function () {
+    var collection,
+        proxy,
+        record;
+
+    proxy = new yamvc.data.proxy.Localstorage();
+
+    collection = new yamvc.Collection({
+        config: {
+            model: yamvc.Model,
+            modelConfig: {
+                namespace : 'test8'
+            },
+            proxy : proxy
+        }
+    });
+
+    collection.add([{
+        age: 24,
+        name: 'Sebastian',
+        surname: 'Widelak'
+    },{
+        age: 21,
+        name: 'Sebastian 2',
+        surname: 'Widelak 2'
+    },{
+        age: 25,
+        name: 'Sebastian 3',
+        surname: 'Widelak 3'
+    }]);
+
+    record = collection.getOneBy(function (record) {
+        return record.data('age') > 22;
+    });
+
+    equal(Array.isArray(record), false, "Returned object is Model instance");
+    equal(record.data('age'), 24, "Value of property `age` in returned record is equal 24");
+
+});
+
+test("we are able to get records from collection", function () {
+    var collection,
+        proxy,
+        records = [];
+
+    proxy = new yamvc.data.proxy.Localstorage();
+
+    collection = new yamvc.Collection({
+        config: {
+            model: yamvc.Model,
+            modelConfig: {
+                namespace : 'test8'
+            },
+            proxy : proxy
+        }
+    });
+
+    collection.add([{
+        age: 24,
+        name: 'Sebastian',
+        surname: 'Widelak'
+    },{
+        age: 21,
+        name: 'Sebastian 2',
+        surname: 'Widelak 2'
+    },{
+        age: 25,
+        name: 'Sebastian 3',
+        surname: 'Widelak 3'
+    }]);
+
+    records = collection.getBy(function (record) {
+        return record.data('age') > 22;
+    });
+
+    equal(records.length, 2, "Collection should count 3 records");
+
+});
+
+asyncTest("we are able to save collection records to storage", function () {
+    var collection,
+        proxy,
+        promise;
+
+    proxy = new yamvc.data.proxy.Localstorage();
+
+    collection = new yamvc.Collection({
+        config: {
+            model: yamvc.Model,
+            modelConfig: {
+                namespace : 'test8'
+            },
+            proxy : proxy
+        }
+    });
+
+    collection.add([{
+        age: 24,
+        name: 'Sebastian',
+        surname: 'Widelak'
+    },{
+        age: 21,
+        name: 'Sebastian 2',
+        surname: 'Widelak 2'
+    },{
+        age: 21,
+        name: 'Sebastian 2',
+        surname: 'Widelak 2'
+    }]);
+
+    promise = collection.save();
+
+    promise.then(function (x) {
+
+        equal(
+            x.scope.getProxy().getStatus(),
+            yamvc.data.proxy.Localstorage.Status.SUCCESS,
+            "Collection was saved"
+        );
+
+        yamvc.data.proxy.Localstorage.$clear('test8');
+        start();
+    }, function () {
+
+        yamvc.data.proxy.Localstorage.$clear('test8');
+        start();
+    });
+
+});
+
+asyncTest("we are able to load collection from storage", function () {
+    var collection,
+        promise,
+        proxy;
+
+    proxy = new yamvc.data.Proxy();
+
+    collection = new yamvc.Collection({
+        config: {
+            model: yamvc.Model,
+            modelConfig: {
+                namespace : 'test7'
+            },
+            proxy : proxy
+        }
+    });
+
+    ok(collection.getProxy() instanceof yamvc.data.Proxy, "Proxy was set");
+
+    start();
 });

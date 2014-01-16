@@ -4,8 +4,8 @@
         Collection;
 
     Collection = yamvc.Core.extend({
-        defaults : {
-            proxy : null
+        defaults: {
+            proxy: null
         },
         /**
          * initialize collection
@@ -20,6 +20,8 @@
             me.set('config', config);
             me.set('set', []);
             me.set('cache', []);
+            me.set('removed', []);
+            me.set('filters', []);
             me.initConfig();
             me.initData();
         },
@@ -35,6 +37,38 @@
             me.prepareData(data);
             return me;
         },
+        add: function (records) {
+            var me = this,
+                record,
+                ModelDefinition = me.getModel(),
+                namespace = me.getModelConfig().namespace;
+
+            if (!Array.isArray(records)) {
+                records = [records];
+            }
+
+            while (records.length) {
+
+                record = records.pop();
+                record = new ModelDefinition(
+                    {
+                        config: {
+                            namespace: namespace
+                        },
+                        data: record
+                    }
+                );
+
+                me._cache.push(record);
+                me.fireEvent('cacheChanged');
+
+            }
+
+            me.filter();
+
+//            console.log(me._cache, me._set);
+
+        },
         // return number of records in collection
         /**
          * @returns {Number}
@@ -46,32 +80,106 @@
             var me = this;
             me.set('set', []);
             me.set('cache', []);
+            me.set('removed', []);
             return me;
         },
-        clearFilterFn: function () {
-            this.set('set', this._cache);
+        clearFilters: function () {
+            var me = this;
+
+            me.set('filters', []);
+            me.filter();
+
             return this;
         },
-        filterFn: function (fn) {
+        filter: function (fn) {
             var me = this,
+                filters = me._filters,
+                filterFn,
+                passed = true,
                 filtered = [],
-                records = me._cache;
+                records = me._cache,
+                filLength = 0;
+
+            if (typeof fn === 'function') {
+
+                filters.push(fn);
+                me.fireEvent('filtersChanged');
+
+            }
 
             for (var i = 0, l = records.length; i < l; i++) {
-                if (fn(records[i])) {
-                    filtered.push(records[i]);
+
+                passed = true;
+                filLength = filters.length;
+                while (filLength--) {
+
+                    filterFn = filters[filLength];
+                    passed = passed && filterFn(records[i]);
+
                 }
+
+                if (passed) {
+
+                    filtered.push(records[i]);
+
+                }
+
             }
+
             me.set('set', filtered);
+
             return me;
         },
         /**
          * get record at
          * @param index
-         * @returns {*}
+         * @returns {yamvc.Model}
          */
-        getAt: function (index) {
+        getAt: function (index) { // Return record by index.
             return this._set[index];
+        },
+        /**
+         *
+         * @param fn
+         * @returns {Array}
+         */
+        getBy: function (fn) { // Return all matched record.
+            var me = this,
+                records = me._set,
+                filtered = [];
+
+            for (var i = 0, l = records.length; i < l; i++) {
+
+                if (fn(records[i])) {
+
+                    filtered.push(records[i]);
+
+                }
+
+            }
+            return filtered;
+        },
+        /**
+         * @param fn
+         * @returns {Array}
+         */
+        getOneBy: function (fn) { // Return first matched record.
+            var me = this,
+                records = me._set,
+                record,
+                len = records.length;
+
+            while (len--) {
+
+                if (fn(records[len])) {
+                    record = records[len];
+                    break;
+
+                }
+
+            }
+
+            return record;
         },
         /**
          * return real number of records
@@ -89,6 +197,7 @@
             var me = this,
                 data = me.get('data'),
                 idProperty = me.get('idProperty'),
+                deferred = yamvc.Promise.deferred(),
                 namespace = me.getModelConfig().namespace,
                 callback,
                 key, i = 0;
@@ -112,7 +221,87 @@
                 }
             };
             me.getProxy().read(namespace, params, callback);
-            return me;
+            return deferred.promise;
+        },
+        save: function () {
+            var me = this,
+                deferred = yamvc.Promise.deferred(),
+                toCreate = [],
+                toUpdate = [],
+                toRemove = me._removed,
+                records = me._cache,
+                modelConfig = me.getModelConfig(),
+                namespace = modelConfig.namespace,
+                proxy = me.getProxy(),
+                toFinish = 0,
+                callback,
+                record,
+                byIdFn;
+
+            for (var i = 0, l = records.length; i < l; i++) {
+
+                record = records[i];
+                if (record._isDirty) {
+
+                    if (record.hasId()) {
+
+                        toUpdate.push(record._data);
+
+                    } else {
+
+                        toCreate.push(record._data);
+
+                    }
+                }
+
+            }
+
+            byIdFn = function (clientId) {
+                return function (record) {
+                    return record.data('__clientId__') === clientId;
+                };
+            };
+
+            callback = function (proxy, response) {
+                var result, record;
+                toFinish--;
+
+                if (proxy.getStatus() === yamvc.data.Proxy.Status.SUCCESS) {
+                    result = proxy.getResponse().result.slice(0);
+
+                    while (result.length) {
+                        record = result.pop();
+                        //todo: add clientId to match models from backend to frontend models
+                    }
+
+                } else {
+
+                }
+
+                if (toFinish === 0) {
+
+                    deferred.resolve({scope: me});
+
+                }
+
+            };
+
+            if (toCreate.length) {
+                toFinish++;
+                proxy.create(namespace, toCreate, callback);
+            }
+
+            if (toUpdate.length) {
+                toFinish++;
+                proxy.update(namespace, toUpdate, callback);
+            }
+
+            if (toRemove.length) {
+                toFinish++;
+                proxy.destroy(namespace, toRemove, callback);
+            }
+
+            return deferred.promise;
         },
         /**
          * Prepare data
@@ -134,9 +323,11 @@
                     config: modelConfig
                 }));
             }
-            me.set('set', models);
+
             me.set('cache', models);
             me.set('total', total);
+            me.filter();
+
             return me;
         },
         setData: function () {

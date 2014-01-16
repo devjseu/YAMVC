@@ -19,4 +19,6 @@ YAMVC - change log
 
 ##0.1.9
 * `yamvc.experimental.View` merged to main View class
-* Example #1 updated
+* Example #1 updated to v0.1.9
+* `yamvc.Collection` now has `add`, `load` and `save` methods
+* `yamvc.data.proxy.Ydn` moved to experimental

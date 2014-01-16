@@ -23,6 +23,7 @@
             config = yamvc.merge(me._config, opts.config);
             me.set('initOpts', opts);
             me.set('config', config);
+            me.set('isDirty', true);
             me.initConfig();
             me.initData();
         },
@@ -146,18 +147,27 @@
             }
 
             callback = function () {
+
                 if (me.getProxy().getStatus() === 'success') {
+
                     response = me.getProxy().getResponse();
                     me.set('isDirty', false);
                     me.set('data', response);
+
                     deferred.resolve({scope: me, response: response, action: 'read'});
                     me.fireEvent('loaded', me, response, 'read');
+
                 } else {
+
                     deferred.reject({scope: me, action: 'read'});
                     me.fireEvent('error', me, 'read');
+
                 }
+
             };
+
             me.getProxy().read(me.getNamespace(), params, callback);
+
             return deferred.promise;
         },
         /**
@@ -169,6 +179,7 @@
                 data = me.get('data'),
                 idProperty = me.getIdProperty(),
                 deferred = yamvc.Promise.deferred(),
+                proxy = me.getProxy(),
                 response,
                 callback,
                 type;
@@ -178,27 +189,40 @@
             }
 
             me.set('isProcessing', true);
+
             callback = function () {
+
                 me.set('isProcessing', false);
                 if (me.getProxy().getStatus() === yamvc.data.Proxy.Status.SUCCESS) {
+
                     response = me.getProxy().getResponse();
                     me.set('isDirty', false);
                     me.set('data', response.result);
+
                     deferred.resolve({scope: me, response: response, action: type});
                     me.fireEvent('saved', me, response, type);
+
                 } else {
+
                     me.fireEvent('error', me, type);
                     deferred.reject({scope: me, action: type});
+
                 }
+
             };
 
             if (typeof data[idProperty] === 'undefined') {
+
                 type = 'create';
-                me.getProxy().create(me.getNamespace(), data, callback);
+                proxy.create(me.getNamespace(), data, callback);
+
             } else {
+
                 type = 'update';
-                me.getProxy().update(me.getNamespace(), data, callback);
+                proxy.update(me.getNamespace(), data, callback);
+
             }
+
             return deferred.promise;
         },
         /**
@@ -215,19 +239,30 @@
                 throw new Error('Can not remove empty model');
 
             callback = function () {
+
                 if (me.getProxy().getStatus() === yamvc.data.Proxy.Status.SUCCESS) {
+
                     me.set('isDirty', false);
                     me.set('data', {});
+
                     deferred.resolve({scope: me, action: 'destroy'});
                     me.fireEvent('removed', me, 'destroy');
+
                 } else {
+
                     me.fireEvent('error', me, 'destroy');
                     deferred.reject({scope: me, action: 'destroy'});
+
                 }
+
             };
 
             me.getProxy().destroy(me.getNamespace(), data, callback);
+
             return deferred.promise;
+        },
+        hasId: function () {
+            return !!this._data[this._config.idProperty];
         }
     });
 

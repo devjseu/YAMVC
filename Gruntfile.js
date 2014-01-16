@@ -76,8 +76,9 @@ module.exports = function (grunt) {
                     'test/**/*.js',
                     'test/*.js'
                 ],
-                tasks: ['jshint', 'qunit'],
+                tasks: ['jshint'],
                 options: {
+                    livereload: true,
                     spawn: true
                 }
             }
@@ -91,6 +92,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-qunit');
     grunt.loadNpmTasks('grunt-contrib-watch');
 
-    grunt.registerTask("tdd", ["watch:default"]);
+    grunt.registerTask("browser", ["watch:default"]);
     grunt.registerTask('default', ['jshint', 'concat', 'uglify', 'copy']);
 };
