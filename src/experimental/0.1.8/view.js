@@ -21,6 +21,11 @@
      * @type {function}
      */
     View = yamvc.View.extend({
+        /**
+         * @version 0.1.8
+         * @param data
+         * @returns {Node}
+         */
         render: function (data) {
             var me = this,
                 tpl = me._tpl,
@@ -244,7 +249,7 @@
             return el;
         },
         /**
-         * @version 0.1.18
+         * @version 0.1.8
          */
         resolveBindings: function () {
             var me = this,
@@ -291,6 +296,7 @@
             }
         },
         /**
+         * @version 0.1.8
          * @param binding
          */
         partialRender: function (binding) {
