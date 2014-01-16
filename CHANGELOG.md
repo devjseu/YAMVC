@@ -17,3 +17,6 @@ YAMVC - change log
 * In `yamvc.experimental.View` templates are now automatically bind to data
 * Asynchronous model methods now use promises
 
+##0.1.9
+* `yamvc.experimental.View` merged to main View class
+* Example #1 updated

@@ -481,5 +481,6 @@
 
     yamvc.ViewManager = VM;
     window.yamvc = yamvc;
-    window.yamvc.View = View;
+    window.yamvc.backup = window.yamvc.backup || {};
+    window.yamvc.backup.View = View;
 }(window));

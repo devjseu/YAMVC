@@ -3,9 +3,9 @@ Measure.module('View');
 /**
  * test 1
  */
-Measure.suit('View rendering', function (start, stop, loops) {
+Measure.suit('v0.1.8 View rendering', function (start, stop, loops) {
     var container = document.querySelector('#container'),
-        View = yamvc.View,
+        View = yamvc.backup.View,
         views = [],
         models = {};
 
@@ -47,9 +47,9 @@ Measure.suit('View rendering', function (start, stop, loops) {
 /**
  * test 2
  */
-Measure.suit('Experimental view rendering', function (start, stop, loops) {
+Measure.suit('v0.1.9 view rendering', function (start, stop, loops) {
     var container = document.querySelector('#container'),
-        View = yamvc.experimental.View,
+        View = yamvc.View,
         views = [],
         models = {};
 
@@ -70,7 +70,7 @@ Measure.suit('Experimental view rendering', function (start, stop, loops) {
         views.push(new View({
             config: {
                 models: models,
-                tpl: 'tpl-view',
+                tpl: 'tpl-view-2',
                 renderTo: '#container'
             }
         }));

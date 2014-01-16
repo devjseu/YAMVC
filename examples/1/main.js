@@ -10,7 +10,13 @@ yamvc.onReady(function () {
             data: {
                 text: 'Likes',
                 count: 0,
-                disabled : true
+                disabled: true
+            },
+            incrementLikes: function () {
+                this.data('count', this._data.count + 1);
+            },
+            toggleDisabled: function () {
+                this.data('disabled', !this._data.disabled);
             }
         })
     };
@@ -23,7 +29,13 @@ yamvc.onReady(function () {
             data: {
                 text: 'Likes',
                 count: 0,
-                disabled : false
+                disabled: false
+            },
+            incrementLikes: function () {
+                this.data('count', this._data.count + 1);
+            },
+            toggleDisabled: function () {
+                this.data('disabled', !this._data.disabled);
             }
         })
     };
@@ -59,15 +71,20 @@ yamvc.onReady(function () {
             events: {
                 '.liker': {
                     click: function (view, e) {
-                        view.incrementLikes();
+                        view.getModel('likes').incrementLikes();
                     }
                 },
-                $likeBtn : {
-                    render : function (view) {
+                '.container-liker': {
+                    click: function (view, e) {
+                        view.getModel('likes').toggleDisabled();
                     }
                 },
-                $likeBtn2 : {
-                    render : function (view) {
+                $likeBtn: {
+                    render: function (view) {
+                    }
+                },
+                $likeBtn2: {
+                    render: function (view) {
                     }
                 }
             }
