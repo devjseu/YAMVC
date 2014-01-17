@@ -22,3 +22,7 @@ YAMVC - change log
 * Example #1 updated to v0.1.9
 * `yamvc.Collection` now has `add`, `load` and `save` methods
 * `yamvc.data.proxy.Ydn` moved to experimental
+
+##0.1.10
+* Proxy operations are now stored in Action object
+* Model and Collection rewritten to use action

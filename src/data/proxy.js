@@ -11,45 +11,64 @@
     };
 
     Proxy = yamvc.Core.extend({
-        defaults: {
-            propertyResults: 'results',
-            status: Status.PENDING
-        },
         init: function (opts) {
             var me = this, config;
+
             Proxy.Parent.init.apply(this, arguments);
+
             opts = opts || {};
             config = yamvc.merge(me._config, opts.config);
+
             me.set('initOpts', opts);
             me.set('config', config);
+
             me.initConfig();
-        },
-        initConfig: function () {
-            var me = this;
-            Proxy.Parent.initConfig.call(this);
-            me.set('lastResponse', {});
-        },
-        read: function (namespace, data, callback) {
-            if (!namespace)
-                throw new Error('namespace should be set');
 
         },
-        create: function (namespace, data, callback) {
-            if (!namespace)
-                throw new Error('namespace should be set');
-            if (!data || typeof data !== 'object')
+        read: function (action) {
+
+            if (!(action instanceof yamvc.data.Action))
+                throw new Error('yamvc.data.Proxy: read argument action should be instance of yamvc.data.Action');
+
+            if (!action.getOption('namespace'))
+                throw new Error('yamvc.data.Proxy: namespace should be set');
+
+        },
+        create: function (action) {
+
+            if (!(action instanceof yamvc.data.Action))
+                throw new Error('yamvc.data.Proxy: create argument action should be instance of yamvc.data.Action');
+
+            if (!action.getOption('namespace'))
+                throw new Error('yamvc.data.Proxy: namespace should be set');
+
+            if (!action.getData() || typeof action.getData() !== 'object')
                 throw new Error('Data should be pass as object');
-        },
-        update: function () {
 
         },
-        destroy: function () {
+        update: function (action) {
+
+            if (!(action instanceof yamvc.data.Action))
+                throw new Error('yamvc.data.Proxy: update argument action should be instance of yamvc.data.Action');
+
+            if (!action.getOption('namespace'))
+                throw new Error('yamvc.data.Proxy: namespace should be set');
+
+            if (!action.getData() || typeof action.getData() !== 'object')
+                throw new Error('Data should be pass as object');
+
         },
-        setResponse: function (response) {
-            return this.set('response', response);
-        },
-        getResponse: function () {
-            return this.get('response');
+        destroy: function (action) {
+
+            if (!(action instanceof yamvc.data.Action))
+                throw new Error('yamvc.data.Proxy: destroy argument action should be instance of yamvc.data.Action');
+
+            if (!action.getOption('namespace'))
+                throw new Error('yamvc.data.Proxy: namespace should be set');
+
+            if (!action.getData() || typeof action.getData() !== 'object')
+                throw new Error('Data should be pass as object');
+
         }
     });
 

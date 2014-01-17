@@ -1,7 +1,7 @@
 (function (window, undefined) {
     "use strict";
     var yamvc = window.yamvc || {},
-        Container,
+        Action,
         Status;
 
     Status = {
@@ -10,37 +10,57 @@
         FAIL: 2
     };
 
-    Container = yamvc.Core.extend({
-        defaults: {
-            propertyResults: 'results',
-            status: Status.PENDING
-        },
+    Action = yamvc.Core.extend({
         init: function (opts) {
             var me = this, config;
-            Container.Parent.init.apply(this, arguments);
+
+            Action.Parent.init.apply(this, arguments);
+
             opts = opts || {};
             config = yamvc.merge(me._config, opts.config);
+
             me.set('initOpts', opts);
             me.set('config', config);
+            me.set('response', {});
+            me.set('status', Status.PENDING);
+
             me.initConfig();
         },
-        initConfig: function () {
-            var me = this;
-            Container.Parent.initConfig.call(this);
-            me.set('lastResponse', {});
+        setOptions: function (opts) {
+            this.set('options', opts);
+            return this;
+        },
+        getOptions: function () {
+            return this._options;
         },
         setResponse: function (response) {
             return this.set('response', response);
         },
         getResponse: function () {
             return this.get('response');
+        },
+        setStatus: function (status) {
+            var check = false, st;
+
+            for (st in Status) {
+                if (Status.hasOwnProperty(st) && Status[st] === status)
+                    check = true;
+            }
+
+            if (!check)
+                throw new Error('yamvc.data.Action: Wrong status');
+
+            return this.set('status', status);
+        },
+        getStatus: function () {
+            return this.get('response');
         }
     });
 
     // statics
-    Proxy.Status = Status;
+    Action.Status = Status;
 
     window.yamvc = yamvc;
     window.yamvc.data = window.yamvc.data || {};
-    window.yamvc.data.Container = Container;
+    window.yamvc.data.Action = Action;
 }(window));

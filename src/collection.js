@@ -236,7 +236,8 @@
                 toFinish = 0,
                 callback,
                 record,
-                byIdFn;
+                byIdFn,
+                row;
 
             for (var i = 0, l = records.length; i < l; i++) {
 
@@ -249,6 +250,7 @@
 
                     } else {
 
+                        record._data.__clientId__ = record.get('clientId');
                         toCreate.push(record._data);
 
                     }
@@ -256,34 +258,33 @@
 
             }
 
-            byIdFn = function (clientId) {
+            byIdFn = function (id) {
                 return function (record) {
-                    return record.data('__clientId__') === clientId;
+                    return record.data('id') === id || record.data('__clientId__') === id;
                 };
             };
 
-            callback = function (proxy, response) {
-                var result, record;
+//            var result, record;
+//            toFinish--;
+//
+//            result = proxy.getResponse().result.slice(0);
+//            if (proxy.getStatus() === yamvc.data.Proxy.Status.SUCCESS) {
+//
+//                while (result.length) {
+//                    row = result.pop();
+//                    record = me.getOneBy(byIdFn(row.__clientId__ || row.id));
+//                }
+//
+//            }
+//
+//            if (toFinish === 0) {
+//
+//                deferred.resolve({scope: me});
+//
+//            }
+
+            callback = function () {
                 toFinish--;
-
-                if (proxy.getStatus() === yamvc.data.Proxy.Status.SUCCESS) {
-                    result = proxy.getResponse().result.slice(0);
-
-                    while (result.length) {
-                        record = result.pop();
-                        //todo: add clientId to match models from backend to frontend models
-                    }
-
-                } else {
-
-                }
-
-                if (toFinish === 0) {
-
-                    deferred.resolve({scope: me});
-
-                }
-
             };
 
             if (toCreate.length) {

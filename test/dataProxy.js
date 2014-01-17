@@ -6,13 +6,3 @@ test("proxy initialize", function () {
 
     ok(proxy instanceof yamvc.data.Proxy);
 });
-
-test("Defaults was set", function () {
-    var proxy;
-
-    proxy = new yamvc.data.Proxy();
-
-    equal(proxy._config.propertyResults, 'results');
-
-});
-

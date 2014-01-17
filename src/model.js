@@ -2,7 +2,8 @@
     "use strict";
     var yamvc = window.yamvc || {},
         Model,
-        config;
+        config,
+        id = 0;
 
     Model = yamvc.Core.extend({
         /**
@@ -35,9 +36,13 @@
             var me = this,
                 config = me.get('config');
             yamvc.Core.prototype.initConfig.apply(this);
+
             if (!config.namespace)
                 throw new Error("Model need to have namespace property in your model configuration");
-            return this;
+
+            me.set('clientId', config.namespace + '-' + id++);
+
+            return me;
         },
         /**
          *
@@ -130,27 +135,25 @@
                 data = me.get('data'),
                 idProperty = me.getIdProperty(),
                 deferred = yamvc.Promise.deferred(),
-                callback,
-                response,
-                key, i = 0;
-
-            for (key in params) i++;
+                action = new yamvc.data.Action(),
+                opts = {},
+                response;
 
             if (
-                i === 0 &&
-                    typeof data[idProperty] === 'undefined'
+                typeof params[idProperty] === 'undefined' && typeof data[idProperty] === 'undefined'
                 )
-                throw new Error('You need to pass at least one condition to load model');
+                throw new Error('You need to pass id to load model');
 
-            if (i === 0) {
-                params[idProperty] = data[idProperty];
-            }
+            params[idProperty] = data[idProperty];
 
-            callback = function () {
+            opts.namespace = me.getNamespace();
+            opts.params = params;
+            opts.callback = function () {
+
+                response = me.getProxy().getResponse();
 
                 if (me.getProxy().getStatus() === 'success') {
 
-                    response = me.getProxy().getResponse();
                     me.set('isDirty', false);
                     me.set('data', response);
 
@@ -159,14 +162,16 @@
 
                 } else {
 
-                    deferred.reject({scope: me, action: 'read'});
-                    me.fireEvent('error', me, 'read');
+                    deferred.reject({scope: me, response: response, action: 'read'});
+                    me.fireEvent('error', me, response, 'read');
 
                 }
 
             };
 
-            me.getProxy().read(me.getNamespace(), params, callback);
+            action.setOptions(opts);
+
+            me.getProxy().read(action);
 
             return deferred.promise;
         },
@@ -179,9 +184,10 @@
                 data = me.get('data'),
                 idProperty = me.getIdProperty(),
                 deferred = yamvc.Promise.deferred(),
+                action = new yamvc.data.Action(),
                 proxy = me.getProxy(),
+                opts = {},
                 response,
-                callback,
                 type;
 
             if (me.get('isProcessing') || !me.get('isDirty')) {
@@ -190,12 +196,13 @@
 
             me.set('isProcessing', true);
 
-            callback = function () {
+            opts.callback = function () {
+
+                response = me.getProxy().getResponse();
 
                 me.set('isProcessing', false);
                 if (me.getProxy().getStatus() === yamvc.data.Proxy.Status.SUCCESS) {
 
-                    response = me.getProxy().getResponse();
                     me.set('isDirty', false);
                     me.set('data', response.result);
 
@@ -204,17 +211,19 @@
 
                 } else {
 
-                    me.fireEvent('error', me, type);
-                    deferred.reject({scope: me, action: type});
+                    deferred.reject({scope: me, response: response, action: type});
+                    me.fireEvent('error', me, response, type);
 
                 }
 
             };
 
+            action.setOptions(opts);
+
             if (typeof data[idProperty] === 'undefined') {
 
                 type = 'create';
-                proxy.create(me.getNamespace(), data, callback);
+                proxy.create(action);
 
             } else {
 
@@ -233,6 +242,7 @@
                 data = me.get('data'),
                 idProperty = me.getIdProperty(),
                 deferred = yamvc.Promise.deferred(),
+                response,
                 callback;
 
             if (typeof data[idProperty] === 'undefined')
@@ -240,18 +250,20 @@
 
             callback = function () {
 
+                response = me.getProxy().getResponse();
+
                 if (me.getProxy().getStatus() === yamvc.data.Proxy.Status.SUCCESS) {
 
                     me.set('isDirty', false);
                     me.set('data', {});
 
-                    deferred.resolve({scope: me, action: 'destroy'});
-                    me.fireEvent('removed', me, 'destroy');
+                    deferred.resolve({scope: me, response: response, action: type});
+                    me.fireEvent('removed', me, 'remove', type);
 
                 } else {
 
-                    me.fireEvent('error', me, 'destroy');
-                    deferred.reject({scope: me, action: 'destroy'});
+                    deferred.reject({scope: me, response: response, action: type});
+                    me.fireEvent('error', me, 'remove', type);
 
                 }
 

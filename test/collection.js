@@ -1,5 +1,6 @@
 module('Collection');
-test("initialize", function () {
+
+test("after initialization", function () {
     var collection;
 
     collection = new yamvc.Collection({
@@ -8,11 +9,11 @@ test("initialize", function () {
         }
     });
 
-    ok(collection instanceof  yamvc.Collection);
+    ok(collection instanceof yamvc.Collection, "is instance of yamvc.Collection");
 });
 
 
-test("collection has model", function () {
+test("has model", function () {
     var collection,
         ModelDefinition,
         modelInstance,
@@ -22,7 +23,7 @@ test("collection has model", function () {
         config: {
             model: yamvc.Model,
             modelConfig: {
-                namespace : 'test'
+                namespace: 'test'
             }
         }
     });
@@ -56,7 +57,7 @@ test("has data and record is turned into model", function () {
         config: {
             model: yamvc.Model,
             modelConfig: {
-                namespace : 'test2'
+                namespace: 'test2'
             }
         },
         data: data
@@ -85,7 +86,7 @@ test("is countable", function () {
         config: {
             model: yamvc.Model,
             modelConfig: {
-                namespace : 'test3'
+                namespace: 'test3'
             }
         },
         data: data
@@ -110,7 +111,7 @@ test("we are able to filter the collection by custom function", function () {
         config: {
             model: yamvc.Model,
             modelConfig: {
-                namespace : 'test4'
+                namespace: 'test4'
             }
         },
         data: data
@@ -145,7 +146,7 @@ test("we are able to clear filters from collection", function () {
         config: {
             model: yamvc.Model,
             modelConfig: {
-                namespace : 'test5'
+                namespace: 'test5'
             }
         },
         data: data
@@ -178,7 +179,7 @@ test("we are able to set proxy for collection", function () {
         config: {
             model: yamvc.Model,
             modelConfig: {
-                namespace : 'test6'
+                namespace: 'test6'
             }
         }
     });
@@ -199,25 +200,29 @@ test("we are able to add records to collection", function () {
         config: {
             model: yamvc.Model,
             modelConfig: {
-                namespace : 'test8'
+                namespace: 'test8'
             },
-            proxy : proxy
+            proxy: proxy
         }
     });
 
-    collection.add([{
-        age: 24,
-        name: 'Sebastian',
-        surname: 'Widelak'
-    },{
-        age: 21,
-        name: 'Sebastian 2',
-        surname: 'Widelak 2'
-    },{
-        age: 25,
-        name: 'Sebastian 3',
-        surname: 'Widelak 3'
-    }]);
+    collection.add([
+        {
+            age: 24,
+            name: 'Sebastian',
+            surname: 'Widelak'
+        },
+        {
+            age: 21,
+            name: 'Sebastian 2',
+            surname: 'Widelak 2'
+        },
+        {
+            age: 25,
+            name: 'Sebastian 3',
+            surname: 'Widelak 3'
+        }
+    ]);
 
     equal(collection.count(), 3, "Collection should count 3 records");
 
@@ -234,25 +239,29 @@ test("we are able to get record from collection", function () {
         config: {
             model: yamvc.Model,
             modelConfig: {
-                namespace : 'test8'
+                namespace: 'test8'
             },
-            proxy : proxy
+            proxy: proxy
         }
     });
 
-    collection.add([{
-        age: 24,
-        name: 'Sebastian',
-        surname: 'Widelak'
-    },{
-        age: 21,
-        name: 'Sebastian 2',
-        surname: 'Widelak 2'
-    },{
-        age: 25,
-        name: 'Sebastian 3',
-        surname: 'Widelak 3'
-    }]);
+    collection.add([
+        {
+            age: 24,
+            name: 'Sebastian',
+            surname: 'Widelak'
+        },
+        {
+            age: 21,
+            name: 'Sebastian 2',
+            surname: 'Widelak 2'
+        },
+        {
+            age: 25,
+            name: 'Sebastian 3',
+            surname: 'Widelak 3'
+        }
+    ]);
 
     record = collection.getOneBy(function (record) {
         return record.data('age') > 22;
@@ -274,25 +283,29 @@ test("we are able to get records from collection", function () {
         config: {
             model: yamvc.Model,
             modelConfig: {
-                namespace : 'test8'
+                namespace: 'test8'
             },
-            proxy : proxy
+            proxy: proxy
         }
     });
 
-    collection.add([{
-        age: 24,
-        name: 'Sebastian',
-        surname: 'Widelak'
-    },{
-        age: 21,
-        name: 'Sebastian 2',
-        surname: 'Widelak 2'
-    },{
-        age: 25,
-        name: 'Sebastian 3',
-        surname: 'Widelak 3'
-    }]);
+    collection.add([
+        {
+            age: 24,
+            name: 'Sebastian',
+            surname: 'Widelak'
+        },
+        {
+            age: 21,
+            name: 'Sebastian 2',
+            surname: 'Widelak 2'
+        },
+        {
+            age: 25,
+            name: 'Sebastian 3',
+            surname: 'Widelak 3'
+        }
+    ]);
 
     records = collection.getBy(function (record) {
         return record.data('age') > 22;
@@ -313,25 +326,29 @@ asyncTest("we are able to save collection records to storage", function () {
         config: {
             model: yamvc.Model,
             modelConfig: {
-                namespace : 'test8'
+                namespace: 'test8'
             },
-            proxy : proxy
+            proxy: proxy
         }
     });
 
-    collection.add([{
-        age: 24,
-        name: 'Sebastian',
-        surname: 'Widelak'
-    },{
-        age: 21,
-        name: 'Sebastian 2',
-        surname: 'Widelak 2'
-    },{
-        age: 21,
-        name: 'Sebastian 2',
-        surname: 'Widelak 2'
-    }]);
+    collection.add([
+        {
+            age: 24,
+            name: 'Sebastian',
+            surname: 'Widelak'
+        },
+        {
+            age: 21,
+            name: 'Sebastian 2',
+            surname: 'Widelak 2'
+        },
+        {
+            age: 21,
+            name: 'Sebastian 2',
+            surname: 'Widelak 2'
+        }
+    ]);
 
     promise = collection.save();
 
@@ -364,9 +381,9 @@ asyncTest("we are able to load collection from storage", function () {
         config: {
             model: yamvc.Model,
             modelConfig: {
-                namespace : 'test7'
+                namespace: 'test7'
             },
-            proxy : proxy
+            proxy: proxy
         }
     });
 
