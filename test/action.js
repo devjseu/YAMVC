@@ -10,7 +10,7 @@ test("after initialization", function () {
 
 });
 
-test("has methods", function () {
+test("has method", function () {
     var action;
 
     action = new yamvc.data.Action();
@@ -21,6 +21,8 @@ test("has methods", function () {
     ok(typeof action.getResponse !== "undefined", "to get response");
     ok(typeof action.setStatus !== "undefined", "to set status");
     ok(typeof action.getStatus !== "undefined", "to get status");
+    ok(typeof action.getOption !== "undefined", "to get one option");
+    ok(typeof action.getData !== "undefined", "to get data");
 
 });
 

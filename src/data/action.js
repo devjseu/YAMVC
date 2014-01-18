@@ -26,12 +26,22 @@
 
             me.initConfig();
         },
+        setData : function (data) {
+            this.set('data', data);
+            return this;
+        },
+        getData : function () {
+            return this._data;
+        },
         setOptions: function (opts) {
             this.set('options', opts);
             return this;
         },
         getOptions: function () {
             return this._options;
+        },
+        getOption: function (name) {
+            return this._options[name];
         },
         setResponse: function (response) {
             return this.set('response', response);
@@ -53,7 +63,7 @@
             return this.set('status', status);
         },
         getStatus: function () {
-            return this.get('response');
+            return this.get('status');
         }
     });
 

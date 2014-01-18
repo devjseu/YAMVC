@@ -196,29 +196,33 @@
 
             me.set('isProcessing', true);
 
-            opts.callback = function () {
+            opts.namespace = me.getNamespace();
+            opts.callback = function (proxy, action) {
 
-                response = me.getProxy().getResponse();
+                response = action.getResponse();
 
                 me.set('isProcessing', false);
-                if (me.getProxy().getStatus() === yamvc.data.Proxy.Status.SUCCESS) {
+                if (action.getStatus() === yamvc.data.Action.Status.SUCCESS) {
 
                     me.set('isDirty', false);
                     me.set('data', response.result);
 
-                    deferred.resolve({scope: me, response: response, action: type});
-                    me.fireEvent('saved', me, response, type);
+                    deferred.resolve({scope: me, action: action, type: type});
+                    me.fireEvent('saved', me, action, type);
 
                 } else {
 
-                    deferred.reject({scope: me, response: response, action: type});
-                    me.fireEvent('error', me, response, type);
+                    deferred.reject({scope: me, action: action, type: type});
+                    me.fireEvent('error', me, action, type);
 
                 }
 
             };
 
-            action.setOptions(opts);
+            action
+                .setOptions(opts)
+                .setData(data);
+
 
             if (typeof data[idProperty] === 'undefined') {
 
@@ -228,7 +232,7 @@
             } else {
 
                 type = 'update';
-                proxy.update(me.getNamespace(), data, callback);
+                proxy.update(action);
 
             }
 
@@ -242,34 +246,41 @@
                 data = me.get('data'),
                 idProperty = me.getIdProperty(),
                 deferred = yamvc.Promise.deferred(),
-                response,
-                callback;
+                action = new yamvc.data.Action(),
+                proxy = me.getProxy(),
+                opts = {},
+                response;
 
             if (typeof data[idProperty] === 'undefined')
                 throw new Error('Can not remove empty model');
 
-            callback = function () {
+            opts.namespace = me.getNamespace();
+            opts.callback = function (proxy, action) {
 
-                response = me.getProxy().getResponse();
+                response = action.getResponse();
 
-                if (me.getProxy().getStatus() === yamvc.data.Proxy.Status.SUCCESS) {
+                if (action.getStatus() === yamvc.data.Action.Status.SUCCESS) {
 
                     me.set('isDirty', false);
                     me.set('data', {});
 
-                    deferred.resolve({scope: me, response: response, action: type});
-                    me.fireEvent('removed', me, 'remove', type);
+                    deferred.resolve({scope: me, action: action, type: 'remove'});
+                    me.fireEvent('removed', me, 'remove');
 
                 } else {
 
-                    deferred.reject({scope: me, response: response, action: type});
-                    me.fireEvent('error', me, 'remove', type);
+                    deferred.reject({scope: me, action: action, type: 'remove'});
+                    me.fireEvent('error', me, 'remove');
 
                 }
 
             };
 
-            me.getProxy().destroy(me.getNamespace(), data, callback);
+            action
+                .setOptions(opts)
+                .setData(data);
+
+            proxy.destroy(action);
 
             return deferred.promise;
         },

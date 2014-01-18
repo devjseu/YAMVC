@@ -51,21 +51,26 @@ asyncTest("we are able to save model to db", function () {
 
     promise = model.save();
 
-    promise.then(function (x) {
+    promise
+        .then(function (x) {
 
-        equal(
-            x.scope.getProxy().getStatus(),
-            yamvc.data.proxy.Localstorage.Status.SUCCESS,
-            "Model was saved"
-        );
+            equal(
+                x.action.getStatus(),
+                yamvc.data.Action.Status.SUCCESS,
+                "Model was saved"
+            );
 
-        yamvc.data.proxy.Localstorage.$clear('testModel');
-        start();
-    }, function () {
+            yamvc.data.proxy.Localstorage.$clear('testModel');
 
-        yamvc.data.proxy.Localstorage.$clear('testModel');
-        start();
-    });
+            start();
+
+        })
+        .then(0, function () {
+
+            yamvc.data.proxy.Localstorage.$clear('testModel');
+            start();
+
+        });
 
 });
 
@@ -91,21 +96,24 @@ asyncTest("we are able to load model from db", function () {
 
     promise = model.save();
 
-    promise.then(function (x) {
+    promise
+        .then(function (x) {
 
-        equal(
-            x.scope.getProxy().getStatus(),
-            yamvc.data.proxy.Localstorage.Status.SUCCESS,
-            "Model was saved"
-        );
+            equal(
+                x.action.getStatus(),
+                yamvc.data.Action.Status.SUCCESS,
+                "Model was saved"
+            );
 
-        yamvc.data.proxy.Localstorage.$clear('testModel2');
-        start();
-    }, function () {
+            yamvc.data.proxy.Localstorage.$clear('testModel2');
+            start();
+        })
+        .then(0, function () {
 
-        yamvc.data.proxy.Localstorage.$clear('testModel2');
-        start();
-    });
+            yamvc.data.proxy.Localstorage.$clear('testModel2');
+            start();
+
+        });
 
 });
 
@@ -131,21 +139,24 @@ asyncTest("we are able to update model from db", function () {
 
         promise = model.save();
 
-        promise.then(function(x){
+        promise
+            .then(function (x) {
 
-            equal(
-                model.getProxy().getStatus(),
-                yamvc.data.Proxy.Status.SUCCESS,
-                "Record was updated"
-            );
+                equal(
+                    x.action.getStatus(),
+                    yamvc.data.Action.Status.SUCCESS,
+                    "Record was updated"
+                );
 
-            yamvc.data.proxy.Localstorage.$clear('testModel3');
-            start();
-        }, function(){
+                yamvc.data.proxy.Localstorage.$clear('testModel3');
+                start();
+            })
+            .then(0, function () {
 
-            yamvc.data.proxy.Localstorage.$clear('testModel3');
-            start();
-        });
+                yamvc.data.proxy.Localstorage.$clear('testModel');
+                start();
+
+            });
 
     };
 
@@ -157,12 +168,16 @@ asyncTest("we are able to update model from db", function () {
 
     promise = model.save();
 
-    promise.then(
-        updateFn,
-        function () {
+    promise
+        .then(
+            updateFn
+        )
+        .then(0, function () {
+
+            yamvc.data.proxy.Localstorage.$clear('testModel3');
             start();
-        }
-    );
+
+        });
 
 });
 
@@ -186,18 +201,23 @@ asyncTest("we are able to remove model from db", function () {
 
         promise = model.remove();
 
-        promise.then(function(x){
+        promise
+            .then(function (x) {
 
-            equal(
-                model.getProxy().getStatus(),
-                yamvc.data.Proxy.Status.SUCCESS,
-                "Record was removed"
-            );
+                equal(
+                    x.action.getStatus(),
+                    yamvc.data.Action.Status.SUCCESS,
+                    "Record was removed"
+                );
 
-            start();
-        }, function(){
-            start();
-        });
+                start();
+            })
+            .then(0, function () {
+
+                yamvc.data.proxy.Localstorage.$clear('testModel');
+                start();
+
+            });
 
     };
 
@@ -209,11 +229,15 @@ asyncTest("we are able to remove model from db", function () {
 
     promise = model.save();
 
-    promise.then(
-        removeFn,
-        function () {
+    promise
+        .then(
+            removeFn
+        )
+        .then(0, function () {
+
+            yamvc.data.proxy.Localstorage.$clear('testModel4');
             start();
-        }
-    );
+
+        });
 
 });

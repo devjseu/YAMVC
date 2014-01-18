@@ -1,4 +1,4 @@
-/*! YAMVC v0.1.10 - 2014-01-17 
+/*! YAMVC v0.1.10 - 2014-01-18 
  *  License:  */
 (function (window, undefined) {
     "use strict";
@@ -929,12 +929,22 @@
 
             me.initConfig();
         },
+        setData : function (data) {
+            this.set('data', data);
+            return this;
+        },
+        getData : function () {
+            return this._data;
+        },
         setOptions: function (opts) {
             this.set('options', opts);
             return this;
         },
         getOptions: function () {
             return this._options;
+        },
+        getOption: function (name) {
+            return this._options[name];
         },
         setResponse: function (response) {
             return this.set('response', response);
@@ -956,7 +966,7 @@
             return this.set('status', status);
         },
         getStatus: function () {
-            return this.get('response');
+            return this.get('status');
         }
     });
 
@@ -1013,7 +1023,7 @@
                 throw new Error('yamvc.data.Proxy: namespace should be set');
 
             if (!action.getData() || typeof action.getData() !== 'object')
-                throw new Error('Data should be pass as object');
+                throw new Error('yamvc.data.Proxy: Data should be object');
 
         },
         update: function (action) {
@@ -1025,7 +1035,7 @@
                 throw new Error('yamvc.data.Proxy: namespace should be set');
 
             if (!action.getData() || typeof action.getData() !== 'object')
-                throw new Error('Data should be pass as object');
+                throw new Error('yamvc.data.Proxy: Data should be object');
 
         },
         destroy: function (action) {
@@ -1054,7 +1064,8 @@
     "use strict";
     var yamvc = window.yamvc || {},
         Localstorage,
-        Proxy = yamvc.data.Proxy;
+        Proxy = yamvc.data.Proxy,
+        Action = yamvc.data.Action;
 
     /**
      * Extend Proxy class
@@ -1102,12 +1113,10 @@
             Localstorage.Parent.initConfig.apply(this);
         },
         /**
-         *
-         * @param namespace
-         * @param data
-         * @param callback
+         * @param action
+         * @returns {Localstorage}
          */
-        read: function (namespace, data, callback) {
+        read: function (action) {
             var me = this;
 
             Localstorage.Parent.read.apply(this, arguments);
@@ -1120,14 +1129,12 @@
             return me;
         },
         /**
-         *
-         * @param namespace
-         * @param opts
-         * @param callback
+         * @param action
          * @returns {Localstorage}
          */
-        readBy: function (namespace, opts, callback) {
+        readBy: function (action) {
             var me = this,
+                opts = action.getOptions(),
                 limit = opts.limit || null,
                 offset = opts.offset || 0,
                 filters = opts.filters || [],
@@ -1302,56 +1309,86 @@
             return result;
         },
         /**
-         *
-         * @param namespace
-         * @param data
-         * @param callback
+         * @param action
          * @returns {Localstorage}
          */
-        create: function (namespace, data, callback) {
-            var me = this, records = [], sequence = 0, response = {}, async;
+        create: function (action) {
+            var me = this,
+                data = action.getData(),
+                namespace = action.getOption('namespace'),
+                callback = action.getOption('callback'),
+                records = [],
+                sequence = 0,
+                response = {},
+                async;
+
             Localstorage.Parent.create.apply(this, arguments);
+
             if (localStorage[namespace]) {
+
                 records = JSON.parse(localStorage[namespace]);
                 sequence = localStorage[namespace + "$Sequence"];
+
             }
+
             if (Array.isArray(data)) {
+
                 for (var i = 0, l = data.length; i < l; i++) {
                     data[i].id = sequence++;
                     records.push(data[i]);
                 }
+
             } else {
+
                 data.id = sequence++;
                 records.push(data);
+
             }
 
             async = function () {
                 try {
-                    me.setStatus(Localstorage.Status.SUCCESS);
+
                     localStorage[namespace] = JSON.stringify(records);
                     localStorage[namespace + "$Sequence"] = sequence;
+
                     response.success = true;
                     response.result = data;
+
+                    action
+                        .setStatus(Action.Status.SUCCESS)
+                        .setResponse(response);
+
                 } catch (e) {
-                    me.setStatus(Localstorage.Status.FAIL);
+
                     response.success = false;
                     response.error = e;
+
+                    action
+                        .setStatus(Action.Status.FAIL)
+                        .setResponse(response);
+
                 }
-                me.setResponse(response);
-                callback(me, response);
+
+                callback(me, action);
             };
 
             setTimeout(async, 0);
+
             return me;
         },
         /**
-         * @param namespace
-         * @param data
-         * @param callback
+         * @param action
          * @returns {Localstorage}
          */
-        update: function (namespace, data, callback) { //
-            var me = this, records = [], result = {}, response = {}, id, l, l2, async;
+        update: function (action) { //
+            var me = this,
+                data = action.getData(),
+                namespace = action.getOption('namespace'),
+                callback = action.getOption('callback'),
+                records = [],
+                result = {},
+                response = {},
+                id, l, l2, async;
 
             async = function () { // update record asynchronously
                 if (localStorage[namespace]) { // but only if namespace for saving object exist
@@ -1384,23 +1421,39 @@
                     }
 
                     try {
-                        me.setStatus(Localstorage.Status.SUCCESS);
+
                         localStorage[namespace] = JSON.stringify(records);
                         response.success = true;
                         response.result = result;
+
+                        action
+                            .setStatus(Action.Status.SUCCESS)
+                            .setResponse(response);
+
                     } catch (e) {
-                        me.setStatus(Localstorage.Status.FAIL);
+
                         response.success = false;
                         response.error = e;
+
+                        action
+                            .setStatus(Action.Status.FAIL)
+                            .setResponse(response);
+
                     }
-                    callback(me, response);
+
+                    callback(me, action);
+
                     return me;
                 }
 
-                me.setStatus(Localstorage.Status.FAIL); // in other case return error that record doesnt exist
                 response.success = false;
                 response.error = new Error("Not found");
-                callback(me, response);
+
+                action
+                    .setStatus(Action.Status.FAIL)
+                    .setResponse(response);
+
+                callback(me, action);
             };
 
             setTimeout(async, 0);
@@ -1408,13 +1461,17 @@
         },
         /**
          *
-         * @param namespace
-         * @param data
-         * @param callback
+         * @param action
          * @returns {Localstorage}
          */
-        destroy: function (namespace, data, callback) {
-            var me = this, records = [], response = {}, id, l, l2, async;
+        destroy: function (action) {
+            var me = this,
+                data = action.getData(),
+                namespace = action.getOption('namespace'),
+                callback = action.getOption('callback'),
+                records = [],
+                response = {},
+                id, l, l2, async;
 
             async = function () {
 
@@ -1448,22 +1505,36 @@
                     }
 
                     try {
-                        me.setStatus(Localstorage.Status.SUCCESS);
+
                         localStorage[namespace] = JSON.stringify(records);
                         response.success = true;
+
+                        action
+                            .setStatus(Action.Status.SUCCESS)
+                            .setResponse(response);
+
                     } catch (e) {
-                        me.setStatus(Localstorage.Status.FAIL);
+
                         response.success = false;
                         response.error = e;
+
+                        action
+                            .setStatus(Action.Status.FAIL)
+                            .setResponse(response);
+
                     }
-                    callback(me, response);
+                    callback(me, action);
                     return me;
                 }
 
-                me.setStatus(Localstorage.Status.FAIL);
                 response.success = false;
                 response.error = new Error("Not found");
-                callback(me, response);
+
+                action
+                    .setStatus(Action.Status.FAIL)
+                    .setResponse(response);
+
+                callback(me, action);
 
             };
 
@@ -1677,29 +1748,33 @@
 
             me.set('isProcessing', true);
 
-            opts.callback = function () {
+            opts.namespace = me.getNamespace();
+            opts.callback = function (proxy, action) {
 
-                response = me.getProxy().getResponse();
+                response = action.getResponse();
 
                 me.set('isProcessing', false);
-                if (me.getProxy().getStatus() === yamvc.data.Proxy.Status.SUCCESS) {
+                if (action.getStatus() === yamvc.data.Action.Status.SUCCESS) {
 
                     me.set('isDirty', false);
                     me.set('data', response.result);
 
-                    deferred.resolve({scope: me, response: response, action: type});
-                    me.fireEvent('saved', me, response, type);
+                    deferred.resolve({scope: me, action: action, type: type});
+                    me.fireEvent('saved', me, action, type);
 
                 } else {
 
-                    deferred.reject({scope: me, response: response, action: type});
-                    me.fireEvent('error', me, response, type);
+                    deferred.reject({scope: me, action: action, type: type});
+                    me.fireEvent('error', me, action, type);
 
                 }
 
             };
 
-            action.setOptions(opts);
+            action
+                .setOptions(opts)
+                .setData(data);
+
 
             if (typeof data[idProperty] === 'undefined') {
 
@@ -1709,7 +1784,7 @@
             } else {
 
                 type = 'update';
-                proxy.update(me.getNamespace(), data, callback);
+                proxy.update(action);
 
             }
 
@@ -1723,34 +1798,41 @@
                 data = me.get('data'),
                 idProperty = me.getIdProperty(),
                 deferred = yamvc.Promise.deferred(),
-                response,
-                callback;
+                action = new yamvc.data.Action(),
+                proxy = me.getProxy(),
+                opts = {},
+                response;
 
             if (typeof data[idProperty] === 'undefined')
                 throw new Error('Can not remove empty model');
 
-            callback = function () {
+            opts.namespace = me.getNamespace();
+            opts.callback = function (proxy, action) {
 
-                response = me.getProxy().getResponse();
+                response = action.getResponse();
 
-                if (me.getProxy().getStatus() === yamvc.data.Proxy.Status.SUCCESS) {
+                if (action.getStatus() === yamvc.data.Action.Status.SUCCESS) {
 
                     me.set('isDirty', false);
                     me.set('data', {});
 
-                    deferred.resolve({scope: me, response: response, action: type});
-                    me.fireEvent('removed', me, 'remove', type);
+                    deferred.resolve({scope: me, action: action, type: 'remove'});
+                    me.fireEvent('removed', me, 'remove');
 
                 } else {
 
-                    deferred.reject({scope: me, response: response, action: type});
-                    me.fireEvent('error', me, 'remove', type);
+                    deferred.reject({scope: me, action: action, type: 'remove'});
+                    me.fireEvent('error', me, 'remove');
 
                 }
 
             };
 
-            me.getProxy().destroy(me.getNamespace(), data, callback);
+            action
+                .setOptions(opts)
+                .setData(data);
+
+            proxy.destroy(action);
 
             return deferred.promise;
         },

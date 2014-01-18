@@ -43,7 +43,7 @@
                 throw new Error('yamvc.data.Proxy: namespace should be set');
 
             if (!action.getData() || typeof action.getData() !== 'object')
-                throw new Error('Data should be pass as object');
+                throw new Error('yamvc.data.Proxy: Data should be object');
 
         },
         update: function (action) {
@@ -55,7 +55,7 @@
                 throw new Error('yamvc.data.Proxy: namespace should be set');
 
             if (!action.getData() || typeof action.getData() !== 'object')
-                throw new Error('Data should be pass as object');
+                throw new Error('yamvc.data.Proxy: Data should be object');
 
         },
         destroy: function (action) {

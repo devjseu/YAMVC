@@ -2,7 +2,8 @@
     "use strict";
     var yamvc = window.yamvc || {},
         Localstorage,
-        Proxy = yamvc.data.Proxy;
+        Proxy = yamvc.data.Proxy,
+        Action = yamvc.data.Action;
 
     /**
      * Extend Proxy class
@@ -50,12 +51,10 @@
             Localstorage.Parent.initConfig.apply(this);
         },
         /**
-         *
-         * @param namespace
-         * @param data
-         * @param callback
+         * @param action
+         * @returns {Localstorage}
          */
-        read: function (namespace, data, callback) {
+        read: function (action) {
             var me = this;
 
             Localstorage.Parent.read.apply(this, arguments);
@@ -68,14 +67,12 @@
             return me;
         },
         /**
-         *
-         * @param namespace
-         * @param opts
-         * @param callback
+         * @param action
          * @returns {Localstorage}
          */
-        readBy: function (namespace, opts, callback) {
+        readBy: function (action) {
             var me = this,
+                opts = action.getOptions(),
                 limit = opts.limit || null,
                 offset = opts.offset || 0,
                 filters = opts.filters || [],
@@ -250,56 +247,86 @@
             return result;
         },
         /**
-         *
-         * @param namespace
-         * @param data
-         * @param callback
+         * @param action
          * @returns {Localstorage}
          */
-        create: function (namespace, data, callback) {
-            var me = this, records = [], sequence = 0, response = {}, async;
+        create: function (action) {
+            var me = this,
+                data = action.getData(),
+                namespace = action.getOption('namespace'),
+                callback = action.getOption('callback'),
+                records = [],
+                sequence = 0,
+                response = {},
+                async;
+
             Localstorage.Parent.create.apply(this, arguments);
+
             if (localStorage[namespace]) {
+
                 records = JSON.parse(localStorage[namespace]);
                 sequence = localStorage[namespace + "$Sequence"];
+
             }
+
             if (Array.isArray(data)) {
+
                 for (var i = 0, l = data.length; i < l; i++) {
                     data[i].id = sequence++;
                     records.push(data[i]);
                 }
+
             } else {
+
                 data.id = sequence++;
                 records.push(data);
+
             }
 
             async = function () {
                 try {
-                    me.setStatus(Localstorage.Status.SUCCESS);
+
                     localStorage[namespace] = JSON.stringify(records);
                     localStorage[namespace + "$Sequence"] = sequence;
+
                     response.success = true;
                     response.result = data;
+
+                    action
+                        .setStatus(Action.Status.SUCCESS)
+                        .setResponse(response);
+
                 } catch (e) {
-                    me.setStatus(Localstorage.Status.FAIL);
+
                     response.success = false;
                     response.error = e;
+
+                    action
+                        .setStatus(Action.Status.FAIL)
+                        .setResponse(response);
+
                 }
-                me.setResponse(response);
-                callback(me, response);
+
+                callback(me, action);
             };
 
             setTimeout(async, 0);
+
             return me;
         },
         /**
-         * @param namespace
-         * @param data
-         * @param callback
+         * @param action
          * @returns {Localstorage}
          */
-        update: function (namespace, data, callback) { //
-            var me = this, records = [], result = {}, response = {}, id, l, l2, async;
+        update: function (action) { //
+            var me = this,
+                data = action.getData(),
+                namespace = action.getOption('namespace'),
+                callback = action.getOption('callback'),
+                records = [],
+                result = {},
+                response = {},
+                id, l, l2, async;
 
             async = function () { // update record asynchronously
                 if (localStorage[namespace]) { // but only if namespace for saving object exist
@@ -332,23 +359,39 @@
                     }
 
                     try {
-                        me.setStatus(Localstorage.Status.SUCCESS);
+
                         localStorage[namespace] = JSON.stringify(records);
                         response.success = true;
                         response.result = result;
+
+                        action
+                            .setStatus(Action.Status.SUCCESS)
+                            .setResponse(response);
+
                     } catch (e) {
-                        me.setStatus(Localstorage.Status.FAIL);
+
                         response.success = false;
                         response.error = e;
+
+                        action
+                            .setStatus(Action.Status.FAIL)
+                            .setResponse(response);
+
                     }
-                    callback(me, response);
+
+                    callback(me, action);
+
                     return me;
                 }
 
-                me.setStatus(Localstorage.Status.FAIL); // in other case return error that record doesnt exist
                 response.success = false;
                 response.error = new Error("Not found");
-                callback(me, response);
+
+                action
+                    .setStatus(Action.Status.FAIL)
+                    .setResponse(response);
+
+                callback(me, action);
             };
 
             setTimeout(async, 0);
@@ -356,13 +399,17 @@
         },
         /**
          *
-         * @param namespace
-         * @param data
-         * @param callback
+         * @param action
          * @returns {Localstorage}
          */
-        destroy: function (namespace, data, callback) {
-            var me = this, records = [], response = {}, id, l, l2, async;
+        destroy: function (action) {
+            var me = this,
+                data = action.getData(),
+                namespace = action.getOption('namespace'),
+                callback = action.getOption('callback'),
+                records = [],
+                response = {},
+                id, l, l2, async;
 
             async = function () {
 
@@ -396,22 +443,36 @@
                     }
 
                     try {
-                        me.setStatus(Localstorage.Status.SUCCESS);
+
                         localStorage[namespace] = JSON.stringify(records);
                         response.success = true;
+
+                        action
+                            .setStatus(Action.Status.SUCCESS)
+                            .setResponse(response);
+
                     } catch (e) {
-                        me.setStatus(Localstorage.Status.FAIL);
+
                         response.success = false;
                         response.error = e;
+
+                        action
+                            .setStatus(Action.Status.FAIL)
+                            .setResponse(response);
+
                     }
-                    callback(me, response);
+                    callback(me, action);
                     return me;
                 }
 
-                me.setStatus(Localstorage.Status.FAIL);
                 response.success = false;
                 response.error = new Error("Not found");
-                callback(me, response);
+
+                action
+                    .setStatus(Action.Status.FAIL)
+                    .setResponse(response);
+
+                callback(me, action);
 
             };
 
