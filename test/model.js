@@ -43,7 +43,7 @@ asyncTest("we are able to save model to db", function () {
         }
     });
 
-    model.setData({
+    model.data({
         age: 24,
         name: 'Sebastian',
         surname: 'Widelak'
@@ -88,7 +88,7 @@ asyncTest("we are able to load model from db", function () {
         }
     });
 
-    model.setData({
+    model.data({
         age: 24,
         name: 'Sebastian',
         surname: 'Widelak'
@@ -160,7 +160,7 @@ asyncTest("we are able to update model from db", function () {
 
     };
 
-    model.setData({
+    model.data({
         age: 24,
         name: 'Sebastian',
         surname: 'Widelak'
@@ -221,7 +221,7 @@ asyncTest("we are able to remove model from db", function () {
 
     };
 
-    model.setData({
+    model.data({
         age: 24,
         name: 'Sebastian',
         surname: 'Widelak'

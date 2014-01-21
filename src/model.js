@@ -87,28 +87,35 @@
          *
          */
         data: function (property, data) {
-            var len = arguments.length;
-            if (len > 1) {
-                return this.setDataProperty.apply(this, arguments);
-            } else {
-                return this.getDataProperty.apply(this, arguments);
-            }
-        },
-        /**
-         * @param newData
-         */
-        setData: function (newData) {
             var me = this,
-                data = me.get('data'),
+                len = arguments.length,
                 key;
 
-            for (key in newData) {
-                if (newData.hasOwnProperty(key)) {
-                    me.setDataProperty(key, newData[key]);
+            if (len > 1) {
+
+                this.setDataProperty.apply(this, arguments);
+
+            } else {
+
+                if (typeof property === 'object') {
+
+                    for (key in property) {
+
+                        if (property.hasOwnProperty(key)) {
+
+                            me.setDataProperty(key, property[key]);
+
+                        }
+
+                    }
+
+                } else {
+                    return this.getDataProperty.apply(this, arguments);
                 }
+
             }
 
-            me.fireEvent('dataChange', me, data);
+            return me;
         },
         /**
          *
@@ -281,11 +288,19 @@
                 .setData(data);
 
             proxy.destroy(action);
+            proxy.destroy(action);
 
             return deferred.promise;
         },
         hasId: function () {
             return !!this._data[this._config.idProperty];
+        },
+        setDirty: function (dirty) {
+            this.set('isDirty', !!dirty);
+            return this;
+        },
+        isDirty: function () {
+            return this._isDirty;
         }
     });
 

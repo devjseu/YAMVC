@@ -226,6 +226,7 @@
         save: function () {
             var me = this,
                 deferred = yamvc.Promise.deferred(),
+                action,
                 toCreate = [],
                 toUpdate = [],
                 toRemove = me._removed,
@@ -234,10 +235,10 @@
                 namespace = modelConfig.namespace,
                 proxy = me.getProxy(),
                 toFinish = 0,
+                exceptions = [],
                 callback,
                 record,
-                byIdFn,
-                row;
+                byIdFn;
 
             for (var i = 0, l = records.length; i < l; i++) {
 
@@ -258,48 +259,124 @@
 
             }
 
-            byIdFn = function (id) {
-                return function (record) {
-                    return record.data('id') === id || record.data('__clientId__') === id;
+            byIdFn = function (record) {
+                return function (_record) {
+                    return record.__clientId__ ?
+                        _record.data('__clientId__') === record.__clientId__ :
+                        _record.data('id') === record.id;
                 };
             };
 
-//            var result, record;
-//            toFinish--;
-//
-//            result = proxy.getResponse().result.slice(0);
-//            if (proxy.getStatus() === yamvc.data.Proxy.Status.SUCCESS) {
-//
-//                while (result.length) {
-//                    row = result.pop();
-//                    record = me.getOneBy(byIdFn(row.__clientId__ || row.id));
-//                }
-//
-//            }
-//
-//            if (toFinish === 0) {
-//
-//                deferred.resolve({scope: me});
-//
-//            }
+            callback = function (proxy, action) {
 
-            callback = function () {
                 toFinish--;
+
+                if (action.getStatus() === yamvc.data.Action.Status.SUCCESS) {
+
+                    var response = action.getResponse(),
+                        data = response.result,
+                        len;
+
+                    record = data[0];
+                    len = data.length;
+                    // If record has __clientId__ property it's create process
+                    // or if it has id it's update.
+                    if (record && (record.__clientId__ || record.id)) {
+
+                        while (len--) {
+
+                            record = me.getOneBy(byIdFn(data[len]));
+
+                            record
+                                .data({
+                                    id: data[len].id,
+                                    __clientId__: null
+                                })
+                                .setDirty(false);
+
+                        }
+
+                    } else { // Else it's remove process.
+
+                        me.set('removed', []);
+
+                    }
+
+                } else {
+
+                    exceptions.push(action.getResponse().error);
+
+                }
+
+                if (toFinish === 0) {
+
+                    if (exceptions.length) {
+
+                        me.fireEvent('error', me, exceptions);
+
+                        deferred.reject({
+                            errors: exceptions
+                        });
+
+                    } else {
+
+                        me.fireEvent('success', me);
+
+                        deferred.resolve({scope: me});
+
+                    }
+
+                }
+
             };
 
             if (toCreate.length) {
+
                 toFinish++;
-                proxy.create(namespace, toCreate, callback);
+
+                action = new yamvc.data.Action();
+
+                action
+                    .setOptions({
+                        namespace: namespace,
+                        callback: callback
+                    })
+                    .setData(toCreate);
+
+                proxy.create(action);
+
             }
 
             if (toUpdate.length) {
+
                 toFinish++;
-                proxy.update(namespace, toUpdate, callback);
+
+                action = new yamvc.data.Action();
+
+                action
+                    .setOptions({
+                        namespace: namespace,
+                        callback: callback
+                    })
+                    .setData(toUpdate);
+
+                proxy.update(action);
             }
 
             if (toRemove.length) {
+
                 toFinish++;
-                proxy.destroy(namespace, toRemove, callback);
+
+                action = new yamvc.data.Action();
+
+                action
+                    .setOptions({
+                        namespace: namespace,
+                        callback: callback
+                    })
+                    .setData(toRemove);
+
+                proxy.destroy(action);
             }
 
             return deferred.promise;
@@ -346,6 +423,23 @@
         setRawData: function (data) {
             this.set('raw', data);
             return this;
+        },
+        isDirty: function () {
+            var records = this._cache,
+                len = records.length,
+                isDirty = false;
+
+            while (len--) {
+                if (records[len]._isDirty) {
+                    isDirty = true;
+                }
+            }
+
+            if (this._remove) {
+                isDirty = true;
+            }
+
+            return isDirty;
         }
     });
 

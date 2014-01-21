@@ -352,27 +352,30 @@ asyncTest("we are able to save collection records to storage", function () {
 
     promise = collection.save();
 
-    promise.then(function (x) {
+    promise
+        .then(function (x) {
 
-        equal(
-            x.scope.getProxy().getStatus(),
-            yamvc.data.proxy.Localstorage.Status.SUCCESS,
-            "Collection was saved"
-        );
+            equal(
+                x.scope.isDirty(),
+                false,
+                "Collection was saved"
+            );
 
-        yamvc.data.proxy.Localstorage.$clear('test8');
-        start();
-    }, function () {
+            yamvc.data.proxy.Localstorage.$clear('test8');
+            start();
+        })
+        .then(0, function () {
 
-        yamvc.data.proxy.Localstorage.$clear('test8');
-        start();
-    });
+
+            console.log(arguments);
+            yamvc.data.proxy.Localstorage.$clear('test8');
+            start();
+        });
 
 });
 
 asyncTest("we are able to load collection from storage", function () {
     var collection,
-        promise,
         proxy;
 
     proxy = new yamvc.data.Proxy();

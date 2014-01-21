@@ -54,25 +54,11 @@
          * @param action
          * @returns {Localstorage}
          */
-        read: function (action) {
-            var me = this;
-
-            Localstorage.Parent.read.apply(this, arguments);
-
-            if (typeof data === 'object') {
-                me.readBy(namespace, data, callback);
-            } else {
-                me.readById(namespace, data, callback);
-            }
-            return me;
-        },
-        /**
-         * @param action
-         * @returns {Localstorage}
-         */
         readBy: function (action) {
             var me = this,
                 opts = action.getOptions(),
+                namespace = opts.namespace,
+                callback = opts.callback,
                 limit = opts.limit || null,
                 offset = opts.offset || 0,
                 filters = opts.filters || [],
@@ -81,6 +67,7 @@
                 filtered = [],
                 records = [],
                 meet = true,
+                total = 0,
                 async,
                 operator,
                 property,
@@ -125,6 +112,7 @@
                     }
 
                     records = filtered;
+                    total = filtered.length;
 
                     // next we do sorting
                     len = sorters.length;
@@ -144,13 +132,27 @@
                     }
                 }
 
-                response.success = true;
+                response.total = total;
                 response.result = records;
+
                 callback(me, response);
 
             };
 
-            setTimeout(async, 0);
+            setTimeout(function () {
+
+                try {
+
+                    async();
+
+                } catch (e) {
+
+                    response.error = e;
+
+                    callback(me, response);
+
+                }
+            }, 0);
 
             return me;
         },
@@ -161,29 +163,47 @@
          * @param callback
          * @returns {Localstorage}
          */
-        readById: function (namespace, id, callback) {
-            var me = this, records = [], result = {}, response = {}, async;
+        readById: function (action) {
+            var me = this,
+                opts = action.getOptions(),
+                params = opts.params,
+                namespace = opts.namespace,
+                callback = opts.callback,
+                id = params.id,
+                records = [],
+                result = {},
+                response = {},
+                async;
+
+            console.log(action);
 
             async = function () {
 
                 if (localStorage[namespace]) {
+
                     records = JSON.parse(localStorage[namespace]);
                     for (var i = 0, l = records.length; i < l; i++) {
+
                         if (records[i].id === id) {
                             result = records[i];
                         }
+
                     }
+
                     if (typeof result.id !== 'undefined') {
-                        me.setStatus(Localstorage.Status.SUCCESS);
-                        response.success = true;
+
+                        action.setStatus(yamvc.data.Action.Status.SUCCESS);
+
+                        response.total = 1;
                         response.result = result;
+
                         callback(me, response);
+
                         return me;
                     }
                 }
 
-                me.setStatus(Localstorage.Status.FAIL);
-                response.success = false;
+                me.setStatus(yamvc.data.Action.Status.FAIL);
                 response.error = new Error("Not found");
                 callback(me, response);
             };
@@ -289,7 +309,6 @@
                     localStorage[namespace] = JSON.stringify(records);
                     localStorage[namespace + "$Sequence"] = sequence;
 
-                    response.success = true;
                     response.result = data;
 
                     action
@@ -298,7 +317,6 @@
 
                 } catch (e) {
 
-                    response.success = false;
                     response.error = e;
 
                     action
