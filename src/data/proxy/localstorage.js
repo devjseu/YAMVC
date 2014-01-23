@@ -135,7 +135,11 @@
                 response.total = total;
                 response.result = records;
 
-                callback(me, response);
+                action
+                    .setStatus(yamvc.data.Action.Status.SUCCESS)
+                    .setResponse(response);
+
+                callback(me, action);
 
             };
 
@@ -148,8 +152,7 @@
                 } catch (e) {
 
                     response.error = e;
-
-                    callback(me, response);
+                    callback(me, action);
 
                 }
             }, 0);
@@ -158,9 +161,7 @@
         },
         /**
          *
-         * @param namespace
-         * @param id
-         * @param callback
+         * @param action
          * @returns {Localstorage}
          */
         readById: function (action) {
@@ -174,8 +175,6 @@
                 result = {},
                 response = {},
                 async;
-
-            console.log(action);
 
             async = function () {
 
@@ -192,12 +191,14 @@
 
                     if (typeof result.id !== 'undefined') {
 
-                        action.setStatus(yamvc.data.Action.Status.SUCCESS);
-
                         response.total = 1;
                         response.result = result;
 
-                        callback(me, response);
+                        action
+                            .setStatus(yamvc.data.Action.Status.SUCCESS)
+                            .setResponse(response);
+
+                        callback(me, action);
 
                         return me;
                     }
@@ -205,7 +206,7 @@
 
                 me.setStatus(yamvc.data.Action.Status.FAIL);
                 response.error = new Error("Not found");
-                callback(me, response);
+                callback(me, action);
             };
 
             setTimeout(async, 0);

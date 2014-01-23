@@ -9,14 +9,18 @@ test("initialize", function () {
 });
 
 asyncTest("clear database", function () {
-    var records = [], proxy, action, opts;
+    var records = [], proxy, action, opts, response, n = 'test';
 
     expect(2);
 
     action = new yamvc.data.Action();
 
     opts = {
-        callback: function (proxy, response) {
+        callback: function (proxy, action) {
+
+            console.log(action.getResponse())
+
+            response = action.getResponse();
 
             equal(!response.error, true, "Records read");
 
@@ -24,13 +28,13 @@ asyncTest("clear database", function () {
 
             start();
         },
-        namespace: 'test'
+        namespace: n
     };
 
     action.setOptions(opts);
 
 
-    yamvc.data.proxy.Localstorage.$clear('test');
+    yamvc.data.proxy.Localstorage.$clear(n);
 
     proxy = new yamvc.data.proxy.Localstorage();
 
@@ -56,14 +60,14 @@ test("execute passed conditions", function () {
 });
 
 asyncTest("CRUD: proxy read data by id", function () {
-    var record, callback, callback2, proxy, action, action2;
+    var record, callback, callback2, proxy, action, action2, response, n = 'test2';
 
     expect(2);
 
     /**
      * clear storage
      */
-    yamvc.data.proxy.Localstorage.$clear('test2');
+    yamvc.data.proxy.Localstorage.$clear(n);
 
     record = {
         name: 'Anonymous',
@@ -73,13 +77,14 @@ asyncTest("CRUD: proxy read data by id", function () {
 
     proxy = new yamvc.data.proxy.Localstorage();
 
-    callback = function (proxy, response) {
+    callback = function (proxy, action) {
 
+        response = action.getResponse();
         action2 = new yamvc.data.Action();
 
         action2.setOptions({
             params: {id: record.id},
-            namespace: 'test2',
+            namespace: n,
             callback: callback2
         });
 
@@ -88,13 +93,13 @@ asyncTest("CRUD: proxy read data by id", function () {
         proxy.read(action2);
     };
 
-    callback2 = function (proxy, response) {
+    callback2 = function (proxy, action) {
+
+        response = action.getResponse();
 
         equal(!response.error, true, "Record added to storage");
 
         record = response.result;
-
-        console.log(response);
 
         ok(typeof record.id !== 'undefined', "Record has it id");
 
@@ -114,11 +119,11 @@ asyncTest("CRUD: proxy read data by id", function () {
 });
 
 asyncTest("CRUD: proxy read data sorted by name", function () {
-    var record, records, callback, callback2, proxy, action, action2;
+    var record, records, callback, callback2, proxy, action, action2, n = 'test3';
 
     expect(2);
 
-    yamvc.data.proxy.Localstorage.$clear('test8');
+    yamvc.data.proxy.Localstorage.$clear(n);
 
     records = [
         {
@@ -151,20 +156,22 @@ asyncTest("CRUD: proxy read data sorted by name", function () {
 
         action2
             .setOptions({
-                namespace: 'test8',
+                namespace: n,
                 callback: callback2,
                 sorters: [
                     ['name', 'DESC']
                 ]
             });
 
+        proxy.read(action2);
+
     };
 
-    callback2 = function (proxy, response) {
+    callback2 = function (proxy, action) {
 
-        equal(!response.error, true, "Record added to storage");
+        equal(!action.error, true, "Record added to storage");
 
-        records = response.result;
+        records = action.result;
 
         equal(records[0].name, "Tomasz", "2 records was returned");
 
@@ -175,7 +182,7 @@ asyncTest("CRUD: proxy read data sorted by name", function () {
 
     action
         .setOptions({
-            namespace: 'test8',
+            namespace: n,
             callback: callback
         })
         .setData(records);
@@ -184,13 +191,13 @@ asyncTest("CRUD: proxy read data sorted by name", function () {
 });
 
 asyncTest("CRUD: proxy read data sorted by age", function () {
-    var record, records, callback, callback2, proxy;
+    var records, callback, callback2, proxy, action, action2, n = 'test4';
 
-    expect(2);
+    expect(1);
 
-    yamvc.data.proxy.Localstorage.$clear('test8');
+    yamvc.data.proxy.Localstorage.$clear(n);
 
-    record = [
+    records = [
         {
             name: 'Anonymous',
             surname: 'Anonymous',
@@ -204,51 +211,66 @@ asyncTest("CRUD: proxy read data sorted by age", function () {
         {
             name: 'Anonymous 3',
             surname: 'Anonymous 3',
-            age: 27
+            age: 28
         },
         {
             name: 'Anonymous 4',
             surname: 'Anonymous 4',
-            age: 28
+            age: 27
         }
     ];
 
     proxy = new yamvc.data.proxy.Localstorage();
 
-    callback = function (proxy, response) {
-        if (response.success === true) {
-            record = response.result;
-        }
+    callback = function (proxy, action) {
 
-        proxy.read('test8', {sorters: [
-            ['age', 'DESC']
-        ]}, callback2);
+        response = action.getResponse();
+
+        action2 = new yamvc.data.Action();
+
+        action2
+            .setOptions({
+                namespace: n,
+                callback: callback2,
+                sorters: [
+                    ['age', 'DESC']
+                ]
+            });
+
+        proxy.read(action2);
     };
 
-    callback2 = function (proxy, response) {
+    callback2 = function (proxy, action) {
 
-        equal(response.success, true, "Record added to storage");
+        response = action.getResponse();
 
-        if (response.success === true) {
-            records = response.result;
-        }
+        records = action.result;
 
-        equal(records[0].age, 28, "2 records was returned");
+        equal(records[0].age, 28, "Data was sorted");
 
         start();
     };
 
-    proxy.create('test8', record, callback);
+    action = new yamvc.data.Action();
+
+    action
+        .setOptions({
+            namespace: n,
+            callback: callback
+        })
+        .setData(records);
+
+    proxy.create(action);
 });
 
 asyncTest("CRUD: proxy read data filtered by passed conditions", function () {
-    var record, records, callback, callback2, proxy;
+    var record, records, callback, callback2, proxy, action, action2, n = 'test5';
 
     expect(2);
 
-    yamvc.data.proxy.Localstorage.$clear('test3');
+    yamvc.data.proxy.Localstorage.$clear(n);
 
-    record = [
+    records = [
         {
             name: 'Anonymous',
             surname: 'Anonymous',
@@ -273,39 +295,55 @@ asyncTest("CRUD: proxy read data filtered by passed conditions", function () {
 
     proxy = new yamvc.data.proxy.Localstorage();
 
-    callback = function (proxy, response) {
-        if (response.success === true) {
-            record = response.result;
-        }
+    callback = function (proxy, action) {
 
-        proxy.read('test3', {filters: [
-            ["age", ">", 24],
-            ["or", "age", ">", 24]
-        ]}, callback2);
+        response = action.getResponse();
+
+        action2 = new yamvc.data.Action();
+
+        action2
+            .setOptions({
+                namespace: n,
+                callback: callback2,
+                filters: [
+                    ["age", ">", 24],
+                    ["or", "age", ">", 24]
+                ]
+            });
+
+        proxy.read(action2);
+
     };
 
-    callback2 = function (proxy, response) {
+    callback2 = function (proxy, action) {
 
-        equal(response.success, true, "Record added to storage");
+        response = action.getResponse();
 
-        if (response.success === true) {
-            records = response.result;
-        }
+        equal(action.getStatus(), yamvc.data.Action.Status.SUCCESS, "Record added to storage");
 
         ok(records.length === 2, "2 records was returned");
 
         start();
     };
 
-    proxy.create('test3', record, callback);
+    action = new yamvc.data.Action();
+
+    action
+        .setOptions({
+            namespace: n,
+            callback: callback
+        })
+        .setData(records);
+
+    proxy.create(action);
 });
 
 asyncTest("CRUD: proxy create records", function () {
-    var record, records, callback, proxy;
+    var record, records, callback, proxy, action, n = 'test6';
 
     expect(2);
 
-    yamvc.data.proxy.Localstorage.$clear('test4');
+    yamvc.data.proxy.Localstorage.$clear(n);
 
     proxy = new yamvc.data.proxy.Localstorage();
 
@@ -315,12 +353,14 @@ asyncTest("CRUD: proxy create records", function () {
         age: 23
     };
 
-    callback = function (proxy, response) {
+    callback = function (proxy, action) {
 
-        equal(response.success, true, "Record added to storage");
+        response = action.getResponse();
 
-        if (response.success === true) {
-            records = response.result;
+        equal(action.success, true, "Record added to storage");
+
+        if (action.success === true) {
+            records = action.result;
         }
 
         ok(typeof records.id !== 'undefined', "Record has it id");
@@ -328,15 +368,15 @@ asyncTest("CRUD: proxy create records", function () {
         start();
     };
 
-    proxy.create('test4', record, callback);
+    proxy.create(action);
 });
 
 asyncTest("CRUD: proxy create batch of records", function () {
-    var records, records2 = [], callback, proxy;
+    var records, records2 = [], callback, proxy, n = 'test7';
 
     expect(4);
 
-    yamvc.data.proxy.Localstorage.$clear('test5');
+    yamvc.data.proxy.Localstorage.$clear(n);
 
     proxy = new yamvc.data.proxy.Localstorage();
 
@@ -353,12 +393,14 @@ asyncTest("CRUD: proxy create batch of records", function () {
         }
     ];
 
-    callback = function (proxy, response) {
+    callback = function (proxy, action) {
 
-        equal(response.success, true, "Records added to storage");
+        response = action.getResponse();
 
-        if (response.success === true) {
-            records2 = response.result;
+        equal(action.success, true, "Records added to storage");
+
+        if (action.success === true) {
+            records2 = action.result;
         }
 
         equal(records2.length, 2, "Record has it id");
@@ -372,11 +414,11 @@ asyncTest("CRUD: proxy create batch of records", function () {
         start();
     };
 
-    proxy.create('test5', records, callback);
+    proxy.create(action);
 });
 
 asyncTest("CRUD: proxy update data", function () {
-    var record, records, callback, callback2, proxy;
+    var record, records, callback, callback2, proxy, action, action2, n = 'test8';
 
     expect(2);
 
@@ -397,37 +439,41 @@ asyncTest("CRUD: proxy update data", function () {
         }
     ];
 
-    callback = function (proxy, response) {
+    callback = function (proxy, action) {
 
-        if (response.success === true) {
-            records = response.result;
+        response = action.getResponse();
+
+        if (action.success === true) {
+            records = action.result;
         }
 
         records[1].name = "Anonymous Edited";
 
-        proxy.update('test5', records[1], callback2);
+        proxy.update(action2);
     };
 
-    callback2 = function (proxy, response) {
+    callback2 = function (proxy, action) {
 
-        ok(response.success, "Record was edit and saved");
+        response = action.getResponse();
 
-        if (response.success === true) {
-            record = response.result;
+        ok(action.success, "Record was edit and saved");
+
+        if (action.success === true) {
+            record = action.result;
         }
         equal(record.name, "Anonymous Edited", "Name was updated");
 
         start();
     };
 
-    proxy.create('test5', records, callback);
+    proxy.create(action);
 
 
 });
 
 asyncTest("CRUD: proxy destroy data", function () {
 
-    var records, callback, callback2, proxy;
+    var records, callback, callback2, proxy, action, action2, n = 'test9';
 
     expect(1);
 
@@ -448,29 +494,29 @@ asyncTest("CRUD: proxy destroy data", function () {
         }
     ];
 
-    callback = function (proxy, response) {
+    callback = function (proxy, action) {
 
-        if (response.success === true) {
-            records = response.result;
-        }
+        response = action.getResponse();
 
-        proxy.destroy('test6', records[1], callback2);
+        proxy.destroy(action2);
     };
 
-    callback2 = function (proxy, response) {
+    callback2 = function (proxy, action) {
 
-        ok(response.success, "Record was removed");
+        response = action.getResponse();
+
+        ok(action.success, "Record was removed");
 
         start();
 
     };
 
-    proxy.create('test6', records, callback);
+    proxy.create(action);
 });
 
 asyncTest("CRUD: proxy batch destroy data", function () {
 
-    var records, callback, callback2, proxy;
+    var records, callback, callback2, proxy, action, action2, n = 'test10';
 
     expect(1);
 
@@ -491,22 +537,22 @@ asyncTest("CRUD: proxy batch destroy data", function () {
         }
     ];
 
-    callback = function (proxy, response) {
+    callback = function (proxy, action) {
 
-        if (response.success === true) {
-            records = response.result;
-        }
+        response = action.getResponse();
 
-        proxy.destroy('test6', records, callback2);
+        proxy.destroy(action2);
     };
 
-    callback2 = function (proxy, response) {
+    callback2 = function (proxy, action) {
 
-        ok(response.success, "Record was removed");
+        response = action.getResponse();
+
+        ok(action.success, "Record was removed");
 
         start();
 
     };
 
-    proxy.create('test7', records, callback);
+    proxy.create(action);
 });

@@ -32,8 +32,6 @@
             if (!action.getOption('namespace'))
                 throw new Error('yamvc.data.Proxy: namespace should be set');
 
-            console.log(id);
-
             if (typeof id === 'undefined') {
                 me.readBy(action);
             } else {
