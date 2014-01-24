@@ -1,16 +1,22 @@
-Core.onReady(function (){
-    "use script";
+yamvc.$onReady(function () {
+    "use strict";
+
 
     var model, bar, ctr;
 
-    model = {
-        likes: 0
-    };
+    model = new yamvc.Model({
+        config: {namespace: 'likes'},
+        data: {
+            count: 0
+        }
+    });
 
-    bar = new Bar({
+    bar = new app.view.Bar({
         config: {
-            autoCreate : true,
-            models: model,
+            autoCreate: true,
+            models: {
+                likes: model
+            },
             id: 'bar',
             tpl: 'tpl-bar',
             renderTo: '#container'
@@ -21,9 +27,9 @@ Core.onReady(function (){
         config: {
             name: 'Main',
             views: {
-                topBar : ViewManager.get('bar')
+                topBar: yamvc.ViewManager.get('bar')
             },
-            events : {
+            events: {
             }
         }
     });

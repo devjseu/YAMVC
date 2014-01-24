@@ -6,11 +6,18 @@
         onReadyCallbacks = [],
         readyStateCheckInterval;
 
+    // Run all method when ready
+    function run() {
+        for (var i = 0, l = onReadyCallbacks.length; i < l; i++) {
+            onReadyCallbacks[i]();
+        }
+    }
+
     // Provide way to execute all necessary code after DOM is ready.
     /**
      * @param callback
      */
-    yamvc.onReady = function (callback) {
+    yamvc.$onReady = function (callback) {
         onReadyCallbacks.push(callback);
         if (!readyStateCheckInterval && document.readyState !== "complete") {
             readyStateCheckInterval = setInterval(function () {
@@ -22,27 +29,25 @@
         }
     };
 
-    // Run all method when ready
-    function run() {
-        for (var i = 0, l = onReadyCallbacks.length; i < l; i++) {
-            onReadyCallbacks[i]();
-        }
-    }
-
     // Merge two objects.
-    function merge(obj1, obj2) {
+    /**
+     * @param obj1
+     * @param obj2
+     * @returns {*}
+     */
+    yamvc.$merge = function (obj1, obj2) {
         for (var property in obj2) {
             if (obj2.hasOwnProperty(property)) {
                 obj1[property] = obj2[property];
             }
         }
         return obj1;
-    }
+    };
 
     //
-    function clone(obj) {
+    yamvc.$clone = function (obj) {
         return JSON.parse(JSON.stringify(obj));
-    }
+    };
 
     // Definition of Core object.
     Core = yamvc.Core || (function () {
@@ -194,7 +199,7 @@
                     }
                     Core.apply(this, arguments);
                 },
-                defaults = merge(opts.defaults || {}, Parent.__defaults__),
+                defaults = yamvc.$merge(opts.defaults || {}, Parent.__defaults__),
                 mixins = opts.mixins || [],
                 statics = opts.static || {},
                 __hasProp = {}.hasOwnProperty,
@@ -255,7 +260,5 @@
     }());
 
     yamvc.Core = Core;
-    yamvc.$merge = merge;
-    yamvc.$clone = clone;
     window.yamvc = yamvc;
 }(window));

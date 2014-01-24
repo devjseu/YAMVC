@@ -1,15 +1,16 @@
 (function (window, undefined) {
     "use strict";
 
-    var Bar = View.extend(function (opts) {
-        View.apply(this, arguments);
-        this.bindEvents();
+    var yamvc = window.yamvc || {},
+        app = window.app || {},
+        Bar;
+
+    Bar = yamvc.View.$extend({
+        tpl : ""
     });
 
-    Bar.prototype.bindEvents = function () {
-
-    };
-
-    window.Bar = Bar;
+    app.view = app.view || {};
+    app.view.Bar = Bar;
+    window.app = app;
 
 }(window));

@@ -26,3 +26,7 @@ YAMVC - change log
 ##0.1.10
 * Proxy operations are now stored in Action object
 * Model and Collection rewritten to use action
+* All static methods are now $ prefixed
+
+##0.1.11
+*
