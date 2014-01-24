@@ -35,6 +35,7 @@
         initConfig: function () {
             var me = this,
                 config = me.get('config');
+
             yamvc.Core.prototype.initConfig.apply(this);
 
             if (!config.namespace)

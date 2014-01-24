@@ -29,4 +29,4 @@ YAMVC - change log
 * All static methods are now $ prefixed
 
 ##0.1.11
-*
+* template might be now stored in `yamvc.view.Template`

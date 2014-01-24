@@ -189,16 +189,33 @@
                 config = me.get('config'),
                 div = document.createElement('div'),
                 _tpl;
+
             if (!config.tpl) {
+
                 throw new Error(config.id + ': no tpl set');
+
             }
-            if (!VTM.get(config.tpl)) {
+
+            if (config.tpl instanceof yamvc.view.Template) {
+
+                div.innerHTML = config.tpl.getHtml().innerHTML;
+
+            } else if (VTM.get(config.tpl)) {
+
+                div.innerHTML = VTM.get(config.tpl).innerHTML;
+
+            } else {
+
                 _tpl = document.getElementById(config.tpl);
+
                 if (!_tpl)
                     throw new Error('no tpl ' + config.tpl + ' found');
+
                 VTM.add(config.tpl, _tpl.parentNode.removeChild(_tpl));
+                div.innerHTML = VTM.get(config.tpl).innerHTML;
+
             }
-            div.innerHTML = VTM.get(config.tpl).innerHTML;
+
             me.set('tpl', div);
             return me;
         },
@@ -411,7 +428,7 @@
 
                                 node.removeAttribute(attr.nodeName);
 
-                            }else{
+                            } else {
 
                                 node.setAttribute(attr.nodeName, ret);
 

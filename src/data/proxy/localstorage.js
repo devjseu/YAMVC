@@ -37,20 +37,6 @@
             }
         },
         /**
-         *
-         * @param opts
-         */
-        init: function (opts) {
-            var me = this;
-            Localstorage.Parent.init.apply(me, arguments);
-        },
-        /**
-         *
-         */
-        initConfig: function () {
-            Localstorage.Parent.initConfig.apply(this);
-        },
-        /**
          * @param action
          * @returns {Localstorage}
          */
