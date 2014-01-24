@@ -343,7 +343,7 @@
                 namespace = action.getOption('namespace'),
                 callback = action.getOption('callback'),
                 records = [],
-                result = {},
+                result,
                 response = {},
                 id, l, l2, async;
 
@@ -354,6 +354,7 @@
 
                     if (Array.isArray(data)) {
 
+                        result = [];
                         l = data.length;
                         while (l--) {
                             l2 = records.length;
@@ -361,10 +362,10 @@
                             while (l2--) {
                                 if (records[l2].id === id) {
                                     records[l2] = data[l];
+                                    result.splice(0,0, data[l]);
                                 }
                             }
                         }
-                        result = records;
 
                     } else {
                         l = records.length;

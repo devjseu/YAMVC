@@ -1,4 +1,4 @@
-/*! YAMVC v0.1.10 - 2014-01-18 
+/*! YAMVC v0.1.10 - 2014-01-24 
  *  License:  */
 (function (window, undefined) {
     "use strict";
@@ -614,6 +614,7 @@
         save: function () {
             var me = this,
                 deferred = yamvc.Promise.deferred(),
+                action,
                 toCreate = [],
                 toUpdate = [],
                 toRemove = me._removed,
@@ -622,10 +623,10 @@
                 namespace = modelConfig.namespace,
                 proxy = me.getProxy(),
                 toFinish = 0,
+                exceptions = [],
                 callback,
                 record,
-                byIdFn,
-                row;
+                byIdFn;
 
             for (var i = 0, l = records.length; i < l; i++) {
 
@@ -646,48 +647,124 @@
 
             }
 
-            byIdFn = function (id) {
-                return function (record) {
-                    return record.data('id') === id || record.data('__clientId__') === id;
+            byIdFn = function (record) {
+                return function (_record) {
+                    return record.__clientId__ ?
+                        _record.data('__clientId__') === record.__clientId__ :
+                        _record.data('id') === record.id;
                 };
             };
 
-//            var result, record;
-//            toFinish--;
-//
-//            result = proxy.getResponse().result.slice(0);
-//            if (proxy.getStatus() === yamvc.data.Proxy.Status.SUCCESS) {
-//
-//                while (result.length) {
-//                    row = result.pop();
-//                    record = me.getOneBy(byIdFn(row.__clientId__ || row.id));
-//                }
-//
-//            }
-//
-//            if (toFinish === 0) {
-//
-//                deferred.resolve({scope: me});
-//
-//            }
+            callback = function (proxy, action) {
 
-            callback = function () {
                 toFinish--;
+
+                if (action.getStatus() === yamvc.data.Action.Status.SUCCESS) {
+
+                    var response = action.getResponse(),
+                        data = response.result,
+                        len;
+
+                    record = data[0];
+                    len = data.length;
+                    // If record has __clientId__ property it's create process
+                    // or if it has id it's update.
+                    if (record && (record.__clientId__ || record.id)) {
+
+                        while (len--) {
+
+                            record = me.getOneBy(byIdFn(data[len]));
+
+                            record
+                                .data({
+                                    id: data[len].id,
+                                    __clientId__: null
+                                })
+                                .setDirty(false);
+
+                        }
+
+                    } else { // Else it's remove process.
+
+                        me.set('removed', []);
+
+                    }
+
+                } else {
+
+                    exceptions.push(action.getResponse().error);
+
+                }
+
+                if (toFinish === 0) {
+
+                    if (exceptions.length) {
+
+                        me.fireEvent('error', me, exceptions);
+
+                        deferred.reject({
+                            errors: exceptions
+                        });
+
+                    } else {
+
+                        me.fireEvent('success', me);
+
+                        deferred.resolve({scope: me});
+
+                    }
+
+                }
+
             };
 
             if (toCreate.length) {
+
                 toFinish++;
-                proxy.create(namespace, toCreate, callback);
+
+                action = new yamvc.data.Action();
+
+                action
+                    .setOptions({
+                        namespace: namespace,
+                        callback: callback
+                    })
+                    .setData(toCreate);
+
+                proxy.create(action);
+
             }
 
             if (toUpdate.length) {
+
                 toFinish++;
-                proxy.update(namespace, toUpdate, callback);
+
+                action = new yamvc.data.Action();
+
+                action
+                    .setOptions({
+                        namespace: namespace,
+                        callback: callback
+                    })
+                    .setData(toUpdate);
+
+                proxy.update(action);
             }
 
             if (toRemove.length) {
+
                 toFinish++;
-                proxy.destroy(namespace, toRemove, callback);
+
+                action = new yamvc.data.Action();
+
+                action
+                    .setOptions({
+                        namespace: namespace,
+                        callback: callback
+                    })
+                    .setData(toRemove);
+
+                proxy.destroy(action);
             }
 
             return deferred.promise;
@@ -734,6 +811,23 @@
         setRawData: function (data) {
             this.set('raw', data);
             return this;
+        },
+        isDirty: function () {
+            var records = this._cache,
+                len = records.length,
+                isDirty = false;
+
+            while (len--) {
+                if (records[len]._isDirty) {
+                    isDirty = true;
+                }
+            }
+
+            if (this._remove) {
+                isDirty = true;
+            }
+
+            return isDirty;
         }
     });
 
@@ -981,14 +1075,7 @@
 (function (window, undefined) {
     "use strict";
     var yamvc = window.yamvc || {},
-        Proxy,
-        Status;
-
-    Status = {
-        PENDING: 0,
-        SUCCESS: 1,
-        FAIL: 2
-    };
+        Proxy;
 
     Proxy = yamvc.Core.extend({
         init: function (opts) {
@@ -1006,15 +1093,29 @@
 
         },
         read: function (action) {
+            var me = this,
+                opts,
+                id;
 
             if (!(action instanceof yamvc.data.Action))
                 throw new Error('yamvc.data.Proxy: read argument action should be instance of yamvc.data.Action');
 
+            opts = action.getOptions();
+            id = opts.params && opts.params.id;
+
             if (!action.getOption('namespace'))
                 throw new Error('yamvc.data.Proxy: namespace should be set');
 
+            if (typeof id === 'undefined') {
+                me.readBy(action);
+            } else {
+                me.readById(action);
+            }
+
+            return me;
         },
         create: function (action) {
+            var me = this;
 
             if (!(action instanceof yamvc.data.Action))
                 throw new Error('yamvc.data.Proxy: create argument action should be instance of yamvc.data.Action');
@@ -1025,8 +1126,10 @@
             if (!action.getData() || typeof action.getData() !== 'object')
                 throw new Error('yamvc.data.Proxy: Data should be object');
 
+            return me;
         },
         update: function (action) {
+            var me = this;
 
             if (!(action instanceof yamvc.data.Action))
                 throw new Error('yamvc.data.Proxy: update argument action should be instance of yamvc.data.Action');
@@ -1037,8 +1140,10 @@
             if (!action.getData() || typeof action.getData() !== 'object')
                 throw new Error('yamvc.data.Proxy: Data should be object');
 
+            return me;
         },
         destroy: function (action) {
+            var me = this;
 
             if (!(action instanceof yamvc.data.Action))
                 throw new Error('yamvc.data.Proxy: destroy argument action should be instance of yamvc.data.Action');
@@ -1049,11 +1154,9 @@
             if (!action.getData() || typeof action.getData() !== 'object')
                 throw new Error('Data should be pass as object');
 
+            return me;
         }
     });
-
-    // statics
-    Proxy.Status = Status;
 
     window.yamvc = yamvc;
     window.yamvc.data = window.yamvc.data || {};
@@ -1116,25 +1219,11 @@
          * @param action
          * @returns {Localstorage}
          */
-        read: function (action) {
-            var me = this;
-
-            Localstorage.Parent.read.apply(this, arguments);
-
-            if (typeof data === 'object') {
-                me.readBy(namespace, data, callback);
-            } else {
-                me.readById(namespace, data, callback);
-            }
-            return me;
-        },
-        /**
-         * @param action
-         * @returns {Localstorage}
-         */
         readBy: function (action) {
             var me = this,
                 opts = action.getOptions(),
+                namespace = opts.namespace,
+                callback = opts.callback,
                 limit = opts.limit || null,
                 offset = opts.offset || 0,
                 filters = opts.filters || [],
@@ -1143,6 +1232,7 @@
                 filtered = [],
                 records = [],
                 meet = true,
+                total = 0,
                 async,
                 operator,
                 property,
@@ -1187,6 +1277,7 @@
                     }
 
                     records = filtered;
+                    total = filtered.length;
 
                     // next we do sorting
                     len = sorters.length;
@@ -1206,48 +1297,81 @@
                     }
                 }
 
-                response.success = true;
+                response.total = total;
                 response.result = records;
-                callback(me, response);
+
+                action
+                    .setStatus(yamvc.data.Action.Status.SUCCESS)
+                    .setResponse(response);
+
+                callback(me, action);
 
             };
 
-            setTimeout(async, 0);
+            setTimeout(function () {
+
+                try {
+
+                    async();
+
+                } catch (e) {
+
+                    response.error = e;
+                    callback(me, action);
+
+                }
+            }, 0);
 
             return me;
         },
         /**
          *
-         * @param namespace
-         * @param id
-         * @param callback
+         * @param action
          * @returns {Localstorage}
          */
-        readById: function (namespace, id, callback) {
-            var me = this, records = [], result = {}, response = {}, async;
+        readById: function (action) {
+            var me = this,
+                opts = action.getOptions(),
+                params = opts.params,
+                namespace = opts.namespace,
+                callback = opts.callback,
+                id = params.id,
+                records = [],
+                result = {},
+                response = {},
+                async;
 
             async = function () {
 
                 if (localStorage[namespace]) {
+
                     records = JSON.parse(localStorage[namespace]);
                     for (var i = 0, l = records.length; i < l; i++) {
+
                         if (records[i].id === id) {
                             result = records[i];
                         }
+
                     }
+
                     if (typeof result.id !== 'undefined') {
-                        me.setStatus(Localstorage.Status.SUCCESS);
-                        response.success = true;
+
+                        response.total = 1;
                         response.result = result;
-                        callback(me, response);
+
+                        action
+                            .setStatus(yamvc.data.Action.Status.SUCCESS)
+                            .setResponse(response);
+
+                        callback(me, action);
+
                         return me;
                     }
                 }
 
-                me.setStatus(Localstorage.Status.FAIL);
-                response.success = false;
+                me.setStatus(yamvc.data.Action.Status.FAIL);
                 response.error = new Error("Not found");
-                callback(me, response);
+                callback(me, action);
             };
 
             setTimeout(async, 0);
@@ -1351,7 +1475,6 @@
                     localStorage[namespace] = JSON.stringify(records);
                     localStorage[namespace + "$Sequence"] = sequence;
 
-                    response.success = true;
                     response.result = data;
 
                     action
@@ -1360,7 +1483,6 @@
 
                 } catch (e) {
 
-                    response.success = false;
                     response.error = e;
 
                     action
@@ -1386,7 +1508,7 @@
                 namespace = action.getOption('namespace'),
                 callback = action.getOption('callback'),
                 records = [],
-                result = {},
+                result,
                 response = {},
                 id, l, l2, async;
 
@@ -1397,6 +1519,7 @@
 
                     if (Array.isArray(data)) {
 
+                        result = [];
                         l = data.length;
                         while (l--) {
                             l2 = records.length;
@@ -1404,10 +1527,10 @@
                             while (l2--) {
                                 if (records[l2].id === id) {
                                     records[l2] = data[l];
+                                    result.splice(0,0, data[l]);
                                 }
                             }
                         }
-                        result = records;
 
                     } else {
                         l = records.length;
@@ -1639,28 +1762,35 @@
          *
          */
         data: function (property, data) {
-            var len = arguments.length;
-            if (len > 1) {
-                return this.setDataProperty.apply(this, arguments);
-            } else {
-                return this.getDataProperty.apply(this, arguments);
-            }
-        },
-        /**
-         * @param newData
-         */
-        setData: function (newData) {
             var me = this,
-                data = me.get('data'),
+                len = arguments.length,
                 key;
 
-            for (key in newData) {
-                if (newData.hasOwnProperty(key)) {
-                    me.setDataProperty(key, newData[key]);
+            if (len > 1) {
+
+                this.setDataProperty.apply(this, arguments);
+
+            } else {
+
+                if (typeof property === 'object') {
+
+                    for (key in property) {
+
+                        if (property.hasOwnProperty(key)) {
+
+                            me.setDataProperty(key, property[key]);
+
+                        }
+
+                    }
+
+                } else {
+                    return this.getDataProperty.apply(this, arguments);
                 }
+
             }
 
-            me.fireEvent('dataChange', me, data);
+            return me;
         },
         /**
          *
@@ -1833,11 +1963,19 @@
                 .setData(data);
 
             proxy.destroy(action);
+            proxy.destroy(action);
 
             return deferred.promise;
         },
         hasId: function () {
             return !!this._data[this._config.idProperty];
+        },
+        setDirty: function (dirty) {
+            this.set('isDirty', !!dirty);
+            return this;
+        },
+        isDirty: function () {
+            return this._isDirty;
         }
     });
 
