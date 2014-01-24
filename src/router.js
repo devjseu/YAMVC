@@ -12,7 +12,7 @@
      * @constructor
      * @type {function}
      */
-    Router = yamvc.Core.extend({
+    Router = yamvc.Core.$extend({
         init: function () {
             this.set('routing', {});
             this.bindEvents();

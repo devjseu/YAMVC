@@ -5,7 +5,7 @@
         config,
         id = 0;
 
-    Model = yamvc.Core.extend({
+    Model = yamvc.Core.$extend({
         /**
          * @defaults
          */
@@ -21,7 +21,7 @@
             yamvc.Core.prototype.init.apply(this, arguments);
             var me = this, config;
             opts = opts || {};
-            config = yamvc.merge(me._config, opts.config);
+            config = yamvc.$merge(me._config, opts.config);
             me.set('initOpts', opts);
             me.set('config', config);
             me.set('isDirty', true);

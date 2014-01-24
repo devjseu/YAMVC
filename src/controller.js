@@ -51,7 +51,7 @@
      *
      * @type {*}
      */
-    Controller = yamvc.Core.extend({
+    Controller = yamvc.Core.$extend({
         init: function (opts) {
             var config,
                 me = this;

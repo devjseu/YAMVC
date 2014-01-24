@@ -32,7 +32,7 @@
  * Views are easily expendable, so you can fell free to add more awesome functionality to it.
  *
  *     @example
- *     window.OverlayView = View.extend(function OverlayView(opts) {
+ *     window.OverlayView = View.$extend(function OverlayView(opts) {
  *         View.prototype.constructor.call(this, opts);
  *     });
  *     OverlayView.prototype.show = function (callback) {
@@ -150,7 +150,7 @@
      * @params opts Object with configuration properties
      * @type {function}
      */
-    View = yamvc.Core.extend({
+    View = yamvc.Core.$extend({
         // Initializing function in which we call parent method, merge previous
         // configuration with new one, set id of component, initialize config
         // and save reference to component in View Manager.
@@ -163,7 +163,7 @@
             yamvc.Core.prototype.init.apply(this);
             var me = this, config, id;
             opts = opts || {};
-            config = yamvc.merge(me._config, opts.config);
+            config = yamvc.$merge(me._config, opts.config);
             config.id = id = config.id || 'view-' + VM.i;
             config.views = config.views || {};
             me.set('initOpts', opts);

@@ -344,9 +344,9 @@ asyncTest("we are able to save collection records to storage", function () {
             surname: 'Widelak 2'
         },
         {
-            age: 21,
-            name: 'Sebastian 2',
-            surname: 'Widelak 2'
+            age: 27,
+            name: 'Sebastian 3',
+            surname: 'Widelak 3'
         }
     ]);
 
@@ -365,7 +365,6 @@ asyncTest("we are able to save collection records to storage", function () {
             start();
         })
         .then(0, function () {
-
 
             console.log(arguments);
             yamvc.data.proxy.Localstorage.$clear('test8');

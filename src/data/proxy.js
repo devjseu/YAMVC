@@ -3,14 +3,14 @@
     var yamvc = window.yamvc || {},
         Proxy;
 
-    Proxy = yamvc.Core.extend({
+    Proxy = yamvc.Core.$extend({
         init: function (opts) {
             var me = this, config;
 
             Proxy.Parent.init.apply(this, arguments);
 
             opts = opts || {};
-            config = yamvc.merge(me._config, opts.config);
+            config = yamvc.$merge(me._config, opts.config);
 
             me.set('initOpts', opts);
             me.set('config', config);

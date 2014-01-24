@@ -172,6 +172,11 @@
         return obj1;
     }
 
+    //
+    function clone(obj) {
+        return JSON.parse(JSON.stringify(obj));
+    }
+
     // Definition of Core object.
     Core = yamvc.Core || (function () {
 
@@ -267,9 +272,9 @@
         /**
          * @static
          * @param obj
-         * @param mixin
+         * @param {*} mixin
          */
-        Core.mixin = function (obj, mixin) {
+        Core.$mixin = function (obj, mixin) {
             var prototype,
                 property;
 
@@ -308,7 +313,7 @@
          * @param opts Object
          * @returns {Function}
          */
-        Core.extend = function (opts) {
+        Core.$extend = function (opts) {
             opts = opts || {};
             var Parent = this,
                 Class = function () {
@@ -338,8 +343,8 @@
                     Instance.prototype = parent.prototype;
                     child.Parent = parent.prototype;
                     child.prototype = new Instance();
-                    child.extend = Core.extend;
-                    child.mixin = Core.mixin;
+                    child.$extend = Core.$extend;
+                    child.$mixin = Core.$mixin;
                     child.__mixins__ = [];
                     child.__defaults__ = defaults;
 
@@ -374,16 +379,17 @@
         };
 
         // Add Getters and Setters.
-        Core.mixin(yamvc.mixins.GetSet);
+        Core.$mixin(yamvc.mixins.GetSet);
 
         // Add observable methods.
-        Core.mixin(yamvc.mixins.Observable);
+        Core.$mixin(yamvc.mixins.Observable);
 
         return Core;
     }());
 
     yamvc.Core = Core;
-    yamvc.merge = merge;
+    yamvc.$merge = merge;
+    yamvc.$clone = clone;
     window.yamvc = yamvc;
 }(window));
 (function (window, undefined) {
@@ -391,7 +397,7 @@
     var yamvc = window.yamvc || {},
         Collection;
 
-    Collection = yamvc.Core.extend({
+    Collection = yamvc.Core.$extend({
         defaults: {
             proxy: null
         },
@@ -403,7 +409,7 @@
             Collection.Parent.init.apply(this, arguments);
             var me = this, config;
             opts = opts || {};
-            config = yamvc.merge(me._config, opts.config);
+            config = yamvc.$merge(me._config, opts.config);
             me.set('initOpts', opts);
             me.set('config', config);
             me.set('set', []);
@@ -667,6 +673,7 @@
 
                     record = data[0];
                     len = data.length;
+
                     // If record has __clientId__ property it's create process
                     // or if it has id it's update.
                     if (record && (record.__clientId__ || record.id)) {
@@ -674,13 +681,9 @@
                         while (len--) {
 
                             record = me.getOneBy(byIdFn(data[len]));
+                            record.setDirty(false);
 
-                            record
-                                .data({
-                                    id: data[len].id,
-                                    __clientId__: null
-                                })
-                                .setDirty(false);
+                            delete record._data.__clientId__;
 
                         }
 
@@ -888,7 +891,7 @@
      *
      * @type {*}
      */
-    Controller = yamvc.Core.extend({
+    Controller = yamvc.Core.$extend({
         init: function (opts) {
             var config,
                 me = this;
@@ -1007,14 +1010,14 @@
         FAIL: 2
     };
 
-    Action = yamvc.Core.extend({
+    Action = yamvc.Core.$extend({
         init: function (opts) {
             var me = this, config;
 
             Action.Parent.init.apply(this, arguments);
 
             opts = opts || {};
-            config = yamvc.merge(me._config, opts.config);
+            config = yamvc.$merge(me._config, opts.config);
 
             me.set('initOpts', opts);
             me.set('config', config);
@@ -1077,14 +1080,14 @@
     var yamvc = window.yamvc || {},
         Proxy;
 
-    Proxy = yamvc.Core.extend({
+    Proxy = yamvc.Core.$extend({
         init: function (opts) {
             var me = this, config;
 
             Proxy.Parent.init.apply(this, arguments);
 
             opts = opts || {};
-            config = yamvc.merge(me._config, opts.config);
+            config = yamvc.$merge(me._config, opts.config);
 
             me.set('initOpts', opts);
             me.set('config', config);
@@ -1175,7 +1178,7 @@
      *
      * @type {*}
      */
-    Localstorage = Proxy.extend({
+    Localstorage = Proxy.$extend({
         static: {
             /**
              *
@@ -1442,8 +1445,9 @@
                 namespace = action.getOption('namespace'),
                 callback = action.getOption('callback'),
                 records = [],
-                sequence = 0,
+                sequence = 1,
                 response = {},
+                result,
                 async;
 
             Localstorage.Parent.create.apply(this, arguments);
@@ -1457,15 +1461,31 @@
 
             if (Array.isArray(data)) {
 
+                result = [];
                 for (var i = 0, l = data.length; i < l; i++) {
+
+                    // Add id to the new record,
                     data[i].id = sequence++;
+
+                    // remove client id,
+                    delete data[i].__clientId__;
+
+                    // push to records
                     records.push(data[i]);
+
+                    // and to return array.
+                    result.push(data[i]);
                 }
 
             } else {
 
                 data.id = sequence++;
+
+                delete data.__clientId__;
+
                 records.push(data);
+
+                result = data;
 
             }
 
@@ -1475,7 +1495,7 @@
                     localStorage[namespace] = JSON.stringify(records);
                     localStorage[namespace + "$Sequence"] = sequence;
 
-                    response.result = data;
+                    response.result = result;
 
                     action
                         .setStatus(Action.Status.SUCCESS)
@@ -1680,7 +1700,7 @@
         config,
         id = 0;
 
-    Model = yamvc.Core.extend({
+    Model = yamvc.Core.$extend({
         /**
          * @defaults
          */
@@ -1696,7 +1716,7 @@
             yamvc.Core.prototype.init.apply(this, arguments);
             var me = this, config;
             opts = opts || {};
-            config = yamvc.merge(me._config, opts.config);
+            config = yamvc.$merge(me._config, opts.config);
             me.set('initOpts', opts);
             me.set('config', config);
             me.set('isDirty', true);
@@ -2214,7 +2234,7 @@
      * @constructor
      * @type {function}
      */
-    Router = yamvc.Core.extend({
+    Router = yamvc.Core.$extend({
         init: function () {
             this.set('routing', {});
             this.bindEvents();
@@ -2296,7 +2316,7 @@
  * Views are easily expendable, so you can fell free to add more awesome functionality to it.
  *
  *     @example
- *     window.OverlayView = View.extend(function OverlayView(opts) {
+ *     window.OverlayView = View.$extend(function OverlayView(opts) {
  *         View.prototype.constructor.call(this, opts);
  *     });
  *     OverlayView.prototype.show = function (callback) {
@@ -2414,7 +2434,7 @@
      * @params opts Object with configuration properties
      * @type {function}
      */
-    View = yamvc.Core.extend({
+    View = yamvc.Core.$extend({
         // Initializing function in which we call parent method, merge previous
         // configuration with new one, set id of component, initialize config
         // and save reference to component in View Manager.
@@ -2427,7 +2447,7 @@
             yamvc.Core.prototype.init.apply(this);
             var me = this, config, id;
             opts = opts || {};
-            config = yamvc.merge(me._config, opts.config);
+            config = yamvc.$merge(me._config, opts.config);
             config.id = id = config.id || 'view-' + VM.i;
             config.views = config.views || {};
             me.set('initOpts', opts);

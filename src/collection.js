@@ -3,7 +3,7 @@
     var yamvc = window.yamvc || {},
         Collection;
 
-    Collection = yamvc.Core.extend({
+    Collection = yamvc.Core.$extend({
         defaults: {
             proxy: null
         },
@@ -15,7 +15,7 @@
             Collection.Parent.init.apply(this, arguments);
             var me = this, config;
             opts = opts || {};
-            config = yamvc.merge(me._config, opts.config);
+            config = yamvc.$merge(me._config, opts.config);
             me.set('initOpts', opts);
             me.set('config', config);
             me.set('set', []);
@@ -279,6 +279,7 @@
 
                     record = data[0];
                     len = data.length;
+
                     // If record has __clientId__ property it's create process
                     // or if it has id it's update.
                     if (record && (record.__clientId__ || record.id)) {
@@ -286,13 +287,9 @@
                         while (len--) {
 
                             record = me.getOneBy(byIdFn(data[len]));
+                            record.setDirty(false);
 
-                            record
-                                .data({
-                                    id: data[len].id,
-                                    __clientId__: null
-                                })
-                                .setDirty(false);
+                            delete record._data.__clientId__;
 
                         }
 

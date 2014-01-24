@@ -39,6 +39,11 @@
         return obj1;
     }
 
+    //
+    function clone(obj) {
+        return JSON.parse(JSON.stringify(obj));
+    }
+
     // Definition of Core object.
     Core = yamvc.Core || (function () {
 
@@ -134,9 +139,9 @@
         /**
          * @static
          * @param obj
-         * @param mixin
+         * @param {*} mixin
          */
-        Core.mixin = function (obj, mixin) {
+        Core.$mixin = function (obj, mixin) {
             var prototype,
                 property;
 
@@ -175,7 +180,7 @@
          * @param opts Object
          * @returns {Function}
          */
-        Core.extend = function (opts) {
+        Core.$extend = function (opts) {
             opts = opts || {};
             var Parent = this,
                 Class = function () {
@@ -205,8 +210,8 @@
                     Instance.prototype = parent.prototype;
                     child.Parent = parent.prototype;
                     child.prototype = new Instance();
-                    child.extend = Core.extend;
-                    child.mixin = Core.mixin;
+                    child.$extend = Core.$extend;
+                    child.$mixin = Core.$mixin;
                     child.__mixins__ = [];
                     child.__defaults__ = defaults;
 
@@ -241,15 +246,16 @@
         };
 
         // Add Getters and Setters.
-        Core.mixin(yamvc.mixins.GetSet);
+        Core.$mixin(yamvc.mixins.GetSet);
 
         // Add observable methods.
-        Core.mixin(yamvc.mixins.Observable);
+        Core.$mixin(yamvc.mixins.Observable);
 
         return Core;
     }());
 
     yamvc.Core = Core;
-    yamvc.merge = merge;
+    yamvc.$merge = merge;
+    yamvc.$clone = clone;
     window.yamvc = yamvc;
 }(window));

@@ -10,7 +10,7 @@
      *
      * @type {*}
      */
-    Localstorage = Proxy.extend({
+    Localstorage = Proxy.$extend({
         static: {
             /**
              *
@@ -277,8 +277,9 @@
                 namespace = action.getOption('namespace'),
                 callback = action.getOption('callback'),
                 records = [],
-                sequence = 0,
+                sequence = 1,
                 response = {},
+                result,
                 async;
 
             Localstorage.Parent.create.apply(this, arguments);
@@ -292,15 +293,31 @@
 
             if (Array.isArray(data)) {
 
+                result = [];
                 for (var i = 0, l = data.length; i < l; i++) {
+
+                    // Add id to the new record,
                     data[i].id = sequence++;
+
+                    // remove client id,
+                    delete data[i].__clientId__;
+
+                    // push to records
                     records.push(data[i]);
+
+                    // and to return array.
+                    result.push(data[i]);
                 }
 
             } else {
 
                 data.id = sequence++;
+
+                delete data.__clientId__;
+
                 records.push(data);
+
+                result = data;
 
             }
 
@@ -310,7 +327,7 @@
                     localStorage[namespace] = JSON.stringify(records);
                     localStorage[namespace + "$Sequence"] = sequence;
 
-                    response.result = data;
+                    response.result = result;
 
                     action
                         .setStatus(Action.Status.SUCCESS)

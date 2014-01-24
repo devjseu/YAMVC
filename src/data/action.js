@@ -10,14 +10,14 @@
         FAIL: 2
     };
 
-    Action = yamvc.Core.extend({
+    Action = yamvc.Core.$extend({
         init: function (opts) {
             var me = this, config;
 
             Action.Parent.init.apply(this, arguments);
 
             opts = opts || {};
-            config = yamvc.merge(me._config, opts.config);
+            config = yamvc.$merge(me._config, opts.config);
 
             me.set('initOpts', opts);
             me.set('config', config);
