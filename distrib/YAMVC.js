@@ -2398,6 +2398,7 @@
     "use strict";
 
     var yamvc = window.yamvc || {},
+        style = document.createElement('style'),
         VM,
         VTM,
         View,
@@ -2413,6 +2414,9 @@
 
     fillAttrs = makeMap("checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected");
 
+    style.innerHTML = ".yamvc {display:inline;}";
+
+    document.body.appendChild(style);
 
     // Object that stores all views
     /**
@@ -2568,8 +2572,8 @@
                 l;
 
             l = models.length;
-            while(l--){
-                if(models[l].getNamespace() === namespace){
+            while (l--) {
+                if (models[l].getNamespace() === namespace) {
                     model = models[l];
                     break;
                 }
@@ -2778,9 +2782,13 @@
                 j++;
             }
 
-            el = parsedTpl.childNodes.item(j);
+            if (j > 1)
+                el = parsedTpl.childNodes.item(j);
+            else
+                el = parsedTpl;
 
             el.setAttribute('yamvc-id', config.id);
+            el.setAttribute('class', 'yamvc');
 
             me.set('el', el);
             me.set('bindings', bindings);

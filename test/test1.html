@@ -8,6 +8,18 @@
 <body>
 <div id="qunit"></div>
 <div id="qunit-fixture"></div>
+<div id="container" style="display: none">
+
+</div>
+<div id="test-1" style="display: none">
+
+</div>
+<script type="ext/html" id="tpl-view">
+    <div class="container">
+
+    </div>
+</script>
+<script src="//localhost:35729/livereload.js"></script>
 <script src="../assets/js/lib/qunit/qunit/qunit.js"></script>
 
 <!-- Use latest versionless copy of current release -->
@@ -24,6 +36,8 @@
 <script src="../src/data/proxy.js"></script>
 <script src="../src/data/action.js"></script>
 <script src="../src/data/proxy/localstorage.js"></script>
+
+<!-- Unit test suits -->
 <script src="promise.js"></script>
 <script src="core.js"></script>
 <script src="action.js"></script>
@@ -34,14 +48,5 @@
 <script src="dataProxy.js"></script>
 <script src="dataProxyLocalstorage.js"></script>
 <script src="template.js"></script>
-<div id="container" style="display: none">
-
-</div>
-<script type="ext/html" id="tpl-view">
-    <div class="container">
-
-    </div>
-</script>
-<script src="//localhost:35729/livereload.js"></script>
 </body>
 </html>
