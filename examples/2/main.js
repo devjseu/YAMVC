@@ -8,17 +8,17 @@ yamvc.$onReady(function () {
                 topBar: new app.view.Bar({
                     config: {
                         autoCreate: true,
-                        models: {
-                            likes: new yamvc.Model({
+                        models: [
+                            new yamvc.Model({
                                 config: {namespace: 'likes'},
                                 data: {
                                     count: 0
                                 }
                             })
-                        },
+                        ],
                         id: 'bar',
                         tpl: new yamvc.view.Template({
-                            config : {
+                            config: {
                                 id: 'tpl-bar',
                                 tpl: [
                                     '<div class="bar">',

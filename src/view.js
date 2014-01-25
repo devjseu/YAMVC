@@ -254,20 +254,29 @@
          */
         getModel: function (namespace) {
             var me = this,
-                models = me.getModels();
-            return models[namespace];
+                models = me.getModels(),
+                model,
+                l;
+
+            l = models.length;
+            while(l--){
+                if(models[l].getNamespace() === namespace){
+                    model = models[l];
+                    break;
+                }
+            }
+
+            return model;
         },
         /**
-         * @version 0.1.8
-         * @param data
+         * @version 0.1.11
          * @returns {Node}
          */
-        render: function (data) {
+        render: function () {
             var me = this,
                 tpl = me._tpl,
                 config = me._config,
                 id = config.renderTo,
-                models = data || config.models,
                 parent = config.parent,
                 parentView = config.parent,
                 bindings = [],
@@ -348,8 +357,8 @@
                             result = results[i++];
                             header = result.substr(2, (result.length - 4)).split('.');
 
-                            if (models[header[0]]) {
-                                ret = models[header[0]].data(header[1]);
+                            if (me.getModel([header[0]])) {
+                                ret = me.getModel([header[0]]).data(header[1]);
                                 if (ret === undefined) {
                                     ret = "";
                                 }
@@ -408,15 +417,15 @@
 
                                 if (!fillAttr) {
 
-                                    if (models[header[0]]) {
-                                        ret = models[header[0]].data(header[1]) || "";
+                                    if (me.getModel([header[0]])) {
+                                        ret = me.getModel([header[0]]).data(header[1]) || "";
                                     }
 
                                     attr.nodeValue = attr.nodeValue.replace(result, ret);
 
                                 } else {
 
-                                    ret = ret && models[header[0]].data(header[1]);
+                                    ret = ret && me.getModel([header[0]]).data(header[1]);
 
                                 }
 

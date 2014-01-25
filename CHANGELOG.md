@@ -30,3 +30,5 @@ YAMVC - change log
 
 ##0.1.11
 * template might be now stored in `yamvc.view.Template`
+* in `yamvc.View` models are now stored in array
+* new example, old ones updated to v0.1.11
