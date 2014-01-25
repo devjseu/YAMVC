@@ -16,7 +16,9 @@ yamvc.$onReady(function () {
         config: {
             models: [
                 new yamvc.Model({
-                    config: {namespace: 'names'},
+                    config: {
+                        namespace: 'names'
+                    },
                     data: {
                         name: "Guest"
                     }

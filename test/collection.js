@@ -58,9 +58,9 @@ test("has data and record is turned into model", function () {
             model: yamvc.Model,
             modelConfig: {
                 namespace: 'test2'
-            }
-        },
-        data: data
+            },
+            data: data
+        }
     });
 
     ModelDefinition = collection.get('config').model;
@@ -87,9 +87,9 @@ test("is countable", function () {
             model: yamvc.Model,
             modelConfig: {
                 namespace: 'test3'
-            }
-        },
-        data: data
+            },
+            data: data
+        }
     });
 
     equal(collection.count(), 3, "Number of records in array is equal 3");
@@ -112,9 +112,9 @@ test("we are able to filter the collection by custom function", function () {
             model: yamvc.Model,
             modelConfig: {
                 namespace: 'test4'
-            }
-        },
-        data: data
+            },
+            data: data
+        }
     });
 
     filterFn = function (model) {
@@ -147,9 +147,9 @@ test("we are able to clear filters from collection", function () {
             model: yamvc.Model,
             modelConfig: {
                 namespace: 'test5'
-            }
-        },
-        data: data
+            },
+            data: data
+        }
     });
 
     filterFn = function (model) {

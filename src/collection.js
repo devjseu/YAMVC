@@ -12,29 +12,36 @@
          * @param opts
          */
         init: function (opts) {
+
             Collection.Parent.init.apply(this, arguments);
+
             var me = this, config;
+
             opts = opts || {};
             config = yamvc.$merge(me._config, opts.config);
+
             me.set('initOpts', opts);
             me.set('config', config);
             me.set('set', []);
             me.set('cache', []);
             me.set('removed', []);
             me.set('filters', []);
+
             me.initConfig();
             me.initData();
+
+            return me;
         },
         /**
          * initialize data
          */
         initData: function () {
             var me = this,
-                opts = me.get('initOpts'),
-                config = me.get('config'),
-                data = opts.data || [];
+                data = me.getData() || [];
+
             me.set('raw', data);
             me.prepareData(data);
+
             return me;
         },
         add: function (records) {
@@ -53,9 +60,9 @@
                 record = new ModelDefinition(
                     {
                         config: {
-                            namespace: namespace
-                        },
-                        data: record
+                            namespace: namespace,
+                            data: record
+                        }
                     }
                 );
 
@@ -66,8 +73,7 @@
 
             me.filter();
 
-//            console.log(me._cache, me._set);
-
+            return me;
         },
         // return number of records in collection
         /**
@@ -78,9 +84,11 @@
         },
         clear: function () {
             var me = this;
+
             me.set('set', []);
             me.set('cache', []);
             me.set('removed', []);
+
             return me;
         },
         clearFilters: function () {
@@ -89,7 +97,7 @@
             me.set('filters', []);
             me.filter();
 
-            return this;
+            return me;
         },
         filter: function (fn) {
             var me = this,
@@ -197,8 +205,9 @@
             var me = this,
                 data = me.get('data'),
                 idProperty = me.get('idProperty'),
-                deferred = yamvc.Promise.deferred(),
+                deferred = yamvc.Promise.$deferred(),
                 namespace = me.getModelConfig().namespace,
+                action = new yamvc.data.Action(),
                 callback,
                 key, i = 0;
 
@@ -214,18 +223,32 @@
 
 
             callback = function () {
+
                 if (me.getProxy().getStatus() === 'success') {
-                    me.fireEvent('loaded', me, me.getProxy().getResponse(), 'read');
+
+                    me.fireEvent('loaded', me, action.getResponse(), 'read');
+
                 } else {
+
                     me.fireEvent('error', me, 'read');
+
                 }
             };
-            me.getProxy().read(namespace, params, callback);
+
+            action
+                .setOptions({
+                    callback: callback,
+                    params: params,
+                    namespace: namespace
+                });
+
+            me.getProxy().read(action);
+
             return deferred.promise;
         },
         save: function () {
             var me = this,
-                deferred = yamvc.Promise.deferred(),
+                deferred = yamvc.Promise.$deferred(),
                 action,
                 toCreate = [],
                 toUpdate = [],
@@ -391,24 +414,31 @@
                 modelConfig = me.getModelConfig ? me.getModelConfig() : {},
                 l = data.length,
                 models = [];
+
             total = total || l;
             for (var i = 0; i < l; i++) {
+
+                modelConfig.data = data[i];
                 models.push(new ModelInstance({
                     data: data[i],
                     config: modelConfig
                 }));
+
             }
 
             me.set('cache', models);
             me.set('total', total);
+
             me.filter();
 
             return me;
         },
         setData: function () {
             var me = this;
+
             me.setRawData(data);
             me.prepareData(data);
+
             return me;
         },
         getData: function () {
@@ -418,7 +448,9 @@
             return this._raw;
         },
         setRawData: function (data) {
+
             this.set('raw', data);
+
             return this;
         },
         isDirty: function () {

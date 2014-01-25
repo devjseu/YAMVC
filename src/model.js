@@ -34,14 +34,17 @@
          */
         initConfig: function () {
             var me = this,
-                config = me.get('config');
-
-            yamvc.Core.prototype.initConfig.apply(this);
+                config = me._config;
 
             if (!config.namespace)
-                throw new Error("Model need to have namespace property in your model configuration");
+                throw new Error("Model need to has namespace");
+
+            if (!config.data)
+                config.data = {};
 
             me.set('clientId', config.namespace + '-' + id++);
+
+            Model.Parent.initConfig.apply(this);
 
             return me;
         },
@@ -49,10 +52,11 @@
          *
          */
         initData: function () {
-            var me = this,
-                opts = me.get('initOpts'),
-                config = me.get('config');
-            me.set('data', opts.data || {});
+            var me = this;
+
+            me.set('data', me.getData() || {});
+
+            return me;
         },
         /**
          *
@@ -75,8 +79,7 @@
          * @returns {*}
          */
         getDataProperty: function (property) {
-            var me = this;
-            return me.get('data')[property];
+            return this.get('data')[property];
         },
         // alias for set and get data property
         // if two arguments are passed data will be set
@@ -142,7 +145,7 @@
             var me = this,
                 data = me.get('data'),
                 idProperty = me.getIdProperty(),
-                deferred = yamvc.Promise.deferred(),
+                deferred = yamvc.Promise.$deferred(),
                 action = new yamvc.data.Action(),
                 opts = {},
                 response;
@@ -191,7 +194,7 @@
             var me = this,
                 data = me.get('data'),
                 idProperty = me.getIdProperty(),
-                deferred = yamvc.Promise.deferred(),
+                deferred = yamvc.Promise.$deferred(),
                 action = new yamvc.data.Action(),
                 proxy = me.getProxy(),
                 opts = {},
@@ -253,7 +256,7 @@
             var me = this,
                 data = me.get('data'),
                 idProperty = me.getIdProperty(),
-                deferred = yamvc.Promise.deferred(),
+                deferred = yamvc.Promise.$deferred(),
                 action = new yamvc.data.Action(),
                 proxy = me.getProxy(),
                 opts = {},

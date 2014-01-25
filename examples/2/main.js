@@ -10,9 +10,15 @@ yamvc.$onReady(function () {
                         autoCreate: true,
                         models: [
                             new yamvc.Model({
-                                config: {namespace: 'likes'},
-                                data: {
-                                    count: 0
+                                config: {
+                                    namespace: 'likes',
+                                    data: {
+                                        count: 0
+                                    }
+                                },
+                                incrementCount: function () {
+                                    var me = this;
+                                    me.data('count', me.data('count') + 1);
                                 }
                             })
                         ],
@@ -23,6 +29,7 @@ yamvc.$onReady(function () {
                                 tpl: [
                                     '<div class="bar">',
                                     'Count : {{likes.count}}',
+                                    '<button>+</button>',
                                     '</div>'
                                 ]
                             }
@@ -32,6 +39,11 @@ yamvc.$onReady(function () {
                 })
             },
             events: {
+                button: {
+                    click: function (view, event) {
+                        view.getModel('likes').incrementCount();
+                    }
+                }
             }
         }
     });

@@ -1,16 +1,17 @@
-yamvc.onReady(function () {
+yamvc.$onReady(function () {
     "use strict";
-    var models, models2, liker, ctr, app = {views: {}, ctr: {}};
 
-    models = {
-        likes: new yamvc.Model({
+    var models, models2, liker, app = {views: {}, ctr: {}};
+
+    models = [
+        new yamvc.Model({
             config: {
-                namespace: 'likes'
-            },
-            data: {
-                text: 'Likes',
-                count: 0,
-                disabled: true
+                namespace: 'likes',
+                data: {
+                    text: 'Likes',
+                    count: 0,
+                    disabled: true
+                }
             },
             incrementLikes: function () {
                 this.data('count', this._data.count + 1);
@@ -19,17 +20,17 @@ yamvc.onReady(function () {
                 this.data('disabled', !this._data.disabled);
             }
         })
-    };
+    ];
 
-    models2 = {
-        likes: new yamvc.Model({
+    models2 = [
+        new yamvc.Model({
             config: {
-                namespace: 'likes'
-            },
-            data: {
-                text: 'Likes',
-                count: 0,
-                disabled: false
+                namespace: 'likes',
+                data: {
+                    text: 'Likes',
+                    count: 0,
+                    disabled: false
+                }
             },
             incrementLikes: function () {
                 this.data('count', this._data.count + 1);
@@ -38,7 +39,7 @@ yamvc.onReady(function () {
                 this.data('disabled', !this._data.disabled);
             }
         })
-    };
+    ];
 
 
     app.views.liker = new Liker({
@@ -81,10 +82,12 @@ yamvc.onReady(function () {
                 },
                 $likeBtn: {
                     render: function (view) {
+                        alert('Button 1 rendered disabled');
                     }
                 },
                 $likeBtn2: {
                     render: function (view) {
+                        alert('Button 2 rendered enabled');
                     }
                 }
             }

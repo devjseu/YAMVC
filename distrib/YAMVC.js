@@ -409,29 +409,36 @@
          * @param opts
          */
         init: function (opts) {
+
             Collection.Parent.init.apply(this, arguments);
+
             var me = this, config;
+
             opts = opts || {};
             config = yamvc.$merge(me._config, opts.config);
+
             me.set('initOpts', opts);
             me.set('config', config);
             me.set('set', []);
             me.set('cache', []);
             me.set('removed', []);
             me.set('filters', []);
+
             me.initConfig();
             me.initData();
+
+            return me;
         },
         /**
          * initialize data
          */
         initData: function () {
             var me = this,
-                opts = me.get('initOpts'),
-                config = me.get('config'),
-                data = opts.data || [];
+                data = me.getData() || [];
+
             me.set('raw', data);
             me.prepareData(data);
+
             return me;
         },
         add: function (records) {
@@ -450,9 +457,9 @@
                 record = new ModelDefinition(
                     {
                         config: {
-                            namespace: namespace
-                        },
-                        data: record
+                            namespace: namespace,
+                            data: record
+                        }
                     }
                 );
 
@@ -463,8 +470,7 @@
 
             me.filter();
 
-//            console.log(me._cache, me._set);
-
+            return me;
         },
         // return number of records in collection
         /**
@@ -475,9 +481,11 @@
         },
         clear: function () {
             var me = this;
+
             me.set('set', []);
             me.set('cache', []);
             me.set('removed', []);
+
             return me;
         },
         clearFilters: function () {
@@ -486,7 +494,7 @@
             me.set('filters', []);
             me.filter();
 
-            return this;
+            return me;
         },
         filter: function (fn) {
             var me = this,
@@ -594,8 +602,9 @@
             var me = this,
                 data = me.get('data'),
                 idProperty = me.get('idProperty'),
-                deferred = yamvc.Promise.deferred(),
+                deferred = yamvc.Promise.$deferred(),
                 namespace = me.getModelConfig().namespace,
+                action = new yamvc.data.Action(),
                 callback,
                 key, i = 0;
 
@@ -611,18 +620,32 @@
 
 
             callback = function () {
+
                 if (me.getProxy().getStatus() === 'success') {
-                    me.fireEvent('loaded', me, me.getProxy().getResponse(), 'read');
+
+                    me.fireEvent('loaded', me, action.getResponse(), 'read');
+
                 } else {
+
                     me.fireEvent('error', me, 'read');
+
                 }
             };
-            me.getProxy().read(namespace, params, callback);
+
+            action
+                .setOptions({
+                    callback: callback,
+                    params: params,
+                    namespace: namespace
+                });
+
+            me.getProxy().read(action);
+
             return deferred.promise;
         },
         save: function () {
             var me = this,
-                deferred = yamvc.Promise.deferred(),
+                deferred = yamvc.Promise.$deferred(),
                 action,
                 toCreate = [],
                 toUpdate = [],
@@ -788,24 +811,31 @@
                 modelConfig = me.getModelConfig ? me.getModelConfig() : {},
                 l = data.length,
                 models = [];
+
             total = total || l;
             for (var i = 0; i < l; i++) {
+
+                modelConfig.data = data[i];
                 models.push(new ModelInstance({
                     data: data[i],
                     config: modelConfig
                 }));
+
             }
 
             me.set('cache', models);
             me.set('total', total);
+
             me.filter();
 
             return me;
         },
         setData: function () {
             var me = this;
+
             me.setRawData(data);
             me.prepareData(data);
+
             return me;
         },
         getData: function () {
@@ -815,7 +845,9 @@
             return this._raw;
         },
         setRawData: function (data) {
+
             this.set('raw', data);
+
             return this;
         },
         isDirty: function () {
@@ -1718,14 +1750,17 @@
          */
         initConfig: function () {
             var me = this,
-                config = me.get('config');
-
-            yamvc.Core.prototype.initConfig.apply(this);
+                config = me._config;
 
             if (!config.namespace)
-                throw new Error("Model need to have namespace property in your model configuration");
+                throw new Error("Model need to has namespace");
+
+            if (!config.data)
+                config.data = {};
 
             me.set('clientId', config.namespace + '-' + id++);
+
+            Model.Parent.initConfig.apply(this);
 
             return me;
         },
@@ -1733,10 +1768,11 @@
          *
          */
         initData: function () {
-            var me = this,
-                opts = me.get('initOpts'),
-                config = me.get('config');
-            me.set('data', opts.data || {});
+            var me = this;
+
+            me.set('data', me.getData() || {});
+
+            return me;
         },
         /**
          *
@@ -1759,8 +1795,7 @@
          * @returns {*}
          */
         getDataProperty: function (property) {
-            var me = this;
-            return me.get('data')[property];
+            return this.get('data')[property];
         },
         // alias for set and get data property
         // if two arguments are passed data will be set
@@ -1826,7 +1861,7 @@
             var me = this,
                 data = me.get('data'),
                 idProperty = me.getIdProperty(),
-                deferred = yamvc.Promise.deferred(),
+                deferred = yamvc.Promise.$deferred(),
                 action = new yamvc.data.Action(),
                 opts = {},
                 response;
@@ -1875,7 +1910,7 @@
             var me = this,
                 data = me.get('data'),
                 idProperty = me.getIdProperty(),
-                deferred = yamvc.Promise.deferred(),
+                deferred = yamvc.Promise.$deferred(),
                 action = new yamvc.data.Action(),
                 proxy = me.getProxy(),
                 opts = {},
@@ -1937,7 +1972,7 @@
             var me = this,
                 data = me.get('data'),
                 idProperty = me.getIdProperty(),
-                deferred = yamvc.Promise.deferred(),
+                deferred = yamvc.Promise.$deferred(),
                 action = new yamvc.data.Action(),
                 proxy = me.getProxy(),
                 opts = {},
@@ -2176,7 +2211,7 @@
      * @param value
      * @returns {Promise}
      */
-    Promise.resolved = function (value) {
+    Promise.$resolved = function (value) {
         return new Promise(function (res) {
             res(value);
         });
@@ -2186,7 +2221,7 @@
      * @param reason
      * @returns {Promise}
      */
-    Promise.rejected = function (reason) {
+    Promise.$rejected = function (reason) {
         return new Promise(function (res, rej) {
             rej(reason);
         });
@@ -2195,7 +2230,7 @@
     /**
      * @returns {{promise: Promise, resolve: (Function|resolve|resolve), reject: (*|Function|reject|reject|reject|reject)}}
      */
-    Promise.deferred = function () {
+    Promise.$deferred = function () {
         var resolve, reject;
         return {
             promise: new Promise(function (res, rej) {
@@ -2631,8 +2666,8 @@
                             result = results[i++];
                             header = result.substr(2, (result.length - 4)).split('.');
 
-                            if (me.getModel([header[0]])) {
-                                ret = me.getModel([header[0]]).data(header[1]);
+                            if (me.getModel(header[0])) {
+                                ret = me.getModel(header[0]).data(header[1]);
                                 if (ret === undefined) {
                                     ret = "";
                                 }
@@ -2691,15 +2726,15 @@
 
                                 if (!fillAttr) {
 
-                                    if (me.getModel([header[0]])) {
-                                        ret = me.getModel([header[0]]).data(header[1]) || "";
+                                    if (me.getModel(header[0])) {
+                                        ret = me.getModel(header[0]).data(header[1]) || "";
                                     }
 
                                     attr.nodeValue = attr.nodeValue.replace(result, ret);
 
                                 } else {
 
-                                    ret = ret && me.getModel([header[0]]).data(header[1]);
+                                    ret = ret && me.getModel(header[0]).data(header[1]);
 
                                 }
 
@@ -2819,9 +2854,9 @@
          * @param binding
          */
         partialRender: function (binding) {
-            var element = binding.type === 3,
+            var me = this,
+                element = binding.type === 3,
                 org = element ? binding.original : true,
-                models = this._config.models,
                 headers = binding.headers,
                 len = headers.length,
                 header;
@@ -2832,11 +2867,11 @@
 
                 if (element || !binding.fillAttr) {
 
-                    org = org.replace("{{" + header.join(".") + "}}", models[header[0]].data(header[1]));
+                    org = org.replace("{{" + header.join(".") + "}}", me.getModel(header[0]).data(header[1]));
 
                 } else {
 
-                    org = org && models[header[0]].data(header[1]);
+                    org = org && me.getModel(header[0]).data(header[1]);
 
                 }
             }
@@ -2860,6 +2895,7 @@
 
             }
 
+            return me;
         },
         /**
          * @param selector

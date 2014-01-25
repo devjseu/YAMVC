@@ -357,8 +357,8 @@
                             result = results[i++];
                             header = result.substr(2, (result.length - 4)).split('.');
 
-                            if (me.getModel([header[0]])) {
-                                ret = me.getModel([header[0]]).data(header[1]);
+                            if (me.getModel(header[0])) {
+                                ret = me.getModel(header[0]).data(header[1]);
                                 if (ret === undefined) {
                                     ret = "";
                                 }
@@ -417,15 +417,15 @@
 
                                 if (!fillAttr) {
 
-                                    if (me.getModel([header[0]])) {
-                                        ret = me.getModel([header[0]]).data(header[1]) || "";
+                                    if (me.getModel(header[0])) {
+                                        ret = me.getModel(header[0]).data(header[1]) || "";
                                     }
 
                                     attr.nodeValue = attr.nodeValue.replace(result, ret);
 
                                 } else {
 
-                                    ret = ret && me.getModel([header[0]]).data(header[1]);
+                                    ret = ret && me.getModel(header[0]).data(header[1]);
 
                                 }
 
@@ -545,9 +545,9 @@
          * @param binding
          */
         partialRender: function (binding) {
-            var element = binding.type === 3,
+            var me = this,
+                element = binding.type === 3,
                 org = element ? binding.original : true,
-                models = this._config.models,
                 headers = binding.headers,
                 len = headers.length,
                 header;
@@ -558,11 +558,11 @@
 
                 if (element || !binding.fillAttr) {
 
-                    org = org.replace("{{" + header.join(".") + "}}", models[header[0]].data(header[1]));
+                    org = org.replace("{{" + header.join(".") + "}}", me.getModel(header[0]).data(header[1]));
 
                 } else {
 
-                    org = org && models[header[0]].data(header[1]);
+                    org = org && me.getModel(header[0]).data(header[1]);
 
                 }
             }
@@ -586,6 +586,7 @@
 
             }
 
+            return me;
         },
         /**
          * @param selector

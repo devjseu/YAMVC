@@ -181,7 +181,7 @@
      * @param value
      * @returns {Promise}
      */
-    Promise.resolved = function (value) {
+    Promise.$resolved = function (value) {
         return new Promise(function (res) {
             res(value);
         });
@@ -191,7 +191,7 @@
      * @param reason
      * @returns {Promise}
      */
-    Promise.rejected = function (reason) {
+    Promise.$rejected = function (reason) {
         return new Promise(function (res, rej) {
             rej(reason);
         });
@@ -200,7 +200,7 @@
     /**
      * @returns {{promise: Promise, resolve: (Function|resolve|resolve), reject: (*|Function|reject|reject|reject|reject)}}
      */
-    Promise.deferred = function () {
+    Promise.$deferred = function () {
         var resolve, reject;
         return {
             promise: new Promise(function (res, rej) {
