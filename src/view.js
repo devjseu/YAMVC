@@ -155,6 +155,9 @@
      * @type {function}
      */
     View = yamvc.Core.$extend({
+        defaults : {
+            parent : null
+        },
         // Initializing function in which we call parent method, merge previous
         // configuration with new one, set id of component, initialize config
         // and save reference to component in View Manager.
@@ -164,25 +167,34 @@
          * @returns {View}
          */
         init: function (opts) {
+
             yamvc.Core.prototype.init.apply(this);
+
             var me = this, config, id;
+
             opts = opts || {};
             config = yamvc.$merge(me._config, opts.config);
             config.id = id = config.id || 'view-' + VM.i;
-            config.views = config.views || {};
+            config.children = config.children || [];
+
             me.set('initOpts', opts);
             me.set('config', config);
+
             me.initConfig();
             VM.add(id, me);
+
             return me;
         },
         /**
          * @returns {View}
          */
         initConfig: function () {
+
             yamvc.Core.prototype.initConfig.apply(this);
+
             this.initTemplate();
             this.initModels();
+
             return this;
         },
         /**
@@ -221,6 +233,7 @@
             }
 
             me.set('tpl', div);
+
             return me;
         },
         /**
@@ -240,6 +253,7 @@
                     me.setModel(model, models[model]);
                 }
             }
+
             return me;
         },
         /**
@@ -248,8 +262,11 @@
         setModel: function (namespace, model) {
             var me = this,
                 models = me.getModels();
+
             models[model.getNamespace()] = model;
+
             me.setModels(models);
+
             return me;
         },
         /**
@@ -487,11 +504,17 @@
             me.resolveBindings();
 
             if (parent) {
+
                 parent.appendChild(el);
 
                 if (parentView) {
-                    parentView.views = parentView.views || {};
-                    parentView.views[config.id] = me;
+
+                    if (parentView.findChild(me.getId()) < 0) {
+
+                        parentView.getChildren().push(me);
+
+                    }
+
                 }
 
                 me.set('isInDOM', true);
@@ -611,17 +634,6 @@
             return this.get('el').querySelectorAll(selector);
         },
         /**
-         * @param id
-         * @returns {View||Boolean}
-         */
-        getChild: function (id) {
-            var me = this,
-                config = me.get('config');
-            if (!config.views || config.views && !config.views[id])
-                return false;
-            return config.views[id];
-        },
-        /**
          * @param view
          * @param selector
          * @returns {View}
@@ -633,24 +645,77 @@
             return me;
         },
         /**
-         * @returns {View}
+         * @param id
+         * @returns {View||Boolean}
+         */
+        getChild: function (id) {
+            var me = this;
+
+            if (me.findChild(id) < 0)
+                return false;
+
+            return me.findChild(id);
+        },
+        findChild: function (id) {
+            var views = this.getChildren(),
+                l = views.length;
+
+            while (l--) {
+                if (views[l].getId() === id)
+                    break;
+            }
+
+            return l;
+        },
+        removeChild: function (id) {
+            var views = this.getChildren(),
+                l = views.length,
+                view;
+
+            while (l--) {
+                if (views[l].getId() === id) {
+
+                    view = views[l].clear();
+
+                }
+            }
+
+            return view || null;
+        },
+        /**
+         * @returns {Array}
          */
         removeChildren: function () {
-            var views = this.get('config').views || [];
-            for (var i = 0, len = views.length; i < len; i++) {
-                views[i].clear();
+            var views = this.getChildren(),
+                l = views.length,
+                removed = [];
+
+            while (l--) {
+                removed.push(views[l].clear());
             }
-            return this;
+
+
+            return removed;
         },
         /**
          * @returns {View}
          */
         clear: function () {
-            var me = this, el = me.get('el');
+            var me = this,
+                el = me.get('el'),
+                parent = me.getParent();
+
             if (me.isInDOM()) {
                 el.parentNode.removeChild(el);
                 me.set('isInDOM', false);
             }
+
+            if(parent) {
+
+                //todo: here
+
+            }
+
             return me;
         },
         /**
@@ -667,32 +732,56 @@
         appendTo: function (parent, selector) {
             var me = this,
                 config = me.get('config'),
-                id = config.id,
-                views = parent.get('config').views,
+                id = me.getId(),
+                views = parent.getChildren(),
+                oldParent = config.parent,
                 parentEl = selector ? parent.get('el').querySelector(selector) : parent.get('el');
 
             if (selector) {
+
                 config.renderTo = selector;
+
             }
 
-            if (!config.parent) {
+            if (!oldParent) {
+
                 config.parent = parent;
+
             }
-            else if (config.parent && config.parent.get('config').id !== parent.get('config').id) {
-                delete config.parent.get('config').views[id];
+            else if (oldParent && oldParent.getId() !== parent.getId()) {
+
+                if (oldParent.findChild(id) > -1) {
+
+                    oldParent
+                        .getChildren()
+                        .splice(
+                            oldParent.findChild(id), 1
+                        );
+
+                }
+
             }
 
             if (!me.isInDOM() && parent.isInDOM()) {
+
                 if (!me.get('el')) {
+
                     me.render();
+
                 } else {
+
                     parentEl.appendChild(me.get('el'));
                     me.set('isInDOM', true);
                     me.reAppendChildren();
                     me.fireEvent('render', null, me);
+
                 }
+
             }
-            views[id] = me;
+
+
+            views.push(me);
+
             config.parent = parent;
             return me;
         },
@@ -700,12 +789,13 @@
          * @returns {View}
          */
         reAppendChildren: function () {
-            var views = this.get('config').views;
-            for (var key in views) {
-                if (views.hasOwnProperty(key)) {
-                    views[key].appendTo(this);
-                }
+            var views = this.getChildren(),
+                l = views.length;
+
+            while (l--) {
+                views[l].appendTo(this);
             }
+
             return this;
         },
         /**
@@ -714,12 +804,16 @@
         show: function () {
             var me = this,
                 style;
+
             if (!me.isInDOM())
                 return me;
+
             style = me.get('el').style;
             style.display = 'block';
+
             me.set('visible', true);
             me.fireEvent('show', me, style);
+
             return me;
         },
         /**
@@ -728,12 +822,16 @@
         hide: function () {
             var me = this,
                 style;
+
             if (!me.isInDOM())
                 return me;
+
             style = me.get('el').style;
             style.display = 'none';
+
             me.set('visible', false);
             me.fireEvent('hide', me, style);
+
             return me;
         },
         /**

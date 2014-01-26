@@ -2,29 +2,16 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Liker example</title>
+    <title>Hello world</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="../../examples/1/assets/css/yamvc.css">
 </head>
 <body>
 <!-- Use latest versionless copy of current release -->
 <script src="../../distrib/YAMVC-v0.1.11.js"></script>
-<script src="../../examples/1/views/liker.js"></script>
 <script src="../../examples/1/main.js"></script>
-<style>
-    button {
-        padding: 10px;
-        cursor: pointer;
-    }
-</style>
 <div id="container">
 
 </div>
-<script type="text/html" id="tpl-liker">
-    <div>
-        <span>{{likes.text}}</span>
-        <div style="display: inline" class="container-liker">
-            <button disabled="{{likes.disabled}}" class="liker">{{likes.count}}</button>
-        </div>
-    </div>
-</script>
 </body>
 </html>

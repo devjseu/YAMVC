@@ -1,6 +1,7 @@
 yamvc.$onReady(function () {
     "use strict";
 
+    // create main controller to
     new yamvc.Controller({
         config: {
             name: 'Main',

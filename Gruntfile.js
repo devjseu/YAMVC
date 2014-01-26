@@ -46,7 +46,7 @@ module.exports = function (grunt) {
                 sourceMappingURL: sourceMapUrl
             },
             target: {
-                src: ['src/**/*.js'],
+                src: ['src/mixins/**/*.js', 'src/core.js', 'src/**/*.js'],
                 dest: minRelease
             }
         },

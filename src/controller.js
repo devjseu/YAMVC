@@ -55,17 +55,21 @@
         init: function (opts) {
             var config,
                 me = this;
+
             opts = opts || {};
             config = opts.config || {};
             router = router || new yamvc.Router();
+
             me.set('initOpts', opts);
             me.set('config', config);
             me.set('routes', config.routes || {});
             me.set('events', config.events || {});
             me.set('views', config.views || {});
+
             me.initConfig();
             me.renderViews();
             me.restoreRouter();
+
             return me;
         },
         initConfig: function () {
@@ -77,6 +81,7 @@
                 query,
                 rx = /(^\$|,$)/,
                 view;
+
             if (routes) {
                 for (var k in routes) {
                     if (routes.hasOwnProperty(k)) {
@@ -85,6 +90,7 @@
                     }
                 }
             }
+
             if (events && views) {
                 for (view in views) {
                     if (views.hasOwnProperty(view)) {
@@ -93,33 +99,51 @@
                 }
 
                 for (query in events) {
+
                     if (events.hasOwnProperty(query)) {
+
                         if (rx.test(query)) {
+
                             view = views[query.substr(1)];
+
                             if (view) {
+
                                 for (var event in events[query]) {
+
                                     if (events[query].hasOwnProperty(event)) {
                                         view.addListener(event, events[query][event].bind(me, view));
                                     }
+
                                 }
+
                             }
+
                             delete events[query];
                         }
                     }
+
                 }
+
             }
             return this;
         },
         renderViews: function () {
             var me = this,
                 views = me.get('views');
+
             for (var view in views) {
+
                 if (views.hasOwnProperty(view)) {
+
                     if (views[view].getAutoCreate && views[view].getAutoCreate()) {
+
                         views[view].render();
+
                     }
                 }
+
             }
+
         },
         resolveEvents: function (view) {
             var events = this.get('events'),
@@ -127,31 +151,50 @@
                 newScope = function (func, scope, arg) {
                     return func.bind(scope, arg);
                 },
+                elements,
                 scope;
+
             for (var query in events) {
+
                 if (events.hasOwnProperty(query)) {
+
                     viewEvents = events[query];
-                    var elements = view.get('el').querySelectorAll(query);
+                    elements = view.get('el').querySelectorAll(query);
                     for (var i = 0, l = elements.length; i < l; i++) {
+
                         for (var event in viewEvents) {
+
                             if (viewEvents.hasOwnProperty(event)) {
+
                                 scope = newScope(viewEvents[event], this, view);
+
                                 elements[i].addEventListener(event, scope);
+
                             }
+
                         }
+
                     }
+
                 }
+
             }
+
         },
         getRouter: function () {
             return router;
         },
         restoreRouter: function () {
             var me = this;
+
             me.getRouter().restore();
+
             return me;
-        }, redirectTo: function (path) {
+        },
+        redirectTo: function (path) {
+
             window.location.hash = path;
+
             return this;
         }
     });
