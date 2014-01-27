@@ -32,56 +32,9 @@
  * Views are easily expendable, so you can fell free to add more awesome functionality to it.
  *
  *     @example
- *     window.OverlayView = View.$extend(function OverlayView(opts) {
- *         View.prototype.constructor.call(this, opts);
- *     });
- *     OverlayView.prototype.show = function (callback) {
- *         var me = this,
- *             dom = me.get('el'),
- *         config = me.get('config');
- *         if (me.get('isAnimated')) {
- *             jQuery(dom).stop();
- *         }
- *         me.set('isAnimated', true);
- *         jQuery(dom).css({
- *             display: 'block',
- *             opacity: 0
- *         }).animate({
- *             opacity: 1
- *         }, config.showDuration || 500, function () {
- *             me.set('isAnimated', false);
- *             if (callback)
- *                 callback(me, this);
- *             });
- *     };
+ *     window.OverlayView = View.$extend({
  *
- *     OverlayView.prototype.hide = function (callback) {
- *             var me = this,
- *                 dom = me.get('el'),
- *                 config = me.get('config');
- *             if (me.get('isAnimated')) {
- *                 jQuery(dom).stop();
- *             }
- *             me.set('isAnimated', true);
- *             jQuery(dom).animate({
- *                 opacity: 0
- *             }, config.hideDuration || 500, function () {
- *                 jQuery(dom).css({
- *                     display: 'none'
- *                 });
- *                 me.set('isAnimated', false);
- *                 if (callback)
- *                     callback(me, this);
- *             });
- *     };
- *     var overlay = new OverlayView({
- *       config: {
- *          tpl: 'container',
- *          renderTo: '#body',
- *          models: window.models
  *     });
- *     overlay.render();
- *     overlay.show();
  *
  *
  */
@@ -155,8 +108,8 @@
      * @type {function}
      */
     View = yamvc.Core.$extend({
-        defaults : {
-            parent : null
+        defaults: {
+            parent: null
         },
         // Initializing function in which we call parent method, merge previous
         // configuration with new one, set id of component, initialize config
@@ -435,7 +388,6 @@
                                 result = results[i++];
                                 header = result.substr(2, (result.length - 4)).split('.');
 
-
                                 if (!fillAttr) {
 
                                     if (me.getModel(header[0])) {
@@ -454,13 +406,17 @@
 
                             }
 
-                            if (fillAttr && !ret) {
+                            if (fillAttr) {
 
-                                node.removeAttribute(attr.nodeName);
+                                if (!ret) {
 
-                            } else {
+                                    node.removeAttribute(attr.nodeName);
 
-                                node.setAttribute(attr.nodeName, ret);
+                                } else {
+
+                                    node.setAttribute(attr.nodeName, ret);
+
+                                }
 
                             }
 
@@ -578,7 +534,7 @@
         partialRender: function (binding) {
             var me = this,
                 element = binding.type === 3,
-                org = element ? binding.original : true,
+                org = element ? binding.original : (binding.fillAttr ? true : binding.original),
                 headers = binding.headers,
                 len = headers.length,
                 header;
@@ -710,7 +666,7 @@
                 me.set('isInDOM', false);
             }
 
-            if(parent) {
+            if (parent) {
 
                 //todo: here
 

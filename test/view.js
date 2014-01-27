@@ -107,3 +107,46 @@ test("remove child", function () {
 
     equal(view.getChildren().length, 0, 'from parent');
 });
+
+
+test("bind with data", function () {
+    var view, model;
+
+    model = new yamvc.Model({
+        config: {
+            namespace: 'example',
+            data: {
+                name: "Seba",
+                display: "none"
+            }
+        }
+    });
+
+    view = new yamvc.View({
+        config: {
+            models: [
+                model
+            ],
+            tpl: new yamvc.view.Template({
+                config: {
+                    id: 'tpl-example-3',
+                    tpl: [
+                        '<div>Who are you ?</div>',
+                        '<button style="margin: 10px;">answer</button>',
+                        '<div class="example" style="display: {{example.display}}">Hi {{example.name}}</div>'
+                    ]
+                }
+            }),
+            renderTo: '#example-4-result'
+        }
+    });
+    view.render();
+
+    equal(view.queryEl('.example').innerText, 'Hi Seba');
+
+    equal(view.queryEl('.example').getAttribute('style'), 'display: none');
+
+    model.data('display', 'block');
+
+    equal(view.queryEl('.example').getAttribute('style'), 'display: block');
+});
