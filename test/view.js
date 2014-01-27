@@ -28,7 +28,7 @@ test("render", function () {
         }
     })).render();
 
-    el = document.querySelector('[yamvc-id="' + view.getId() + '"]');
+    el = document.querySelector('#' + view.getId());
 
     equal(el.innerText, 'Hello World!');
 });
@@ -65,7 +65,7 @@ test("render with children", function () {
         }
     })).render();
 
-    el = document.querySelector('[yamvc-id="' + view.getId() + '"]');
+    el = document.querySelector('#' + view.getId());
 
     equal(el.innerText, 'Hello World!');
 });
@@ -133,7 +133,7 @@ test("bind with data", function () {
                     tpl: [
                         '<div>Who are you ?</div>',
                         '<button style="margin: 10px;">answer</button>',
-                        '<div class="example" style="display: {{example.display}}">Hi {{example.name}}</div>'
+                        '<div class="example" css="display: {{example.display}};">Hi {{example.name}}</div>'
                     ]
                 }
             }),
@@ -144,9 +144,9 @@ test("bind with data", function () {
 
     equal(view.queryEl('.example').innerText, 'Hi Seba');
 
-    equal(view.queryEl('.example').getAttribute('style'), 'display: none');
+    equal(view.queryEl('.example').getAttribute('style'), 'display: none;');
 
     model.data('display', 'block');
 
-    equal(view.queryEl('.example').getAttribute('style'), 'display: block');
+    equal(view.queryEl('.example').getAttribute('style'), 'display: block;');
 });
