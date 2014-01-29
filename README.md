@@ -18,7 +18,7 @@ Yet Another MVC library. Why? Because. Without reason...
 * node.js
 
 ###Dependency
-Resolve it typing `npm install` and `bower install` in console in root directory.
+Resolve them typing `npm install` and `bower install` in console in root directory.
 
 ###Build
 Type `grunt`.
