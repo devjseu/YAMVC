@@ -11,7 +11,7 @@ Yet Another MVC library. Why? Because. Without reason...
 * No compatibility for IE8 and less
 
 ##Docs
-* (http://devjseu.github.io/YAMVC.html "Under Construction")
+* [Under Construction](http://devjseu.github.io/YAMVC.html "Under Construction")
 
 ##Build
 ###Requires
