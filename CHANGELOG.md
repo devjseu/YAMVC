@@ -29,6 +29,8 @@ YAMVC - change log
 * All static methods are now $ prefixed
 
 ##0.1.11
-* template might be now stored in `yamvc.view.Template`
+* view might be now initialized with `yamvc.view.Template` object
+* in template tags now use css attribute instead of style for styling
 * in `yamvc.View` models are now stored in array
 * new example, old ones updated to v0.1.11
+

@@ -2,10 +2,26 @@ YAMVC
 =============
 Yet Another MVC library. Why? Because. Without reason...
 
-##Danger
-Use only on your own risk!
+##Pros
+* Light, use native API as much as possible
+* Auto model <-> view binding
+* Easily extendable
 
+##Cons
+* No compatibility for IE8 and less
 
+##Docs
+* (http://devjseu.github.io/YAMVC.html "Under Construction")
+
+##Build
+###Requires
+* node.js
+
+###Dependency
+Resolve it typing `npm install` and `bower install` in console in root directory.
+
+###Build
+Type `grunt`.
 
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/devjseu/yamvc/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
