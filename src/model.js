@@ -37,7 +37,7 @@
                 config = me._config;
 
             if (!config.namespace)
-                throw new Error("Model need to has namespace");
+                throw new Error("Model need to have namespace");
 
             if (!config.data)
                 config.data = {};

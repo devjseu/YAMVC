@@ -5,6 +5,7 @@
 
     Collection = yamvc.Core.$extend({
         defaults: {
+            namespace: null,
             proxy: null
         },
         /**
@@ -44,11 +45,26 @@
 
             return me;
         },
-        add: function (records) {
+        forEach: function (fn) {
+            var me = this,
+                records = me._set,
+                t, len;
+
+            t = Object(records);
+            len = t.length >>> 0;
+            if (typeof fn !== "function")
+                throw new TypeError();
+
+            for (var i = 0; i < len; i++) {
+                if (i in t)
+                    fn.call(me, t[i], i, t);
+            }
+        },
+        push: function (records) {
             var me = this,
                 record,
                 ModelDefinition = me.getModel(),
-                namespace = me.getModelConfig().namespace;
+                namespace = me.getNamespace();
 
             if (!Array.isArray(records)) {
                 records = [records];
@@ -206,7 +222,7 @@
                 data = me.get('data'),
                 idProperty = me.get('idProperty'),
                 deferred = yamvc.Promise.$deferred(),
-                namespace = me.getModelConfig().namespace,
+                namespace = me.getNamespace(),
                 action = new yamvc.data.Action(),
                 callback,
                 key, i = 0;
@@ -254,8 +270,7 @@
                 toUpdate = [],
                 toRemove = me._removed,
                 records = me._cache,
-                modelConfig = me.getModelConfig(),
-                namespace = modelConfig.namespace,
+                namespace = me.getNamespace(),
                 proxy = me.getProxy(),
                 toFinish = 0,
                 exceptions = [],
@@ -411,7 +426,7 @@
         prepareData: function (data, total) {
             var me = this,
                 ModelInstance = me.getModel(),
-                modelConfig = me.getModelConfig ? me.getModelConfig() : {},
+                modelConfig = { namespace: me.getNamespace()},
                 l = data.length,
                 models = [];
 
@@ -420,7 +435,6 @@
 
                 modelConfig.data = data[i];
                 models.push(new ModelInstance({
-                    data: data[i],
                     config: modelConfig
                 }));
 

@@ -22,14 +22,12 @@ test("has model", function () {
     collection = new yamvc.Collection({
         config: {
             model: yamvc.Model,
-            modelConfig: {
-                namespace: 'test'
-            }
+            namespace: 'test'
         }
     });
 
     ModelDefinition = collection.getModel();
-    namespace = collection.getModelConfig().namespace;
+    namespace = collection.getNamespace();
 
     modelInstance = new ModelDefinition(
         {
@@ -56,9 +54,7 @@ test("has data and record is turned into model", function () {
     collection = new yamvc.Collection({
         config: {
             model: yamvc.Model,
-            modelConfig: {
-                namespace: 'test2'
-            },
+            namespace: 'test2',
             data: data
         }
     });
@@ -85,9 +81,7 @@ test("is countable", function () {
     collection = new yamvc.Collection({
         config: {
             model: yamvc.Model,
-            modelConfig: {
-                namespace: 'test3'
-            },
+            namespace: 'test3',
             data: data
         }
     });
@@ -110,9 +104,7 @@ test("we are able to filter the collection by custom function", function () {
     collection = new yamvc.Collection({
         config: {
             model: yamvc.Model,
-            modelConfig: {
-                namespace: 'test4'
-            },
+            namespace: 'test4',
             data: data
         }
     });
@@ -145,9 +137,7 @@ test("we are able to clear filters from collection", function () {
     collection = new yamvc.Collection({
         config: {
             model: yamvc.Model,
-            modelConfig: {
-                namespace: 'test5'
-            },
+            namespace: 'test5',
             data: data
         }
     });
@@ -178,9 +168,7 @@ test("we are able to set proxy for collection", function () {
     collection = new yamvc.Collection({
         config: {
             model: yamvc.Model,
-            modelConfig: {
-                namespace: 'test6'
-            }
+            namespace: 'test6'
         }
     });
 
@@ -199,14 +187,12 @@ test("we are able to add records to collection", function () {
     collection = new yamvc.Collection({
         config: {
             model: yamvc.Model,
-            modelConfig: {
-                namespace: 'test8'
-            },
+            namespace: 'test7',
             proxy: proxy
         }
     });
 
-    collection.add([
+    collection.push([
         {
             age: 24,
             name: 'Sebastian',
@@ -238,14 +224,12 @@ test("we are able to get record from collection", function () {
     collection = new yamvc.Collection({
         config: {
             model: yamvc.Model,
-            modelConfig: {
-                namespace: 'test8'
-            },
+            namespace: 'test8',
             proxy: proxy
         }
     });
 
-    collection.add([
+    collection.push([
         {
             age: 24,
             name: 'Sebastian',
@@ -282,14 +266,12 @@ test("we are able to get records from collection", function () {
     collection = new yamvc.Collection({
         config: {
             model: yamvc.Model,
-            modelConfig: {
-                namespace: 'test8'
-            },
+            namespace: 'test9',
             proxy: proxy
         }
     });
 
-    collection.add([
+    collection.push([
         {
             age: 24,
             name: 'Sebastian',
@@ -325,14 +307,12 @@ asyncTest("we are able to save collection records to storage", function () {
     collection = new yamvc.Collection({
         config: {
             model: yamvc.Model,
-            modelConfig: {
-                namespace: 'test8'
-            },
+            namespace: 'test10',
             proxy: proxy
         }
     });
 
-    collection.add([
+    collection.push([
         {
             age: 24,
             name: 'Sebastian',
@@ -382,9 +362,7 @@ asyncTest("we are able to load collection from storage", function () {
     collection = new yamvc.Collection({
         config: {
             model: yamvc.Model,
-            modelConfig: {
-                namespace: 'test7'
-            },
+            namespace: 'test11',
             proxy: proxy
         }
     });
