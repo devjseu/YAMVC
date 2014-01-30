@@ -1,4 +1,4 @@
-/*! YAMVC v0.1.10 - 2014-01-24 
+/*! YAMVC v0.1.12 - 2014-01-30 
  *  License:  */
 (function (window, undefined) {
     "use strict";
@@ -74,12 +74,13 @@
 
         /**
          * fire event
+         * @version 0.1.12
          * @param evName
          * @param callback
          * @returns {this}
          *
          */
-        addListener: function (evName, callback) {
+        addEventListener: function (evName, callback) {
             var listeners = this._listeners[evName] || [];
             listeners.push(callback);
             this._listeners[evName] = listeners;
@@ -88,13 +89,14 @@
 
         /**
          * fire event
+         * @version 0.1.12
          * @param evName
          * @param callback
          * @returns {this}
          *
          */
-        removeListener: function (evName, callback) {
-            var listeners = this._listeners,
+        removeEventListener: function (evName, callback) {
+            var listeners = this._listeners[evName] || [],
                 index;
             if (listeners) {
                 if (callback) {
@@ -109,7 +111,7 @@
                     }
                     listeners.splice(index, 1);
                 } else {
-                    this._listeners = [];
+                    this._listeners[evName] = [];
                 }
             }
             return this;
@@ -252,7 +254,7 @@
          * @returns {this}
          */
         Core.prototype.onChange = function (property, callback) {
-            this.addListener(property + 'Change', callback);
+            this.addEventListener(property + 'Change', callback);
             return this;
         };
 
@@ -409,29 +411,36 @@
          * @param opts
          */
         init: function (opts) {
+
             Collection.Parent.init.apply(this, arguments);
+
             var me = this, config;
+
             opts = opts || {};
             config = yamvc.$merge(me._config, opts.config);
+
             me.set('initOpts', opts);
             me.set('config', config);
             me.set('set', []);
             me.set('cache', []);
             me.set('removed', []);
             me.set('filters', []);
+
             me.initConfig();
             me.initData();
+
+            return me;
         },
         /**
          * initialize data
          */
         initData: function () {
             var me = this,
-                opts = me.get('initOpts'),
-                config = me.get('config'),
-                data = opts.data || [];
+                data = me.getData() || [];
+
             me.set('raw', data);
             me.prepareData(data);
+
             return me;
         },
         add: function (records) {
@@ -450,9 +459,9 @@
                 record = new ModelDefinition(
                     {
                         config: {
-                            namespace: namespace
-                        },
-                        data: record
+                            namespace: namespace,
+                            data: record
+                        }
                     }
                 );
 
@@ -463,8 +472,7 @@
 
             me.filter();
 
-//            console.log(me._cache, me._set);
-
+            return me;
         },
         // return number of records in collection
         /**
@@ -475,9 +483,11 @@
         },
         clear: function () {
             var me = this;
+
             me.set('set', []);
             me.set('cache', []);
             me.set('removed', []);
+
             return me;
         },
         clearFilters: function () {
@@ -486,7 +496,7 @@
             me.set('filters', []);
             me.filter();
 
-            return this;
+            return me;
         },
         filter: function (fn) {
             var me = this,
@@ -594,8 +604,9 @@
             var me = this,
                 data = me.get('data'),
                 idProperty = me.get('idProperty'),
-                deferred = yamvc.Promise.deferred(),
+                deferred = yamvc.Promise.$deferred(),
                 namespace = me.getModelConfig().namespace,
+                action = new yamvc.data.Action(),
                 callback,
                 key, i = 0;
 
@@ -611,18 +622,32 @@
 
 
             callback = function () {
+
                 if (me.getProxy().getStatus() === 'success') {
-                    me.fireEvent('loaded', me, me.getProxy().getResponse(), 'read');
+
+                    me.fireEvent('loaded', me, action.getResponse(), 'read');
+
                 } else {
+
                     me.fireEvent('error', me, 'read');
+
                 }
             };
-            me.getProxy().read(namespace, params, callback);
+
+            action
+                .setOptions({
+                    callback: callback,
+                    params: params,
+                    namespace: namespace
+                });
+
+            me.getProxy().read(action);
+
             return deferred.promise;
         },
         save: function () {
             var me = this,
-                deferred = yamvc.Promise.deferred(),
+                deferred = yamvc.Promise.$deferred(),
                 action,
                 toCreate = [],
                 toUpdate = [],
@@ -788,24 +813,31 @@
                 modelConfig = me.getModelConfig ? me.getModelConfig() : {},
                 l = data.length,
                 models = [];
+
             total = total || l;
             for (var i = 0; i < l; i++) {
+
+                modelConfig.data = data[i];
                 models.push(new ModelInstance({
                     data: data[i],
                     config: modelConfig
                 }));
+
             }
 
             me.set('cache', models);
             me.set('total', total);
+
             me.filter();
 
             return me;
         },
         setData: function () {
             var me = this;
+
             me.setRawData(data);
             me.prepareData(data);
+
             return me;
         },
         getData: function () {
@@ -815,7 +847,9 @@
             return this._raw;
         },
         setRawData: function (data) {
+
             this.set('raw', data);
+
             return this;
         },
         isDirty: function () {
@@ -898,17 +932,21 @@
         init: function (opts) {
             var config,
                 me = this;
+
             opts = opts || {};
             config = opts.config || {};
             router = router || new yamvc.Router();
+
             me.set('initOpts', opts);
             me.set('config', config);
             me.set('routes', config.routes || {});
             me.set('events', config.events || {});
             me.set('views', config.views || {});
+
             me.initConfig();
             me.renderViews();
             me.restoreRouter();
+
             return me;
         },
         initConfig: function () {
@@ -920,6 +958,7 @@
                 query,
                 rx = /(^\$|,$)/,
                 view;
+
             if (routes) {
                 for (var k in routes) {
                     if (routes.hasOwnProperty(k)) {
@@ -928,41 +967,60 @@
                     }
                 }
             }
+
             if (events && views) {
                 for (view in views) {
                     if (views.hasOwnProperty(view)) {
-                        views[view].addListener('render', me.resolveEvents.bind(me));
+                        views[view].addEventListener('render', me.resolveEvents.bind(me));
                     }
                 }
 
                 for (query in events) {
+
                     if (events.hasOwnProperty(query)) {
+
                         if (rx.test(query)) {
+
                             view = views[query.substr(1)];
+
                             if (view) {
+
                                 for (var event in events[query]) {
+
                                     if (events[query].hasOwnProperty(event)) {
-                                        view.addListener(event, events[query][event].bind(me, view));
+                                        view.addEventListener(event, events[query][event].bind(me, view));
                                     }
+
                                 }
+
                             }
+
                             delete events[query];
                         }
                     }
+
                 }
+
             }
             return this;
         },
         renderViews: function () {
             var me = this,
                 views = me.get('views');
+
             for (var view in views) {
+
                 if (views.hasOwnProperty(view)) {
+
                     if (views[view].getAutoCreate && views[view].getAutoCreate()) {
+
                         views[view].render();
+
                     }
                 }
+
             }
+
         },
         resolveEvents: function (view) {
             var events = this.get('events'),
@@ -970,31 +1028,50 @@
                 newScope = function (func, scope, arg) {
                     return func.bind(scope, arg);
                 },
+                elements,
                 scope;
+
             for (var query in events) {
+
                 if (events.hasOwnProperty(query)) {
+
                     viewEvents = events[query];
-                    var elements = view.get('el').querySelectorAll(query);
+                    elements = view.get('el').querySelectorAll(query);
                     for (var i = 0, l = elements.length; i < l; i++) {
+
                         for (var event in viewEvents) {
+
                             if (viewEvents.hasOwnProperty(event)) {
+
                                 scope = newScope(viewEvents[event], this, view);
+
                                 elements[i].addEventListener(event, scope);
+
                             }
+
                         }
+
                     }
+
                 }
+
             }
+
         },
         getRouter: function () {
             return router;
         },
         restoreRouter: function () {
             var me = this;
+
             me.getRouter().restore();
+
             return me;
-        }, redirectTo: function (path) {
+        },
+        redirectTo: function (path) {
+
             window.location.hash = path;
+
             return this;
         }
     });
@@ -1206,20 +1283,6 @@
                     }
                 }
             }
-        },
-        /**
-         *
-         * @param opts
-         */
-        init: function (opts) {
-            var me = this;
-            Localstorage.Parent.init.apply(me, arguments);
-        },
-        /**
-         *
-         */
-        initConfig: function () {
-            Localstorage.Parent.initConfig.apply(this);
         },
         /**
          * @param action
@@ -1732,13 +1795,17 @@
          */
         initConfig: function () {
             var me = this,
-                config = me.get('config');
-            yamvc.Core.prototype.initConfig.apply(this);
+                config = me._config;
 
             if (!config.namespace)
-                throw new Error("Model need to have namespace property in your model configuration");
+                throw new Error("Model need to has namespace");
+
+            if (!config.data)
+                config.data = {};
 
             me.set('clientId', config.namespace + '-' + id++);
+
+            Model.Parent.initConfig.apply(this);
 
             return me;
         },
@@ -1746,10 +1813,11 @@
          *
          */
         initData: function () {
-            var me = this,
-                opts = me.get('initOpts'),
-                config = me.get('config');
-            me.set('data', opts.data || {});
+            var me = this;
+
+            me.set('data', me.getData() || {});
+
+            return me;
         },
         /**
          *
@@ -1772,8 +1840,7 @@
          * @returns {*}
          */
         getDataProperty: function (property) {
-            var me = this;
-            return me.get('data')[property];
+            return this.get('data')[property];
         },
         // alias for set and get data property
         // if two arguments are passed data will be set
@@ -1839,7 +1906,7 @@
             var me = this,
                 data = me.get('data'),
                 idProperty = me.getIdProperty(),
-                deferred = yamvc.Promise.deferred(),
+                deferred = yamvc.Promise.$deferred(),
                 action = new yamvc.data.Action(),
                 opts = {},
                 response;
@@ -1888,7 +1955,7 @@
             var me = this,
                 data = me.get('data'),
                 idProperty = me.getIdProperty(),
-                deferred = yamvc.Promise.deferred(),
+                deferred = yamvc.Promise.$deferred(),
                 action = new yamvc.data.Action(),
                 proxy = me.getProxy(),
                 opts = {},
@@ -1950,7 +2017,7 @@
             var me = this,
                 data = me.get('data'),
                 idProperty = me.getIdProperty(),
-                deferred = yamvc.Promise.deferred(),
+                deferred = yamvc.Promise.$deferred(),
                 action = new yamvc.data.Action(),
                 proxy = me.getProxy(),
                 opts = {},
@@ -2006,6 +2073,172 @@
     window.yamvc.Model = Model;
 }(window));
 
+/*
+ * classList.js: Cross-browser full element.classList implementation.
+ * 2014-01-07
+ *
+ * By Eli Grey, http://eligrey.com
+ * Public Domain.
+ * NO WARRANTY EXPRESSED OR IMPLIED. USE AT YOUR OWN RISK.
+ */
+
+/*global self, document, DOMException */
+
+/*! @source http://purl.eligrey.com/github/classList.js/blob/master/classList.js*/
+
+if ("document" in self && !("classList" in document.createElement("_"))) {
+
+    (function (view) {
+
+        "use strict";
+
+        if (!('Element' in view)) return;
+
+        var
+            classListProp = "classList",
+            protoProp = "prototype",
+            elemCtrProto = view.Element[protoProp],
+            objCtr = Object,
+            strTrim = String[protoProp].trim || function () {
+                return this.replace(/^\s+|\s+$/g, "");
+            },
+            arrIndexOf = Array[protoProp].indexOf || function (item) {
+                var
+                    i = 0,
+                    len = this.length;
+
+                for (; i < len; i++) {
+                    if (i in this && this[i] === item) {
+                        return i;
+                    }
+                }
+                return -1;
+            },
+        // Vendors: please allow content code to instantiate DOMExceptions
+
+            DOMEx = function (type, message) {
+                this.name = type;
+                this.code = DOMException[type];
+                this.message = message;
+            },
+            checkTokenAndGetIndex = function (classList, token) {
+                if (token === "") {
+                    throw new DOMEx(
+                        "SYNTAX_ERR",
+                        "An invalid or illegal string was specified"
+                    );
+                }
+                if (/\s/.test(token)) {
+                    throw new DOMEx(
+                        "INVALID_CHARACTER_ERR",
+                        "String contains an invalid character"
+                    );
+                }
+                return arrIndexOf.call(classList, token);
+            },
+            ClassList = function (elem) {
+                var
+                    trimmedClasses = strTrim.call(elem.getAttribute("class") || ""),
+                    classes = trimmedClasses ? trimmedClasses.split(/\s+/) : [],
+                    i = 0,
+                    len = classes.length;
+
+                for (; i < len; i++) {
+                    this.push(classes[i]);
+                }
+
+                this._updateClassName = function () {
+                    elem.setAttribute("class", this.toString());
+                };
+            },
+            classListProto = ClassList[protoProp] = [],
+            classListGetter = function () {
+                return new ClassList(this);
+            };
+// Most DOMException implementations don't allow calling DOMException's toString()
+// on non-DOMExceptions. Error's toString() is sufficient here.
+        DOMEx[protoProp] = Error[protoProp];
+        classListProto.item = function (i) {
+            return this[i] || null;
+        };
+        classListProto.contains = function (token) {
+            token += "";
+            return checkTokenAndGetIndex(this, token) !== -1;
+        };
+        classListProto.add = function () {
+            var
+                tokens = arguments, i = 0, l = tokens.length, token, updated = false;
+            do {
+                token = tokens[i] + "";
+                if (checkTokenAndGetIndex(this, token) === -1) {
+                    this.push(token);
+                    updated = true;
+                }
+            }
+            while (++i < l);
+
+            if (updated) {
+                this._updateClassName();
+            }
+        };
+        classListProto.remove = function () {
+            var
+                tokens = arguments, i = 0, l = tokens.length, token, updated = false;
+
+            do {
+                token = tokens[i] + "";
+                var index = checkTokenAndGetIndex(this, token);
+                if (index !== -1) {
+                    this.splice(index, 1);
+                    updated = true;
+                }
+            }
+            while (++i < l);
+
+            if (updated) {
+                this._updateClassName();
+            }
+        };
+        classListProto.toggle = function (token, forse) {
+            token += "";
+
+            var
+                result = this.contains(token),
+                method = result ?
+                    forse !== true && "remove"
+                    :
+                    forse !== false && "add"
+                ;
+
+            if (method) {
+                this[method](token);
+            }
+
+            return !result;
+        };
+        classListProto.toString = function () {
+            return this.join(" ");
+        };
+
+        if (objCtr.defineProperty) {
+            var classListPropDesc = {
+                get: classListGetter, enumerable: true, configurable: true
+            };
+            try {
+                objCtr.defineProperty(elemCtrProto, classListProp, classListPropDesc);
+            } catch (ex) { // IE 8 doesn't support enumerable:true
+                if (ex.number === -0x7FF5EC54) {
+                    classListPropDesc.enumerable = false;
+                    objCtr.defineProperty(elemCtrProto, classListProp, classListPropDesc);
+                }
+            }
+        } else if (objCtr[protoProp].__defineGetter__) {
+            elemCtrProto.__defineGetter__(classListProp, classListGetter);
+        }
+
+    }(self));
+
+}
 /**
  * @author rhysbrettbowen
  * @contributed mkalafior
@@ -2189,7 +2422,7 @@
      * @param value
      * @returns {Promise}
      */
-    Promise.resolved = function (value) {
+    Promise.$resolved = function (value) {
         return new Promise(function (res) {
             res(value);
         });
@@ -2199,7 +2432,7 @@
      * @param reason
      * @returns {Promise}
      */
-    Promise.rejected = function (reason) {
+    Promise.$rejected = function (reason) {
         return new Promise(function (res, rej) {
             rej(reason);
         });
@@ -2208,7 +2441,7 @@
     /**
      * @returns {{promise: Promise, resolve: (Function|resolve|resolve), reject: (*|Function|reject|reject|reject|reject)}}
      */
-    Promise.deferred = function () {
+    Promise.$deferred = function () {
         var resolve, reject;
         return {
             promise: new Promise(function (res, rej) {
@@ -2319,56 +2552,9 @@
  * Views are easily expendable, so you can fell free to add more awesome functionality to it.
  *
  *     @example
- *     window.OverlayView = View.$extend(function OverlayView(opts) {
- *         View.prototype.constructor.call(this, opts);
- *     });
- *     OverlayView.prototype.show = function (callback) {
- *         var me = this,
- *             dom = me.get('el'),
- *         config = me.get('config');
- *         if (me.get('isAnimated')) {
- *             jQuery(dom).stop();
- *         }
- *         me.set('isAnimated', true);
- *         jQuery(dom).css({
- *             display: 'block',
- *             opacity: 0
- *         }).animate({
- *             opacity: 1
- *         }, config.showDuration || 500, function () {
- *             me.set('isAnimated', false);
- *             if (callback)
- *                 callback(me, this);
- *             });
- *     };
+ *     window.OverlayView = View.$extend({
  *
- *     OverlayView.prototype.hide = function (callback) {
- *             var me = this,
- *                 dom = me.get('el'),
- *                 config = me.get('config');
- *             if (me.get('isAnimated')) {
- *                 jQuery(dom).stop();
- *             }
- *             me.set('isAnimated', true);
- *             jQuery(dom).animate({
- *                 opacity: 0
- *             }, config.hideDuration || 500, function () {
- *                 jQuery(dom).css({
- *                     display: 'none'
- *                 });
- *                 me.set('isAnimated', false);
- *                 if (callback)
- *                     callback(me, this);
- *             });
- *     };
- *     var overlay = new OverlayView({
- *       config: {
- *          tpl: 'container',
- *          renderTo: '#body',
- *          models: window.models
  *     });
- *     overlay.render();
- *     overlay.show();
  *
  *
  */
@@ -2376,6 +2562,7 @@
     "use strict";
 
     var yamvc = window.yamvc || {},
+        style = document.createElement('style'),
         VM,
         VTM,
         View,
@@ -2391,6 +2578,9 @@
 
     fillAttrs = makeMap("checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected");
 
+    style.innerHTML = ".yamvc {display:inline;}; .yamvc-hidden {display: none;}";
+
+    document.body.appendChild(style);
 
     // Object that stores all views
     /**
@@ -2438,6 +2628,9 @@
      * @type {function}
      */
     View = yamvc.Core.$extend({
+        defaults: {
+            parent: null
+        },
         // Initializing function in which we call parent method, merge previous
         // configuration with new one, set id of component, initialize config
         // and save reference to component in View Manager.
@@ -2447,25 +2640,34 @@
          * @returns {View}
          */
         init: function (opts) {
+
             yamvc.Core.prototype.init.apply(this);
+
             var me = this, config, id;
+
             opts = opts || {};
             config = yamvc.$merge(me._config, opts.config);
             config.id = id = config.id || 'view-' + VM.i;
-            config.views = config.views || {};
+            config.children = config.children || [];
+
             me.set('initOpts', opts);
             me.set('config', config);
+
             me.initConfig();
             VM.add(id, me);
+
             return me;
         },
         /**
          * @returns {View}
          */
         initConfig: function () {
+
             yamvc.Core.prototype.initConfig.apply(this);
+
             this.initTemplate();
             this.initModels();
+
             return this;
         },
         /**
@@ -2476,36 +2678,43 @@
                 config = me.get('config'),
                 div = document.createElement('div'),
                 _tpl;
+
             if (!config.tpl) {
+
                 throw new Error(config.id + ': no tpl set');
+
             }
-            if (!VTM.get(config.tpl)) {
+
+            if (config.tpl instanceof yamvc.view.Template) {
+
+                div.innerHTML = config.tpl.getHtml().innerHTML;
+
+            } else if (VTM.get(config.tpl)) {
+
+                div.innerHTML = VTM.get(config.tpl).innerHTML;
+
+            } else {
+
                 _tpl = document.getElementById(config.tpl);
+
                 if (!_tpl)
                     throw new Error('no tpl ' + config.tpl + ' found');
+
                 VTM.add(config.tpl, _tpl.parentNode.removeChild(_tpl));
+                div.innerHTML = VTM.get(config.tpl).innerHTML;
+
             }
-            div.innerHTML = VTM.get(config.tpl).innerHTML;
+
             me.set('tpl', div);
+
             return me;
         },
         /**
          * @returns {View}
          */
         initModels: function () {
-            var me = this,
-                models,
-                model;
-            if (!me.getModels) {
-                return me;
-            }
+            var me = this;
 
-            models = me.getModels();
-            for (model in models) {
-                if (models.hasOwnProperty(model)) {
-                    me.setModel(model, models[model]);
-                }
-            }
             return me;
         },
         /**
@@ -2514,8 +2723,11 @@
         setModel: function (namespace, model) {
             var me = this,
                 models = me.getModels();
-            models[model.getNamespace()] = model;
+
+            models.push(model);
             me.setModels(models);
+            me.resolveModelBindings(model);
+
             return me;
         },
         /**
@@ -2524,30 +2736,39 @@
          */
         getModel: function (namespace) {
             var me = this,
-                models = me.getModels();
-            return models[namespace];
+                models = me.getModels(),
+                model = null,
+                l;
+
+            l = models.length;
+            while (l--) {
+                if (models[l].getNamespace() === namespace) {
+                    model = models[l];
+                    break;
+                }
+            }
+
+            return model;
         },
         /**
-         * @version 0.1.8
-         * @param data
+         * @version 0.1.11
+         * @param {Boolean} force
          * @returns {Node}
          */
-        render: function (data) {
+        render: function () {
             var me = this,
                 tpl = me._tpl,
                 config = me._config,
                 id = config.renderTo,
-                models = data || config.models,
                 parent = config.parent,
                 parentView = config.parent,
                 bindings = [],
                 headers = [],
-//                bindRegEx = /({{.+?}})/gi,
                 results,
                 result,
                 header,
                 ret,
-//                replaceFn,
+                value,
                 parsedTpl,
                 walker,
                 node,
@@ -2559,32 +2780,26 @@
                 attrs = [],
                 attr;
 
-            /*replaceFn = function (match, type, pointer) {
-             var header = match.substr(2, (match.length - 4)).split('.'),
-             ret;
-             if (models[header[0]]) {
-             ret = models[header[0]].data(header[1]) || "";
-             } else {
-             ret = "";
-             }
-             bindings.push({
-             header: header,
-             type: type,
-             pointer: pointer
-             });
-             return ret;  // and replace it with value from model.
-             };*/
+            if (me.isInDOM()) {
+
+                    me.removeRendered();
+
+            }
 
             if (parent) {// If parent is set,
+
                 if (id && parent.queryEl(id)) { // search for element to which we will append component.
                     parent = parent.queryEl(id);
                 } else {// If not found, append to parent root element.
                     parent = parent._el;
                 }
+
             } else {// If parent not set,
+
                 if (id) { // but we have an id of element to which we want render new one,
                     parent = document.querySelector(id);// we search for it in the whole document.
                 }
+
             }
 
             parsedTpl = tpl.cloneNode(true); // Next, clone template.
@@ -2602,7 +2817,7 @@
                 if (node.nodeType === 3) { // If our element is text node
                     results = node.data.match(/\{\{(.*?)\}\}/gi);// we searching for mustached text inside it
                     if (results) { // and if we have positive match
-                        var text = node.nodeValue,
+                        var text = node.value || node.data,
                             doc = document.createElement('span'),// we create new span element
                             rId = "v-r-b-" + renderId++;
 
@@ -2618,8 +2833,8 @@
                             result = results[i++];
                             header = result.substr(2, (result.length - 4)).split('.');
 
-                            if (models[header[0]]) {
-                                ret = models[header[0]].data(header[1]);
+                            if (me.getModel(header[0])) {
+                                ret = me.getModel(header[0]).data(header[1]);
                                 if (ret === undefined) {
                                     ret = "";
                                 }
@@ -2638,7 +2853,7 @@
 
                         // We also keep founded bindings.
                         bindings.push({
-                            original: node.nodeValue,
+                            original: node.value || node.data,
                             headers: headers,
                             type: 3,
                             pointer: doc,
@@ -2646,7 +2861,7 @@
                         });
 
                     }
-                    /*node.nodeValue = node.nodeValue.replace(bindRegEx, function (match) {
+                    /*node.value = node.value.replace(bindRegEx, function (match) {
                      return replaceFn(match, 1, node);
                      });*/
                 }
@@ -2658,10 +2873,10 @@
                     while (l--) {
 
                         attr = attrs.item(l);
-                        results = attr.nodeValue && attr.nodeValue.match(/\{\{(.*?)\}\}/gi);
+                        results = attr.value && attr.value.match(/\{\{(.*?)\}\}/gi);
 
                         if (results) {
-                            var original = attr.nodeValue,
+                            var original = attr.value,
                                 fillAttr = fillAttrs[attr.nodeName];
 
                             i = 0;
@@ -2675,18 +2890,17 @@
                                 result = results[i++];
                                 header = result.substr(2, (result.length - 4)).split('.');
 
-
                                 if (!fillAttr) {
 
-                                    if (models[header[0]]) {
-                                        ret = models[header[0]].data(header[1]) || "";
+                                    if (me.getModel(header[0])) {
+                                        ret = me.getModel(header[0]).data(header[1]) || "";
                                     }
 
-                                    attr.nodeValue = attr.nodeValue.replace(result, ret);
+                                    attr.value = attr.value.replace(result, ret);
 
                                 } else {
 
-                                    ret = ret && models[header[0]].data(header[1]);
+                                    ret = ret && me.getModel(header[0]).data(header[1]);
 
                                 }
 
@@ -2694,13 +2908,33 @@
 
                             }
 
-                            if (fillAttr && !ret) {
+                            if (fillAttr) {
 
-                                node.removeAttribute(attr.nodeName);
+                                if (!ret) {
 
-                            }else{
+                                    node.removeAttribute(attr.nodeName);
 
-                                node.setAttribute(attr.nodeName, ret);
+                                } else {
+
+                                    node.setAttribute(attr.nodeName, ret);
+
+                                }
+
+                            } else {
+
+                                if (attr.nodeName === 'css') {
+
+                                    value = attr.value;
+
+                                    attr = document.createAttribute("style");
+
+                                    attr.value = value;
+
+                                    node.removeAttribute('css');
+
+                                    attrs.setNamedItem(attr);
+
+                                }
 
                             }
 
@@ -2713,9 +2947,25 @@
                                 pointer: node
                             });
 
+                        } else {
+
+                            if (attr.nodeName === 'css') {
+
+                                value = attr.value;
+
+                                attr = document.createAttribute("style");
+
+                                attr.value = value;
+
+                                node.removeAttribute('css');
+
+                                attrs.setNamedItem(attr);
+
+                            }
+
                         }
 
-                        /*attrs.item(l).nodeValue = attrs[l].nodeValue.replace(bindRegEx, function (match) {
+                        /*attrs.item(l).value = attrs[l].value.replace(bindRegEx, function (match) {
                          return replaceFn(match, 0, attrs[l]);
                          });*/
                     }
@@ -2730,9 +2980,13 @@
                 j++;
             }
 
-            el = parsedTpl.childNodes.item(j);
+            if (j > 1)
+                el = parsedTpl.childNodes.item(j);
+            else
+                el = parsedTpl;
 
-            el.setAttribute('yamvc-id', config.id);
+            el.setAttribute('id', config.id);
+            el.setAttribute('class', 'yamvc');
 
             me.set('el', el);
             me.set('bindings', bindings);
@@ -2740,11 +2994,17 @@
             me.resolveBindings();
 
             if (parent) {
+
                 parent.appendChild(el);
 
                 if (parentView) {
-                    parentView.views = parentView.views || {};
-                    parentView.views[config.id] = me;
+
+                    if (parentView.findChild(me.getId()) < 0) {
+
+                        parentView.getChildren().push(me);
+
+                    }
+
                 }
 
                 me.set('isInDOM', true);
@@ -2755,22 +3015,64 @@
             return el;
         },
         /**
-         * @version 0.1.8
+         * @version 0.1.12
+         */
+        resolveModelBindings: function (model) {
+            var me = this,
+                bindings = me._bindings,
+                bindFnFactory,
+                headers,
+                header,
+                binding,
+                eventName,
+                lenM = 0,
+                len = 0;
+
+            bindFnFactory = function (binding) {
+                return function () {
+                    me.partialRender(binding);
+                };
+            };
+
+            len = bindings.length;
+            while (len--) {
+
+                binding = bindings[len];
+                headers = binding.headers;
+                lenM = headers.length;
+                while (lenM--) {
+
+                    if (model.getNamespace() === headers[lenM][0]) {
+
+                        header = headers[lenM][1];
+                        eventName = 'data' + header.charAt(0).toUpperCase() + header.slice(1) + 'Change';
+                        binding.fn = bindFnFactory(binding);
+
+                        model.addEventListener(eventName,  binding.fn);
+
+                        binding.fn();
+
+                    }
+
+                }
+            }
+        },
+        /**
+         * @version 0.1.12
          */
         resolveBindings: function () {
             var me = this,
                 bindings = me._bindings,
-                models = me._config.models,
-                bindFactory,
+                bindFnFactory,
                 model,
                 headers,
                 header,
                 binding,
-                property,
+                eventName,
                 lenM = 0,
                 len = 0;
 
-            bindFactory = function (binding) {
+            bindFnFactory = function (binding) {
                 return function () {
                     me.partialRender(binding);
                 };
@@ -2782,7 +3084,7 @@
                 binding = bindings[len];
                 headers = binding.headers;
 
-                if (binding.type === 3) {
+                if (binding.type === 3 && binding.oldDOM) {
                     binding.oldDOM.parentNode.replaceChild(binding.pointer, binding.oldDOM);
                     delete binding.oldDOM;
                 }
@@ -2790,25 +3092,29 @@
                 lenM = headers.length;
                 while (lenM--) {
 
-                    model = models[headers[lenM][0]];
+                    model = me.getModel(headers[lenM][0]);
                     header = headers[lenM][1];
 
                     if (model) {
-                        property = header.charAt(0).toUpperCase() + header.slice(1);
-                        model.addListener('data' + property + 'Change', bindFactory(binding));
+
+                        binding.fn = bindFnFactory(binding);
+                        eventName = 'data' + header.charAt(0).toUpperCase() + header.slice(1) + 'Change';
+
+                        model.addEventListener( eventName, binding.fn);
+
                     }
 
                 }
             }
         },
         /**
-         * @version 0.1.8
+         * @version 0.1.11
          * @param binding
          */
         partialRender: function (binding) {
-            var element = binding.type === 3,
-                org = element ? binding.original : true,
-                models = this._config.models,
+            var me = this,
+                element = binding.type === 3,
+                org = element ? binding.original : (binding.fillAttr ? true : binding.original),
                 headers = binding.headers,
                 len = headers.length,
                 header;
@@ -2819,11 +3125,11 @@
 
                 if (element || !binding.fillAttr) {
 
-                    org = org.replace("{{" + header.join(".") + "}}", models[header[0]].data(header[1]));
+                    org = org.replace("{{" + header.join(".") + "}}", me.getModel(header[0]).data(header[1]));
 
                 } else {
 
-                    org = org && models[header[0]].data(header[1]);
+                    org = org && me.getModel(header[0]).data(header[1]);
 
                 }
             }
@@ -2847,6 +3153,51 @@
 
             }
 
+            return me;
+        },
+        /**
+         * @version 0.1.12
+         */
+        removeBindings : function () {
+            var me = this,
+                bindings = me._bindings,
+                l = bindings.length,
+                binding,
+                model,
+                header,
+                l2,
+                eventName;
+
+            while(l--) {
+
+                binding = bindings[l];
+                l2 = binding.headers.length;
+                while(l2--) {
+
+                    header = binding.headers[l2];
+                    model = me.getModel(header[0]);
+                    eventName ='data' + header[1].charAt(0).toUpperCase() + header[1].slice(1) + 'Change';
+
+                    model.removeEventListener(eventName, binding.fn);
+
+                }
+
+            }
+
+            return me;
+        },
+        /**
+         * @version 0.1.12
+         */
+        removeRendered: function () {
+            var me = this;
+
+            me._el.parentNode.removeChild(me._el);
+            me.removeBindings();
+            me.set('el', null);
+            me.set('isInDOM', false);
+
+            return me;
         },
         /**
          * @param selector
@@ -2863,17 +3214,6 @@
             return this.get('el').querySelectorAll(selector);
         },
         /**
-         * @param id
-         * @returns {View||Boolean}
-         */
-        getChild: function (id) {
-            var me = this,
-                config = me.get('config');
-            if (!config.views || config.views && !config.views[id])
-                return false;
-            return config.views[id];
-        },
-        /**
          * @param view
          * @param selector
          * @returns {View}
@@ -2885,24 +3225,71 @@
             return me;
         },
         /**
-         * @returns {View}
+         * @param id
+         * @returns {View||Boolean}
+         */
+        getChild: function (id) {
+            var me = this;
+
+            if (me.findChild(id) < 0)
+                return false;
+
+            return me.findChild(id);
+        },
+        findChild: function (id) {
+            var views = this.getChildren(),
+                l = views.length;
+
+            while (l--) {
+                if (views[l].getId() === id)
+                    break;
+            }
+
+            return l;
+        },
+        removeChild: function (id) {
+            var views = this.getChildren(),
+                l = views.length,
+                view = [];
+
+            while (l--) {
+                if (views[l].getId() === id) {
+
+                    view = views.splice(l, 1);
+                    view[0].clear();
+
+                }
+            }
+
+            return view[0] || null;
+        },
+        /**
+         * @returns {Array}
          */
         removeChildren: function () {
-            var views = this.get('config').views || [];
-            for (var i = 0, len = views.length; i < len; i++) {
-                views[i].clear();
+            var views = this.getChildren(),
+                l = views.length,
+                removed = [];
+
+            while (l--) {
+                removed.push(views[l].clear());
             }
-            return this;
+
+
+            return removed;
         },
         /**
          * @returns {View}
          */
         clear: function () {
-            var me = this, el = me.get('el');
+            var me = this,
+                el = me.get('el');
+
             if (me.isInDOM()) {
                 el.parentNode.removeChild(el);
                 me.set('isInDOM', false);
             }
+
             return me;
         },
         /**
@@ -2919,32 +3306,56 @@
         appendTo: function (parent, selector) {
             var me = this,
                 config = me.get('config'),
-                id = config.id,
-                views = parent.get('config').views,
+                id = me.getId(),
+                views = parent.getChildren(),
+                oldParent = config.parent,
                 parentEl = selector ? parent.get('el').querySelector(selector) : parent.get('el');
 
             if (selector) {
+
                 config.renderTo = selector;
+
             }
 
-            if (!config.parent) {
+            if (!oldParent) {
+
                 config.parent = parent;
+
             }
-            else if (config.parent && config.parent.get('config').id !== parent.get('config').id) {
-                delete config.parent.get('config').views[id];
+            else if (oldParent && oldParent.getId() !== parent.getId()) {
+
+                if (oldParent.findChild(id) > -1) {
+
+                    oldParent
+                        .getChildren()
+                        .splice(
+                            oldParent.findChild(id), 1
+                        );
+
+                }
+
             }
 
             if (!me.isInDOM() && parent.isInDOM()) {
+
                 if (!me.get('el')) {
+
                     me.render();
+
                 } else {
+
                     parentEl.appendChild(me.get('el'));
                     me.set('isInDOM', true);
                     me.reAppendChildren();
                     me.fireEvent('render', null, me);
+
                 }
+
             }
-            views[id] = me;
+
+
+            views.push(me);
+
             config.parent = parent;
             return me;
         },
@@ -2952,40 +3363,46 @@
          * @returns {View}
          */
         reAppendChildren: function () {
-            var views = this.get('config').views;
-            for (var key in views) {
-                if (views.hasOwnProperty(key)) {
-                    views[key].appendTo(this);
-                }
+            var views = this.getChildren(),
+                l = views.length;
+
+            while (l--) {
+                views[l].appendTo(this);
             }
+
             return this;
         },
         /**
          * @returns {View}
          */
         show: function () {
-            var me = this,
-                style;
+            var me = this;
+
             if (!me.isInDOM())
                 return me;
-            style = me.get('el').style;
-            style.display = 'block';
+
+            me.get('el').classList.remove('yamvc-hidden');
+
             me.set('visible', true);
-            me.fireEvent('show', me, style);
+            me.fireEvent('show', me);
+
             return me;
         },
         /**
          * @returns {View}
          */
         hide: function () {
-            var me = this,
-                style;
+            var me = this;
+
             if (!me.isInDOM())
                 return me;
-            style = me.get('el').style;
-            style.display = 'none';
+
+
+            me.get('el').classList.add('yamvc-hidden');
+
             me.set('visible', false);
-            me.fireEvent('hide', me, style);
+            me.fireEvent('hide', me);
+
             return me;
         },
         /**
@@ -3003,14 +3420,15 @@
 }(window));
 (function (window, undefined) {
     "use strict";
-    var yamvc = window.yamvc || {},
-        Proxy;
 
-    Proxy = yamvc.Core.$extend({
+    var yamvc = window.yamvc || {},
+        Template;
+
+    Template = yamvc.Core.$extend({
         init: function (opts) {
             var me = this, config;
 
-            Proxy.Parent.init.apply(this, arguments);
+            Template.Parent.init.apply(this, arguments);
 
             opts = opts || {};
             config = yamvc.$merge(me._config, opts.config);
@@ -3019,75 +3437,39 @@
             me.set('config', config);
 
             me.initConfig();
+            me.initTpl();
 
         },
-        read: function (action) {
+        initConfig: function () {
             var me = this,
-                opts,
-                id;
+                config = me.get('config');
 
-            if (!(action instanceof yamvc.data.Action))
-                throw new Error('yamvc.data.Proxy: read argument action should be instance of yamvc.data.Action');
+            Template.Parent.initConfig.apply(this);
 
-            opts = action.getOptions();
-            id = opts.params && opts.params.id;
+            if (!config.id)
+                throw new Error("yamvc.data.Template: Template need to have id");
 
-            if (!action.getOption('namespace'))
-                throw new Error('yamvc.data.Proxy: namespace should be set');
+            return me;
+        },
+        initTpl: function () {
+            var me = this,
+                html = me.getTpl(),
+                tpl = document.createElement('div');
 
-            if (typeof id === 'undefined') {
-                me.readBy(action);
-            } else {
-                me.readById(action);
+            if (Array.isArray(html)) {
+                html = html.join("");
             }
 
-            return me;
+            tpl.innerHTML = html;
+
+            me.set('html', tpl);
         },
-        create: function (action) {
-            var me = this;
-
-            if (!(action instanceof yamvc.data.Action))
-                throw new Error('yamvc.data.Proxy: create argument action should be instance of yamvc.data.Action');
-
-            if (!action.getOption('namespace'))
-                throw new Error('yamvc.data.Proxy: namespace should be set');
-
-            if (!action.getData() || typeof action.getData() !== 'object')
-                throw new Error('yamvc.data.Proxy: Data should be object');
-
-            return me;
-        },
-        update: function (action) {
-            var me = this;
-
-            if (!(action instanceof yamvc.data.Action))
-                throw new Error('yamvc.data.Proxy: update argument action should be instance of yamvc.data.Action');
-
-            if (!action.getOption('namespace'))
-                throw new Error('yamvc.data.Proxy: namespace should be set');
-
-            if (!action.getData() || typeof action.getData() !== 'object')
-                throw new Error('yamvc.data.Proxy: Data should be object');
-
-            return me;
-        },
-        destroy: function (action) {
-            var me = this;
-
-            if (!(action instanceof yamvc.data.Action))
-                throw new Error('yamvc.data.Proxy: destroy argument action should be instance of yamvc.data.Action');
-
-            if (!action.getOption('namespace'))
-                throw new Error('yamvc.data.Proxy: namespace should be set');
-
-            if (!action.getData() || typeof action.getData() !== 'object')
-                throw new Error('Data should be pass as object');
-
-            return me;
+        getHtml : function () {
+            return this._html;
         }
     });
 
     window.yamvc = yamvc;
-    window.yamvc.data = window.yamvc.data || {};
-    window.yamvc.data.Proxy = Proxy;
+    window.yamvc.view = window.yamvc.view || {};
+    window.yamvc.view.Template = Template;
 }(window));

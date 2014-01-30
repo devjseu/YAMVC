@@ -137,7 +137,7 @@ test("bind with data", function () {
                     ]
                 }
             }),
-            renderTo: '#example-4-result'
+            renderTo: '#test-4'
         }
     });
     view.render();
@@ -145,6 +145,52 @@ test("bind with data", function () {
     equal(view.queryEl('.example').innerText, 'Hi Seba');
 
     equal(view.queryEl('.example').getAttribute('style'), 'display: none;');
+
+    model.data('display', 'block');
+
+    equal(view.queryEl('.example').getAttribute('style'), 'display: block;');
+});
+
+
+test("rendered two times", function () {
+    var view, model;
+
+    model = new yamvc.Model({
+        config: {
+            namespace: 'example',
+            data: {
+                name: "Seba",
+                display: "none"
+            }
+        }
+    });
+
+    view = new yamvc.View({
+        config: {
+            models: [
+                model
+            ],
+            tpl: new yamvc.view.Template({
+                config: {
+                    id: 'tpl-example-4',
+                    tpl: [
+                        '<div>Who are you ?</div>',
+                        '<button style="margin: 10px;">answer</button>',
+                        '<div class="example" css="display: {{example.display}};">Hi {{example.name}}</div>'
+                    ]
+                }
+            }),
+            renderTo: '#test-5'
+        }
+    });
+
+    view.render();
+
+    equal(view.queryEl('.example').innerText, 'Hi Seba');
+
+    equal(view.queryEl('.example').getAttribute('style'), 'display: none;');
+
+    view.render();
 
     model.data('display', 'block');
 

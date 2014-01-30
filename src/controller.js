@@ -94,7 +94,7 @@
             if (events && views) {
                 for (view in views) {
                     if (views.hasOwnProperty(view)) {
-                        views[view].addListener('render', me.resolveEvents.bind(me));
+                        views[view].addEventListener('render', me.resolveEvents.bind(me));
                     }
                 }
 
@@ -111,7 +111,7 @@
                                 for (var event in events[query]) {
 
                                     if (events[query].hasOwnProperty(event)) {
-                                        view.addListener(event, events[query][event].bind(me, view));
+                                        view.addEventListener(event, events[query][event].bind(me, view));
                                     }
 
                                 }

@@ -33,4 +33,8 @@ YAMVC - change log
 * in template tags now use css attribute instead of style for styling
 * in `yamvc.View` models are now stored in array
 * new example, old ones updated to v0.1.11
+* classList polifill by Eli Grey
 
+##0.1.12
+* addListener and removeListener are now addEventListener and removeEventListener
+* `yamvc.View` can be now rerender

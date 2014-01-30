@@ -119,7 +119,7 @@
          * @returns {this}
          */
         Core.prototype.onChange = function (property, callback) {
-            this.addListener(property + 'Change', callback);
+            this.addEventListener(property + 'Change', callback);
             return this;
         };
 

@@ -33,12 +33,13 @@
 
         /**
          * fire event
+         * @version 0.1.12
          * @param evName
          * @param callback
          * @returns {this}
          *
          */
-        addListener: function (evName, callback) {
+        addEventListener: function (evName, callback) {
             var listeners = this._listeners[evName] || [];
             listeners.push(callback);
             this._listeners[evName] = listeners;
@@ -47,13 +48,14 @@
 
         /**
          * fire event
+         * @version 0.1.12
          * @param evName
          * @param callback
          * @returns {this}
          *
          */
-        removeListener: function (evName, callback) {
-            var listeners = this._listeners,
+        removeEventListener: function (evName, callback) {
+            var listeners = this._listeners[evName] || [],
                 index;
             if (listeners) {
                 if (callback) {
@@ -68,7 +70,7 @@
                     }
                     listeners.splice(index, 1);
                 } else {
-                    this._listeners = [];
+                    this._listeners[evName] = [];
                 }
             }
             return this;
