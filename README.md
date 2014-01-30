@@ -11,14 +11,14 @@ Yet Another MVC library. Why? Because. Without reason...
 * No compatibility for IE8 and less
 
 ##Docs
-* (http://devjseu.github.io/YAMVC.html "Under Construction")
+* [Under Construction](http://devjseu.github.io/YAMVC.html "Under Construction")
 
 ##Build
 ###Requires
 * node.js
 
 ###Dependency
-Resolve it typing `npm install` and `bower install` in console in root directory.
+Resolve them typing `npm install` and `bower install` in console in root directory.
 
 ###Build
 Type `grunt`.
