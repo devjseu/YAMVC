@@ -1,4 +1,4 @@
-/*! YAMVC v0.1.12 - 2014-01-30 
+/*! YAMVC v0.1.12 - 2014-02-03 
  *  License:  */
 (function (window, undefined) {
     "use strict";
@@ -120,11 +120,16 @@
 
         /**
          * suspend all events
-         * @param {Boolean} suspend
          */
-        suspendEvents: function (suspend) {
-            suspend = suspend || true;
-            this.set('suspendEvents', suspend);
+        suspendEvents: function () {
+            this.set('suspendEvents', true);
+            return this;
+        },
+        /**
+         * resume all events
+         */
+        resumeEvents: function () {
+            this.set('suspendEvents', false);
             return this;
         }
     };
@@ -172,12 +177,22 @@
      * @returns {*}
      */
     yamvc.$merge = function (obj1, obj2) {
-        for (var property in obj2) {
-            if (obj2.hasOwnProperty(property)) {
-                obj1[property] = obj2[property];
+        var nObj = {},
+            property;
+
+        for (property in obj1) {
+            if (obj1.hasOwnProperty(property)) {
+                nObj[property] = obj1[property];
             }
         }
-        return obj1;
+
+        for (property in obj2) {
+            if (obj2.hasOwnProperty(property)) {
+                nObj[property] = obj2[property];
+            }
+        }
+
+        return nObj;
     };
 
     //
@@ -335,7 +350,7 @@
                     }
                     Core.apply(this, arguments);
                 },
-                defaults = yamvc.$merge(opts.defaults || {}, Parent.__defaults__),
+                defaults = yamvc.$merge(Parent.__defaults__  || {}, opts.defaults),
                 mixins = opts.mixins || [],
                 statics = opts.static || {},
                 __hasProp = {}.hasOwnProperty,
@@ -527,7 +542,7 @@
             if (typeof fn === 'function') {
 
                 filters.push(fn);
-                me.fireEvent('filtersChanged');
+                me.fireEvent('beforeFilter', me, filters);
 
             }
 
@@ -551,6 +566,7 @@
             }
 
             me.set('set', filtered);
+            me.fireEvent('afterFilter', me, filters);
 
             return me;
         },
@@ -582,6 +598,23 @@
 
             }
             return filtered;
+        },
+        /**
+         * @param fn
+         * @returns {}
+         */
+        findOneBy: function (fn) { // Return index of first matched record.
+            var me = this,
+                records = me._set,
+                len = records.length;
+
+            while (len--) {
+
+                if (fn(records[len])) break;
+
+            }
+
+            return len;
         },
         /**
          * @param fn
@@ -820,7 +853,7 @@
          * Prepare data
          * @private
          * @param data
-         * @param total
+         * @param {Number||null} total
          * @returns {Collection}
          */
         prepareData: function (data, total) {
@@ -2582,7 +2615,9 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
         VTM,
         View,
         renderId = 0,
-        fillAttrs;
+        fillAttrs,
+        resize = 0,
+        iv = 0;
 
     function makeMap(str) {
         var obj = {}, items = str.split(",");
@@ -2591,18 +2626,55 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
         return obj;
     }
 
+    function onWindowResize(e) {
+
+
+        if (resize === 0) {
+            iv = setInterval(fireResizeEvent, 32);
+        }
+
+        resize = +new Date();
+    }
+
+    function fireResizeEvent() {
+        var views,
+            l,
+            i,
+            now = +new Date();
+
+        if (now - resize >= 32) {
+
+            clearInterval(iv);
+
+            resize = 0;
+            views = VM.views;
+            l = views.length;
+            i = 0;
+
+            while (i < l) {
+
+                if (views[i].getFit()) {
+                    views[i].fireEvent('resize', views[i]);
+                }
+
+                i++;
+            }
+        }
+    }
+
     fillAttrs = makeMap("checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected");
 
-    style.innerHTML = ".yamvc {display:inline;}; .yamvc-hidden {display: none;}";
+    style.innerHTML = ".yamvc.inline {display:inline;}; .yamvc.hidden {display: none;}";
 
     document.body.appendChild(style);
+    window.addEventListener('resize', onWindowResize);
 
     // Object that stores all views
     /**
-     * @type {{views: {}, i: number, add: Function, get: Function}}
+     * @type {{views: [], i: number, add: Function, get: Function}}
      */
     VM = {
-        views: {},
+        views: [],
         i: 0,
         // Add view to manager
         /**
@@ -2610,7 +2682,7 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
          * @param view
          */
         add: function (id, view) {
-            this.views[id] = view;
+            this.views.push(view);
             this.i++;
         },
         // Get view by its id
@@ -2619,7 +2691,15 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
          * @returns {View}
          */
         get: function (id) {
-            return this.views[id];
+            var len = this.views.length;
+
+            while (len--) {
+
+                if (this.views[len].getId() === id) break;
+
+            }
+
+            return this.views[len];
         }
     };
 
@@ -2644,7 +2724,8 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
      */
     View = yamvc.Core.$extend({
         defaults: {
-            parent: null
+            parent: null,
+            fit: null
         },
         // Initializing function in which we call parent method, merge previous
         // configuration with new one, set id of component, initialize config
@@ -2797,7 +2878,7 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
 
             if (me.isInDOM()) {
 
-                    me.removeRendered();
+                me.removeRendered();
 
             }
 
@@ -2990,18 +3071,15 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
 
             }
 
-
-            while (j < tpl.childNodes.length && tpl.childNodes.item(j).nodeType !== 1) {
-                j++;
+            if (parsedTpl.childNodes.length === 1 && parsedTpl.childNodes.item(0).nodeType === 1) {
+                el = parsedTpl.childNodes.item(0);
+            } else {
+                el = parsedTpl;
+                el.classList.add('inline');
             }
 
-            if (j > 1)
-                el = parsedTpl.childNodes.item(j);
-            else
-                el = parsedTpl;
-
             el.setAttribute('id', config.id);
-            el.setAttribute('class', 'yamvc');
+            el.classList.add('yamvc');
 
             me.set('el', el);
             me.set('bindings', bindings);
@@ -3063,7 +3141,7 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
                         eventName = 'data' + header.charAt(0).toUpperCase() + header.slice(1) + 'Change';
                         binding.fn = bindFnFactory(binding);
 
-                        model.addEventListener(eventName,  binding.fn);
+                        model.addEventListener(eventName, binding.fn);
 
                         binding.fn();
 
@@ -3115,7 +3193,7 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
                         binding.fn = bindFnFactory(binding);
                         eventName = 'data' + header.charAt(0).toUpperCase() + header.slice(1) + 'Change';
 
-                        model.addEventListener( eventName, binding.fn);
+                        model.addEventListener(eventName, binding.fn);
 
                     }
 
@@ -3173,7 +3251,7 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
         /**
          * @version 0.1.12
          */
-        removeBindings : function () {
+        removeBindings: function () {
             var me = this,
                 bindings = me._bindings,
                 l = bindings.length,
@@ -3183,15 +3261,15 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
                 l2,
                 eventName;
 
-            while(l--) {
+            while (l--) {
 
                 binding = bindings[l];
                 l2 = binding.headers.length;
-                while(l2--) {
+                while (l2--) {
 
                     header = binding.headers[l2];
                     model = me.getModel(header[0]);
-                    eventName ='data' + header[1].charAt(0).toUpperCase() + header[1].slice(1) + 'Change';
+                    eventName = 'data' + header[1].charAt(0).toUpperCase() + header[1].slice(1) + 'Change';
 
                     model.removeEventListener(eventName, binding.fn);
 
@@ -3379,10 +3457,11 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
          */
         reAppendChildren: function () {
             var views = this.getChildren(),
-                l = views.length;
+                l = views.length,
+                i = 0;
 
-            while (l--) {
-                views[l].appendTo(this);
+            for (; i < l; i++) {
+                views[i].appendTo(this);
             }
 
             return this;
@@ -3396,7 +3475,7 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
             if (!me.isInDOM())
                 return me;
 
-            me.get('el').classList.remove('yamvc-hidden');
+            me.get('el').classList.remove('hidden');
 
             me.set('visible', true);
             me.fireEvent('show', me);
@@ -3413,7 +3492,7 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
                 return me;
 
 
-            me.get('el').classList.add('yamvc-hidden');
+            me.get('el').classList.add('hidden');
 
             me.set('visible', false);
             me.fireEvent('hide', me);

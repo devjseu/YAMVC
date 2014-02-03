@@ -36,12 +36,22 @@
      * @returns {*}
      */
     yamvc.$merge = function (obj1, obj2) {
-        for (var property in obj2) {
-            if (obj2.hasOwnProperty(property)) {
-                obj1[property] = obj2[property];
+        var nObj = {},
+            property;
+
+        for (property in obj1) {
+            if (obj1.hasOwnProperty(property)) {
+                nObj[property] = obj1[property];
             }
         }
-        return obj1;
+
+        for (property in obj2) {
+            if (obj2.hasOwnProperty(property)) {
+                nObj[property] = obj2[property];
+            }
+        }
+
+        return nObj;
     };
 
     //
@@ -199,7 +209,7 @@
                     }
                     Core.apply(this, arguments);
                 },
-                defaults = yamvc.$merge(opts.defaults || {}, Parent.__defaults__),
+                defaults = yamvc.$merge(Parent.__defaults__  || {}, opts.defaults),
                 mixins = opts.mixins || [],
                 statics = opts.static || {},
                 __hasProp = {}.hasOwnProperty,

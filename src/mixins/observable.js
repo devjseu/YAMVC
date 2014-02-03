@@ -79,11 +79,16 @@
 
         /**
          * suspend all events
-         * @param {Boolean} suspend
          */
-        suspendEvents: function (suspend) {
-            suspend = suspend || true;
-            this.set('suspendEvents', suspend);
+        suspendEvents: function () {
+            this.set('suspendEvents', true);
+            return this;
+        },
+        /**
+         * resume all events
+         */
+        resumeEvents: function () {
+            this.set('suspendEvents', false);
             return this;
         }
     };

@@ -47,7 +47,9 @@
         VTM,
         View,
         renderId = 0,
-        fillAttrs;
+        fillAttrs,
+        resize = 0,
+        iv = 0;
 
     function makeMap(str) {
         var obj = {}, items = str.split(",");
@@ -56,18 +58,55 @@
         return obj;
     }
 
+    function onWindowResize(e) {
+
+
+        if (resize === 0) {
+            iv = setInterval(fireResizeEvent, 32);
+        }
+
+        resize = +new Date();
+    }
+
+    function fireResizeEvent() {
+        var views,
+            l,
+            i,
+            now = +new Date();
+
+        if (now - resize >= 32) {
+
+            clearInterval(iv);
+
+            resize = 0;
+            views = VM.views;
+            l = views.length;
+            i = 0;
+
+            while (i < l) {
+
+                if (views[i].getFit()) {
+                    views[i].fireEvent('resize', views[i]);
+                }
+
+                i++;
+            }
+        }
+    }
+
     fillAttrs = makeMap("checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected");
 
-    style.innerHTML = ".yamvc {display:inline;}; .yamvc-hidden {display: none;}";
+    style.innerHTML = ".yamvc.inline {display:inline;}; .yamvc.hidden {display: none;}";
 
     document.body.appendChild(style);
+    window.addEventListener('resize', onWindowResize);
 
     // Object that stores all views
     /**
-     * @type {{views: {}, i: number, add: Function, get: Function}}
+     * @type {{views: [], i: number, add: Function, get: Function}}
      */
     VM = {
-        views: {},
+        views: [],
         i: 0,
         // Add view to manager
         /**
@@ -75,7 +114,7 @@
          * @param view
          */
         add: function (id, view) {
-            this.views[id] = view;
+            this.views.push(view);
             this.i++;
         },
         // Get view by its id
@@ -84,7 +123,15 @@
          * @returns {View}
          */
         get: function (id) {
-            return this.views[id];
+            var len = this.views.length;
+
+            while (len--) {
+
+                if (this.views[len].getId() === id) break;
+
+            }
+
+            return this.views[len];
         }
     };
 
@@ -109,7 +156,8 @@
      */
     View = yamvc.Core.$extend({
         defaults: {
-            parent: null
+            parent: null,
+            fit: null
         },
         // Initializing function in which we call parent method, merge previous
         // configuration with new one, set id of component, initialize config
@@ -262,7 +310,7 @@
 
             if (me.isInDOM()) {
 
-                    me.removeRendered();
+                me.removeRendered();
 
             }
 
@@ -455,18 +503,15 @@
 
             }
 
-
-            while (j < tpl.childNodes.length && tpl.childNodes.item(j).nodeType !== 1) {
-                j++;
+            if (parsedTpl.childNodes.length === 1 && parsedTpl.childNodes.item(0).nodeType === 1) {
+                el = parsedTpl.childNodes.item(0);
+            } else {
+                el = parsedTpl;
+                el.classList.add('inline');
             }
 
-            if (j > 1)
-                el = parsedTpl.childNodes.item(j);
-            else
-                el = parsedTpl;
-
             el.setAttribute('id', config.id);
-            el.setAttribute('class', 'yamvc');
+            el.classList.add('yamvc');
 
             me.set('el', el);
             me.set('bindings', bindings);
@@ -528,7 +573,7 @@
                         eventName = 'data' + header.charAt(0).toUpperCase() + header.slice(1) + 'Change';
                         binding.fn = bindFnFactory(binding);
 
-                        model.addEventListener(eventName,  binding.fn);
+                        model.addEventListener(eventName, binding.fn);
 
                         binding.fn();
 
@@ -580,7 +625,7 @@
                         binding.fn = bindFnFactory(binding);
                         eventName = 'data' + header.charAt(0).toUpperCase() + header.slice(1) + 'Change';
 
-                        model.addEventListener( eventName, binding.fn);
+                        model.addEventListener(eventName, binding.fn);
 
                     }
 
@@ -638,7 +683,7 @@
         /**
          * @version 0.1.12
          */
-        removeBindings : function () {
+        removeBindings: function () {
             var me = this,
                 bindings = me._bindings,
                 l = bindings.length,
@@ -648,15 +693,15 @@
                 l2,
                 eventName;
 
-            while(l--) {
+            while (l--) {
 
                 binding = bindings[l];
                 l2 = binding.headers.length;
-                while(l2--) {
+                while (l2--) {
 
                     header = binding.headers[l2];
                     model = me.getModel(header[0]);
-                    eventName ='data' + header[1].charAt(0).toUpperCase() + header[1].slice(1) + 'Change';
+                    eventName = 'data' + header[1].charAt(0).toUpperCase() + header[1].slice(1) + 'Change';
 
                     model.removeEventListener(eventName, binding.fn);
 
@@ -844,10 +889,11 @@
          */
         reAppendChildren: function () {
             var views = this.getChildren(),
-                l = views.length;
+                l = views.length,
+                i = 0;
 
-            while (l--) {
-                views[l].appendTo(this);
+            for (; i < l; i++) {
+                views[i].appendTo(this);
             }
 
             return this;
@@ -861,7 +907,7 @@
             if (!me.isInDOM())
                 return me;
 
-            me.get('el').classList.remove('yamvc-hidden');
+            me.get('el').classList.remove('hidden');
 
             me.set('visible', true);
             me.fireEvent('show', me);
@@ -878,7 +924,7 @@
                 return me;
 
 
-            me.get('el').classList.add('yamvc-hidden');
+            me.get('el').classList.add('hidden');
 
             me.set('visible', false);
             me.fireEvent('hide', me);

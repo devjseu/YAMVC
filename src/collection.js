@@ -127,7 +127,7 @@
             if (typeof fn === 'function') {
 
                 filters.push(fn);
-                me.fireEvent('filtersChanged');
+                me.fireEvent('beforeFilter', me, filters);
 
             }
 
@@ -151,6 +151,7 @@
             }
 
             me.set('set', filtered);
+            me.fireEvent('afterFilter', me, filters);
 
             return me;
         },
@@ -182,6 +183,23 @@
 
             }
             return filtered;
+        },
+        /**
+         * @param fn
+         * @returns {}
+         */
+        findOneBy: function (fn) { // Return index of first matched record.
+            var me = this,
+                records = me._set,
+                len = records.length;
+
+            while (len--) {
+
+                if (fn(records[len])) break;
+
+            }
+
+            return len;
         },
         /**
          * @param fn
@@ -420,7 +438,7 @@
          * Prepare data
          * @private
          * @param data
-         * @param total
+         * @param {Number||null} total
          * @returns {Collection}
          */
         prepareData: function (data, total) {
