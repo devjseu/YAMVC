@@ -14,7 +14,7 @@ YAMVC - change log
 
 ##0.1.8
 * Rewritten rendering method in `yamvc.experimental.View`
-* In `yamvc.experimental.View` templates are now automatically bind to data
+* In `yamvc.experimental.View` to data is now automatically bind to template
 * Asynchronous model methods now use promises
 
 ##0.1.9
@@ -30,7 +30,7 @@ YAMVC - change log
 
 ##0.1.11
 * view might be now initialized with `yamvc.view.Template` object
-* in template tags now use css attribute instead of style for styling
+* in template instead of `style` attribute you should use `css`
 * in `yamvc.View` models are now stored in array
 * new example, old ones updated to v0.1.11
 * classList polifill by Eli Grey
