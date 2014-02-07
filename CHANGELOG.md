@@ -14,7 +14,7 @@ YAMVC - change log
 
 ##0.1.8
 * Rewritten rendering method in `yamvc.experimental.View`
-* In `yamvc.experimental.View` to data is now automatically bind to template
+* In `yamvc.experimental.View` data is now automatically bind to template
 * Asynchronous model methods now use promises
 
 ##0.1.9
