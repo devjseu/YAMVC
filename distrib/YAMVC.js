@@ -1,4 +1,4 @@
-/*! YAMVC v0.1.12 - 2014-02-03 
+/*! YAMVC v0.1.12 - 2014-02-07 
  *  License:  */
 (function (window, undefined) {
     "use strict";
@@ -291,6 +291,11 @@
             return this;
         };
 
+        Core.$create = function (opts) {
+            var Obj = this;
+            return new Obj(opts);
+        };
+
         // Add mixin to object definition.
         /**
          * @static
@@ -350,7 +355,7 @@
                     }
                     Core.apply(this, arguments);
                 },
-                defaults = yamvc.$merge(Parent.__defaults__  || {}, opts.defaults),
+                defaults = yamvc.$merge(Parent.__defaults__ || {}, opts.defaults),
                 mixins = opts.mixins || [],
                 statics = opts.static || {},
                 __hasProp = {}.hasOwnProperty,
@@ -368,6 +373,7 @@
                     child.prototype = new Instance();
                     child.$extend = Core.$extend;
                     child.$mixin = Core.$mixin;
+                    child.$create = Core.$create;
                     child.__mixins__ = [];
                     child.__defaults__ = defaults;
 
@@ -525,7 +531,32 @@
         clearFilters: function () {
             var me = this;
 
+            //TODO: clear by multiple filters id
             me.set('filters', []);
+            me.filter();
+
+            return me;
+        },
+        clearFilter: function (id) {
+            var me = this,
+                filters = me._filters,
+                filLength,
+                filter;
+
+            filLength = filters.length;
+            while (filLength--) {
+
+                filter = filters[filLength];
+                if (typeof filter !== 'function' && filter.id === id) {
+
+                    filters.splice(filLength, 1);
+
+                    break;
+
+                }
+
+            }
+
             me.filter();
 
             return me;
@@ -537,11 +568,30 @@
                 passed = true,
                 filtered = [],
                 records = me._cache,
-                filLength = 0;
+                filLength = 0,
+                id = null;
+
+            if (arguments.length > 1) {
+                id = arguments[0];
+                fn = arguments[1];
+            }
+
 
             if (typeof fn === 'function') {
 
-                filters.push(fn);
+                if (id) {
+
+                    filters.push({
+                        id: id,
+                        fn: fn
+                    });
+
+                } else {
+
+                    filters.push(fn);
+
+                }
+
                 me.fireEvent('beforeFilter', me, filters);
 
             }
@@ -552,7 +602,7 @@
                 filLength = filters.length;
                 while (filLength--) {
 
-                    filterFn = filters[filLength];
+                    filterFn = typeof filters[filLength] === 'function' ? filters[filLength] : filters[filLength].fn;
                     passed = passed && filterFn(records[i]);
 
                 }
@@ -2466,6 +2516,11 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
     // static
     Promise.State = State;
 
+    Promise.$create = function (opts) {
+        var Obj = this;
+        return new Obj(opts);
+    };
+
     /**
      * @param value
      * @returns {Promise}
@@ -2492,7 +2547,7 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
     Promise.$deferred = function () {
         var resolve, reject;
         return {
-            promise: new Promise(function (res, rej) {
+            promise: Promise.$create(function (res, rej) {
                 resolve = res;
                 reject = rej;
             }),
@@ -2620,6 +2675,7 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
         iv = 0;
 
     function makeMap(str) {
+        // Make object map from string.
         var obj = {}, items = str.split(",");
         for (var i = 0; i < items.length; i++)
             obj[ items[i] ] = true;
@@ -2627,7 +2683,8 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
     }
 
     function onWindowResize(e) {
-
+        // When resize event occur wait 32 miliseconds
+        // to not firing it to often.
 
         if (resize === 0) {
             iv = setInterval(fireResizeEvent, 32);
@@ -2637,6 +2694,8 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
     }
 
     function fireResizeEvent() {
+        // Fire yamvc resize event only on components
+        // which need to be fitted to their parents.
         var views,
             l,
             i,
@@ -2662,17 +2721,22 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
         }
     }
 
+    // Make object with attributes that not need any value.
     fillAttrs = makeMap("checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected");
 
-    style.innerHTML = ".yamvc.inline {display:inline;}; .yamvc.hidden {display: none;}";
+    // Append some basic css to document.
+    style.innerHTML = ".yamvc.inline {display:inline;} .yamvc.hidden {display: none !important;}";
+    style.setAttribute('type', 'text/css');
 
     document.body.appendChild(style);
     window.addEventListener('resize', onWindowResize);
 
-    // Object that stores all views
+
     /**
      * @type {{views: [], i: number, add: Function, get: Function}}
      */
+        // `yamvc.ViewManager` stores all created views and allow as to
+        // use `get` method (with id as argument) to return requested view.
     VM = {
         views: [],
         i: 0,
@@ -2703,10 +2767,11 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
         }
     };
 
-    //Private object, keeps all templates in one place
     /**
      * @type {{tpl: {}, add: Function, get: Function}}
      */
+        // `VTM` is a private object that stores all templates used
+        // in application.
     VTM = {
         tpl: {},
         add: function (id, view) {
@@ -2716,16 +2781,22 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
             return this.tpl[id];
         }
     };
-    // Definition of View object
     /**
      * @constructor
      * @params opts Object with configuration properties
      * @type {function}
      */
     View = yamvc.Core.$extend({
+        // `yamvc.View` accept few configuration properties:
+        // * `parent` - pointer to parent view
+        // * `fit` - if true, component will fire resize event when size
+        // of window was changed
+        // * `hidden` - if true, component will be hidden after render
         defaults: {
             parent: null,
-            fit: null
+            fit: false,
+            hidden: false,
+            models: null
         },
         // Initializing function in which we call parent method, merge previous
         // configuration with new one, set id of component, initialize config
@@ -3086,6 +3157,9 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
 
             me.resolveBindings();
 
+            if (me.getHidden())
+                me.hide();
+
             if (parent) {
 
                 parent.appendChild(el);
@@ -3376,7 +3450,7 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
          */
         clear: function () {
             var me = this,
-                el = me.get('el');
+                el = me._el;
 
             if (me.isInDOM()) {
                 el.parentNode.removeChild(el);
@@ -3402,7 +3476,7 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
                 id = me.getId(),
                 views = parent.getChildren(),
                 oldParent = config.parent,
-                parentEl = selector ? parent.get('el').querySelector(selector) : parent.get('el');
+                parentEl = selector ? parent._el.querySelector(selector) : parent._el;
 
             if (selector) {
 
@@ -3431,13 +3505,13 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
 
             if (!me.isInDOM() && parent.isInDOM()) {
 
-                if (!me.get('el')) {
+                if (!me._el) {
 
                     me.render();
 
                 } else {
 
-                    parentEl.appendChild(me.get('el'));
+                    parentEl.appendChild(me._el);
                     me.set('isInDOM', true);
                     me.reAppendChildren();
                     me.fireEvent('render', null, me);
@@ -3472,10 +3546,10 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
         show: function () {
             var me = this;
 
-            if (!me.isInDOM())
+            if (!me._el)
                 return me;
 
-            me.get('el').classList.remove('hidden');
+            me._el.classList.remove('hidden');
 
             me.set('visible', true);
             me.fireEvent('show', me);
@@ -3488,16 +3562,30 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
         hide: function () {
             var me = this;
 
-            if (!me.isInDOM())
+            if (!me._el)
                 return me;
 
 
-            me.get('el').classList.add('hidden');
+            me._el.classList.add('hidden');
 
             me.set('visible', false);
             me.fireEvent('hide', me);
 
             return me;
+        },
+        toggle: function () {
+            var me = this;
+
+            if(me._visible){
+
+                me.hide();
+
+            }else{
+
+                me.show();
+
+            }
+
         },
         /**
          * @returns {Boolean}

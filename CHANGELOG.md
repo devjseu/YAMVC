@@ -38,3 +38,8 @@ YAMVC - change log
 ##0.1.12
 * addListener and removeListener are now addEventListener and removeEventListener
 * `yamvc.View` can be now rerender
+* `Core` and object that inherited from it contains now static factory method '$create' which should be used instead of
+new keyword
+* `filter` method in `yamvc.Collection` can takes now two arguments where first is id of passed filter and second is
+filtering function
+* `yamvc.Collection` has now method `clearFilter`

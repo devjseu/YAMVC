@@ -110,7 +110,32 @@
         clearFilters: function () {
             var me = this;
 
+            //TODO: clear by multiple filters id
             me.set('filters', []);
+            me.filter();
+
+            return me;
+        },
+        clearFilter: function (id) {
+            var me = this,
+                filters = me._filters,
+                filLength,
+                filter;
+
+            filLength = filters.length;
+            while (filLength--) {
+
+                filter = filters[filLength];
+                if (typeof filter !== 'function' && filter.id === id) {
+
+                    filters.splice(filLength, 1);
+
+                    break;
+
+                }
+
+            }
+
             me.filter();
 
             return me;
@@ -122,11 +147,30 @@
                 passed = true,
                 filtered = [],
                 records = me._cache,
-                filLength = 0;
+                filLength = 0,
+                id = null;
+
+            if (arguments.length > 1) {
+                id = arguments[0];
+                fn = arguments[1];
+            }
+
 
             if (typeof fn === 'function') {
 
-                filters.push(fn);
+                if (id) {
+
+                    filters.push({
+                        id: id,
+                        fn: fn
+                    });
+
+                } else {
+
+                    filters.push(fn);
+
+                }
+
                 me.fireEvent('beforeFilter', me, filters);
 
             }
@@ -137,7 +181,7 @@
                 filLength = filters.length;
                 while (filLength--) {
 
-                    filterFn = filters[filLength];
+                    filterFn = typeof filters[filLength] === 'function' ? filters[filLength] : filters[filLength].fn;
                     passed = passed && filterFn(records[i]);
 
                 }

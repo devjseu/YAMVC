@@ -150,6 +150,11 @@
             return this;
         };
 
+        Core.$create = function (opts) {
+            var Obj = this;
+            return new Obj(opts);
+        };
+
         // Add mixin to object definition.
         /**
          * @static
@@ -209,7 +214,7 @@
                     }
                     Core.apply(this, arguments);
                 },
-                defaults = yamvc.$merge(Parent.__defaults__  || {}, opts.defaults),
+                defaults = yamvc.$merge(Parent.__defaults__ || {}, opts.defaults),
                 mixins = opts.mixins || [],
                 statics = opts.static || {},
                 __hasProp = {}.hasOwnProperty,
@@ -227,6 +232,7 @@
                     child.prototype = new Instance();
                     child.$extend = Core.$extend;
                     child.$mixin = Core.$mixin;
+                    child.$create = Core.$create;
                     child.__mixins__ = [];
                     child.__defaults__ = defaults;
 

@@ -177,6 +177,11 @@
     // static
     Promise.State = State;
 
+    Promise.$create = function (opts) {
+        var Obj = this;
+        return new Obj(opts);
+    };
+
     /**
      * @param value
      * @returns {Promise}
@@ -203,7 +208,7 @@
     Promise.$deferred = function () {
         var resolve, reject;
         return {
-            promise: new Promise(function (res, rej) {
+            promise: Promise.$create(function (res, rej) {
                 resolve = res;
                 reject = rej;
             }),

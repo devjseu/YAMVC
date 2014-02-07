@@ -3,7 +3,7 @@ module('Action');
 test("after initialization", function () {
     var action;
 
-    action = new yamvc.data.Action();
+    action = yamvc.data.Action.$create();
 
     ok(action instanceof  yamvc.data.Action, "is instance of yamvc.data.Action");
     equal(action.get('status'), yamvc.data.Action.Status.PENDING, "has status pending");
@@ -13,7 +13,7 @@ test("after initialization", function () {
 test("has method", function () {
     var action;
 
-    action = new yamvc.data.Action();
+    action = yamvc.data.Action.$create();
 
     ok(typeof action.setOptions !== "undefined", "to set options");
     ok(typeof action.getOptions !== "undefined", "to get options");

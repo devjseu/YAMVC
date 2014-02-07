@@ -52,6 +52,7 @@
         iv = 0;
 
     function makeMap(str) {
+        // Make object map from string.
         var obj = {}, items = str.split(",");
         for (var i = 0; i < items.length; i++)
             obj[ items[i] ] = true;
@@ -59,7 +60,8 @@
     }
 
     function onWindowResize(e) {
-
+        // When resize event occur wait 32 miliseconds
+        // to not firing it to often.
 
         if (resize === 0) {
             iv = setInterval(fireResizeEvent, 32);
@@ -69,6 +71,8 @@
     }
 
     function fireResizeEvent() {
+        // Fire yamvc resize event only on components
+        // which need to be fitted to their parents.
         var views,
             l,
             i,
@@ -94,17 +98,22 @@
         }
     }
 
+    // Make object with attributes that not need any value.
     fillAttrs = makeMap("checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected");
 
-    style.innerHTML = ".yamvc.inline {display:inline;}; .yamvc.hidden {display: none;}";
+    // Append some basic css to document.
+    style.innerHTML = ".yamvc.inline {display:inline;} .yamvc.hidden {display: none !important;}";
+    style.setAttribute('type', 'text/css');
 
     document.body.appendChild(style);
     window.addEventListener('resize', onWindowResize);
 
-    // Object that stores all views
+
     /**
      * @type {{views: [], i: number, add: Function, get: Function}}
      */
+        // `yamvc.ViewManager` stores all created views and allow as to
+        // use `get` method (with id as argument) to return requested view.
     VM = {
         views: [],
         i: 0,
@@ -135,10 +144,11 @@
         }
     };
 
-    //Private object, keeps all templates in one place
     /**
      * @type {{tpl: {}, add: Function, get: Function}}
      */
+        // `VTM` is a private object that stores all templates used
+        // in application.
     VTM = {
         tpl: {},
         add: function (id, view) {
@@ -148,16 +158,22 @@
             return this.tpl[id];
         }
     };
-    // Definition of View object
     /**
      * @constructor
      * @params opts Object with configuration properties
      * @type {function}
      */
     View = yamvc.Core.$extend({
+        // `yamvc.View` accept few configuration properties:
+        // * `parent` - pointer to parent view
+        // * `fit` - if true, component will fire resize event when size
+        // of window was changed
+        // * `hidden` - if true, component will be hidden after render
         defaults: {
             parent: null,
-            fit: null
+            fit: false,
+            hidden: false,
+            models: null
         },
         // Initializing function in which we call parent method, merge previous
         // configuration with new one, set id of component, initialize config
@@ -518,6 +534,9 @@
 
             me.resolveBindings();
 
+            if (me.getHidden())
+                me.hide();
+
             if (parent) {
 
                 parent.appendChild(el);
@@ -808,7 +827,7 @@
          */
         clear: function () {
             var me = this,
-                el = me.get('el');
+                el = me._el;
 
             if (me.isInDOM()) {
                 el.parentNode.removeChild(el);
@@ -834,7 +853,7 @@
                 id = me.getId(),
                 views = parent.getChildren(),
                 oldParent = config.parent,
-                parentEl = selector ? parent.get('el').querySelector(selector) : parent.get('el');
+                parentEl = selector ? parent._el.querySelector(selector) : parent._el;
 
             if (selector) {
 
@@ -863,13 +882,13 @@
 
             if (!me.isInDOM() && parent.isInDOM()) {
 
-                if (!me.get('el')) {
+                if (!me._el) {
 
                     me.render();
 
                 } else {
 
-                    parentEl.appendChild(me.get('el'));
+                    parentEl.appendChild(me._el);
                     me.set('isInDOM', true);
                     me.reAppendChildren();
                     me.fireEvent('render', null, me);
@@ -904,10 +923,10 @@
         show: function () {
             var me = this;
 
-            if (!me.isInDOM())
+            if (!me._el)
                 return me;
 
-            me.get('el').classList.remove('hidden');
+            me._el.classList.remove('hidden');
 
             me.set('visible', true);
             me.fireEvent('show', me);
@@ -920,16 +939,30 @@
         hide: function () {
             var me = this;
 
-            if (!me.isInDOM())
+            if (!me._el)
                 return me;
 
 
-            me.get('el').classList.add('hidden');
+            me._el.classList.add('hidden');
 
             me.set('visible', false);
             me.fireEvent('hide', me);
 
             return me;
+        },
+        toggle: function () {
+            var me = this;
+
+            if(me._visible){
+
+                me.hide();
+
+            }else{
+
+                me.show();
+
+            }
+
         },
         /**
          * @returns {Boolean}
