@@ -6,7 +6,7 @@
  *         config: {
  *             name: 'Main',
  *             views: {
- *                 layout: ViewManager.get('view-0')
+ *                 layout: viewManager.get('view-0')
  *             },
  *             routes: {
  *                 "page/{\\d+}": 'changePage'
@@ -43,22 +43,55 @@
 (function (window, undefined) {
     "use strict";
 
-    var yamvc = window.yamvc || {},
+    var ya = window.ya || {},
         Controller,
-        router;
+        router,
+        CM;
+
+    // `ya.ControllerManager` stores all created views and allow as to
+    // use `get` method (with id as argument) to return requested view.
+    CM = {
+        controller: [],
+        i: 0,
+        // Add view to manager
+        /**
+         * @param id
+         * @param view
+         */
+        add: function (id, view) {
+            this.controller.push(view);
+            this.i++;
+        },
+        // Get view by its id
+        /**
+         * @param id
+         * @returns {View}
+         */
+        get: function (id) {
+            var len = this.controller.length;
+
+            while (len--) {
+
+                if (this.controller[len].getId() === id) break;
+
+            }
+
+            return this.controller[len];
+        }
+    };
 
     /**
      *
      * @type {*}
      */
-    Controller = yamvc.Core.$extend({
+    Controller = ya.Core.$extend({
         init: function (opts) {
-            var config,
-                me = this;
+            var me = this, config, id;
 
             opts = opts || {};
-            config = opts.config || {};
-            router = router || new yamvc.Router();
+            config = ya.$merge(me._config, opts.config);
+            config.id = id = config.id || 'controller-' + CM.i;
+            router = router || new ya.Router();
 
             me.set('initOpts', opts);
             me.set('config', config);
@@ -69,11 +102,12 @@
             me.initConfig();
             me.renderViews();
             me.restoreRouter();
+            CM.add(id, me);
 
             return me;
         },
         initConfig: function () {
-            yamvc.Core.prototype.initConfig.apply(this);
+            ya.Core.prototype.initConfig.apply(this);
             var me = this,
                 routes = me.get('routes'),
                 events = me.get('events'),
@@ -93,9 +127,13 @@
 
             if (events && views) {
                 for (view in views) {
+
                     if (views.hasOwnProperty(view)) {
+
                         views[view].addEventListener('render', me.resolveEvents.bind(me));
+
                     }
+
                 }
 
                 for (query in events) {
@@ -198,6 +236,6 @@
             return this;
         }
     });
-
-    window.yamvc.Controller = Controller;
+    window.ya.controllerManager = CM;
+    window.ya.Controller = Controller;
 }(window));

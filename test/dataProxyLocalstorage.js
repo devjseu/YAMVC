@@ -3,9 +3,9 @@ module('Local proxy');
 test("initialize", function () {
     var proxy;
 
-    proxy = new yamvc.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.Localstorage();
 
-    ok(proxy instanceof  yamvc.data.proxy.Localstorage);
+    ok(proxy instanceof  ya.data.proxy.Localstorage);
 });
 
 asyncTest("clear database", function () {
@@ -13,7 +13,7 @@ asyncTest("clear database", function () {
 
     expect(2);
 
-    action = new yamvc.data.Action();
+    action = new ya.data.Action();
 
     opts = {
         callback: function (proxy, action) {
@@ -32,9 +32,9 @@ asyncTest("clear database", function () {
     action.setOptions(opts);
 
 
-    yamvc.data.proxy.Localstorage.$clear(n);
+    ya.data.proxy.Localstorage.$clear(n);
 
-    proxy = new yamvc.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.Localstorage();
 
     proxy.read(action);
 });
@@ -42,7 +42,7 @@ asyncTest("clear database", function () {
 test("execute passed conditions", function () {
     var proxy, record;
 
-    proxy = new yamvc.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.Localstorage();
 
     record = {
         name: "Sebastian",
@@ -65,7 +65,7 @@ asyncTest("CRUD: proxy read data by id", function () {
     /**
      * clear storage
      */
-    yamvc.data.proxy.Localstorage.$clear(n);
+    ya.data.proxy.Localstorage.$clear(n);
 
     record = {
         name: 'Anonymous',
@@ -73,12 +73,12 @@ asyncTest("CRUD: proxy read data by id", function () {
         age: 23
     };
 
-    proxy = new yamvc.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.Localstorage();
 
     callback = function (proxy, action) {
 
         response = action.getResponse();
-        action2 = new yamvc.data.Action();
+        action2 = new ya.data.Action();
 
         action2.setOptions({
             params: {id: record.id},
@@ -104,7 +104,7 @@ asyncTest("CRUD: proxy read data by id", function () {
         start();
     };
 
-    action = new yamvc.data.Action();
+    action = new ya.data.Action();
 
     action
         .setOptions({
@@ -121,7 +121,7 @@ asyncTest("CRUD: proxy read data sorted by name", function () {
 
     expect(2);
 
-    yamvc.data.proxy.Localstorage.$clear(n);
+    ya.data.proxy.Localstorage.$clear(n);
 
     records = [
         {
@@ -146,11 +146,11 @@ asyncTest("CRUD: proxy read data sorted by name", function () {
         }
     ];
 
-    proxy = new yamvc.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.Localstorage();
 
     callback = function () {
 
-        action2 = new yamvc.data.Action();
+        action2 = new ya.data.Action();
 
         action2
             .setOptions({
@@ -169,7 +169,7 @@ asyncTest("CRUD: proxy read data sorted by name", function () {
 
         response = action.getResponse();
 
-        equal(action.getStatus(), yamvc.data.Action.Status.SUCCESS, "Record added to storage");
+        equal(action.getStatus(), ya.data.Action.Status.SUCCESS, "Record added to storage");
 
         records = response.result;
 
@@ -178,7 +178,7 @@ asyncTest("CRUD: proxy read data sorted by name", function () {
         start();
     };
 
-    action = new yamvc.data.Action();
+    action = new ya.data.Action();
 
     action
         .setOptions({
@@ -195,7 +195,7 @@ asyncTest("CRUD: proxy read data sorted by age", function () {
 
     expect(1);
 
-    yamvc.data.proxy.Localstorage.$clear(n);
+    ya.data.proxy.Localstorage.$clear(n);
 
     records = [
         {
@@ -220,11 +220,11 @@ asyncTest("CRUD: proxy read data sorted by age", function () {
         }
     ];
 
-    proxy = new yamvc.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.Localstorage();
 
     callback = function (proxy, action) {
 
-        action2 = new yamvc.data.Action();
+        action2 = new ya.data.Action();
 
         action2
             .setOptions({
@@ -249,7 +249,7 @@ asyncTest("CRUD: proxy read data sorted by age", function () {
         start();
     };
 
-    action = new yamvc.data.Action();
+    action = new ya.data.Action();
 
     action
         .setOptions({
@@ -266,7 +266,7 @@ asyncTest("CRUD: proxy read data filtered by passed conditions", function () {
 
     expect(2);
 
-    yamvc.data.proxy.Localstorage.$clear(n);
+    ya.data.proxy.Localstorage.$clear(n);
 
     records = [
         {
@@ -291,13 +291,13 @@ asyncTest("CRUD: proxy read data filtered by passed conditions", function () {
         }
     ];
 
-    proxy = new yamvc.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.Localstorage();
 
     callback = function (proxy, action) {
 
         response = action.getResponse();
 
-        action2 = new yamvc.data.Action();
+        action2 = new ya.data.Action();
 
         action2
             .setOptions({
@@ -318,14 +318,14 @@ asyncTest("CRUD: proxy read data filtered by passed conditions", function () {
         response = action.getResponse();
         records = response.result;
 
-        equal(action.getStatus(), yamvc.data.Action.Status.SUCCESS, "Record added to storage");
+        equal(action.getStatus(), ya.data.Action.Status.SUCCESS, "Record added to storage");
 
         ok(records.length === 2, "2 records was returned");
 
         start();
     };
 
-    action = new yamvc.data.Action();
+    action = new ya.data.Action();
 
     action
         .setOptions({
@@ -342,9 +342,9 @@ asyncTest("CRUD: proxy create records", function () {
 
     expect(2);
 
-    yamvc.data.proxy.Localstorage.$clear(n);
+    ya.data.proxy.Localstorage.$clear(n);
 
-    proxy = new yamvc.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.Localstorage();
 
     record = {
         name: 'Anonymous',
@@ -356,7 +356,7 @@ asyncTest("CRUD: proxy create records", function () {
 
         response = action.getResponse();
 
-        equal(action.getStatus(), yamvc.data.Action.Status.SUCCESS, "Record added to storage");
+        equal(action.getStatus(), ya.data.Action.Status.SUCCESS, "Record added to storage");
 
         if (response.success === true) {
             record = response.result;
@@ -367,7 +367,7 @@ asyncTest("CRUD: proxy create records", function () {
         start();
     };
 
-    action = new yamvc.data.Action();
+    action = new ya.data.Action();
 
     action
         .setOptions({
@@ -384,9 +384,9 @@ asyncTest("CRUD: proxy create batch of records", function () {
 
     expect(4);
 
-    yamvc.data.proxy.Localstorage.$clear(n);
+    ya.data.proxy.Localstorage.$clear(n);
 
-    proxy = new yamvc.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.Localstorage();
 
     records = [
         {
@@ -406,7 +406,7 @@ asyncTest("CRUD: proxy create batch of records", function () {
         response = action.getResponse();
         records = response.result;
 
-        equal(action.getStatus(), yamvc.data.Action.Status.SUCCESS, "Records added to storage");
+        equal(action.getStatus(), ya.data.Action.Status.SUCCESS, "Records added to storage");
         equal(records.length, 2, "2 records were created");
 
         for (var i = 0, l = records.length; i < l; i++) {
@@ -418,7 +418,7 @@ asyncTest("CRUD: proxy create batch of records", function () {
         start();
     };
 
-    action = new yamvc.data.Action();
+    action = new ya.data.Action();
 
     action
         .setOptions({
@@ -435,9 +435,9 @@ asyncTest("CRUD: proxy update data", function () {
 
     expect(2);
 
-    yamvc.data.proxy.Localstorage.$clear(n);
+    ya.data.proxy.Localstorage.$clear(n);
 
-    proxy = new yamvc.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.Localstorage();
 
     records = [
         {
@@ -458,7 +458,7 @@ asyncTest("CRUD: proxy update data", function () {
         records = response.result;
         records[1].name = "Anonymous Edited";
 
-        action2 = new yamvc.data.Action();
+        action2 = new ya.data.Action();
 
         action2
             .setOptions({
@@ -475,13 +475,13 @@ asyncTest("CRUD: proxy update data", function () {
         response = action.getResponse();
         record = response.result[1];
 
-        equal(action.getStatus(), yamvc.data.Action.Status.SUCCESS, "Record was edit and saved");
+        equal(action.getStatus(), ya.data.Action.Status.SUCCESS, "Record was edit and saved");
         equal(record.name, "Anonymous Edited", "Name was updated");
 
         start();
     };
 
-    action = new yamvc.data.Action();
+    action = new ya.data.Action();
 
     action
         .setOptions({
@@ -501,9 +501,9 @@ asyncTest("CRUD: proxy destroy data", function () {
 
     expect(1);
 
-    yamvc.data.proxy.Localstorage.$clear('test6');
+    ya.data.proxy.Localstorage.$clear('test6');
 
-    proxy = new yamvc.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.Localstorage();
 
     records = [
         {
@@ -523,7 +523,7 @@ asyncTest("CRUD: proxy destroy data", function () {
         response = action.getResponse();
         records = response.result;
 
-        action2 = new yamvc.data.Action();
+        action2 = new ya.data.Action();
 
         action2
             .setOptions({
@@ -539,13 +539,13 @@ asyncTest("CRUD: proxy destroy data", function () {
 
         response = action.getResponse();
 
-        equal(action.getStatus(), yamvc.data.Action.Status.SUCCESS, "Record was removed");
+        equal(action.getStatus(), ya.data.Action.Status.SUCCESS, "Record was removed");
 
         start();
 
     };
 
-    action = new yamvc.data.Action();
+    action = new ya.data.Action();
 
     action
         .setOptions({
@@ -563,9 +563,9 @@ asyncTest("CRUD: proxy batch destroy data", function () {
 
     expect(1);
 
-    yamvc.data.proxy.Localstorage.$clear('test7');
+    ya.data.proxy.Localstorage.$clear('test7');
 
-    proxy = new yamvc.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.Localstorage();
 
     records = [
         {
@@ -585,7 +585,7 @@ asyncTest("CRUD: proxy batch destroy data", function () {
         response = action.getResponse();
         records = response.result;
 
-        action2 = new yamvc.data.Action();
+        action2 = new ya.data.Action();
 
         action2
             .setOptions({
@@ -599,13 +599,13 @@ asyncTest("CRUD: proxy batch destroy data", function () {
 
     callback2 = function (proxy, action) {
 
-        equal(action.getStatus(), yamvc.data.Action.Status.SUCCESS, "Record was removed");
+        equal(action.getStatus(), ya.data.Action.Status.SUCCESS, "Record was removed");
 
         start();
 
     };
 
-    action = new yamvc.data.Action();
+    action = new ya.data.Action();
 
     action
         .setOptions({

@@ -6,13 +6,13 @@
 (function (window, undefined) {
     "use strict";
 
-    var yamvc = window.yamvc || {},
+    var ya = window.ya || {},
         Router;
     /**
      * @constructor
      * @type {function}
      */
-    Router = yamvc.Core.$extend({
+    Router = ya.Core.$extend({
         init: function () {
             this.set('routing', {});
             this.bindEvents();
@@ -58,5 +58,5 @@
         }
     });
 
-    window.yamvc.Router = Router;
+    window.ya.Router = Router;
 }(window));

@@ -1,4 +1,4 @@
-/*! YAMVC v0.1.12 - 2014-02-07 
+/*! YAMVC v0.1.12 - 2014-02-08 
  *  License:  */
 (function (window, undefined) {
     "use strict";
@@ -504,7 +504,8 @@
                 );
 
                 me._cache.push(record);
-                me.fireEvent('cacheChanged');
+
+                me.fireEvent('pushed', record);
 
             }
 
@@ -981,7 +982,7 @@
  *         config: {
  *             name: 'Main',
  *             views: {
- *                 layout: ViewManager.get('view-0')
+ *                 layout: viewManager.get('view-0')
  *             },
  *             routes: {
  *                 "page/{\\d+}": 'changePage'
@@ -1020,7 +1021,40 @@
 
     var yamvc = window.yamvc || {},
         Controller,
-        router;
+        router,
+        CM;
+
+    // `yamvc.ControllerManager` stores all created views and allow as to
+    // use `get` method (with id as argument) to return requested view.
+    CM = {
+        controller: [],
+        i: 0,
+        // Add view to manager
+        /**
+         * @param id
+         * @param view
+         */
+        add: function (id, view) {
+            this.controller.push(view);
+            this.i++;
+        },
+        // Get view by its id
+        /**
+         * @param id
+         * @returns {View}
+         */
+        get: function (id) {
+            var len = this.controller.length;
+
+            while (len--) {
+
+                if (this.controller[len].getId() === id) break;
+
+            }
+
+            return this.controller[len];
+        }
+    };
 
     /**
      *
@@ -1028,11 +1062,11 @@
      */
     Controller = yamvc.Core.$extend({
         init: function (opts) {
-            var config,
-                me = this;
+            var me = this, config, id;
 
             opts = opts || {};
-            config = opts.config || {};
+            config = yamvc.$merge(me._config, opts.config);
+            config.id = id = config.id || 'controller-' + CM.i;
             router = router || new yamvc.Router();
 
             me.set('initOpts', opts);
@@ -1044,6 +1078,7 @@
             me.initConfig();
             me.renderViews();
             me.restoreRouter();
+            CM.add(id, me);
 
             return me;
         },
@@ -1068,9 +1103,13 @@
 
             if (events && views) {
                 for (view in views) {
+
                     if (views.hasOwnProperty(view)) {
+
                         views[view].addEventListener('render', me.resolveEvents.bind(me));
+
                     }
+
                 }
 
                 for (query in events) {
@@ -1173,7 +1212,7 @@
             return this;
         }
     });
-
+    window.yamvc.controllerManager = CM;
     window.yamvc.Controller = Controller;
 }(window));
 (function (window, undefined) {
@@ -2735,7 +2774,7 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
     /**
      * @type {{views: [], i: number, add: Function, get: Function}}
      */
-        // `yamvc.ViewManager` stores all created views and allow as to
+        // `yamvc.viewManager` stores all created views and allow as to
         // use `get` method (with id as argument) to return requested view.
     VM = {
         views: [],
@@ -3503,6 +3542,12 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
 
             }
 
+
+            views.push(me);
+            config.parent = parent;
+            me.fireEvent('append', null, me, parent);
+
+
             if (!me.isInDOM() && parent.isInDOM()) {
 
                 if (!me._el) {
@@ -3519,11 +3564,6 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
                 }
 
             }
-
-
-            views.push(me);
-
-            config.parent = parent;
             return me;
         },
         /**
@@ -3596,7 +3636,7 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
     });
 
 
-    yamvc.ViewManager = VM;
+    yamvc.viewManager = VM;
     window.yamvc = yamvc;
     window.yamvc.View = View;
 }(window));

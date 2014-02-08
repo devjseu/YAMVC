@@ -5,13 +5,13 @@ Measure.module('View');
  */
 Measure.suit('v0.1.8 View rendering', function (start, stop, loops) {
     var container = document.querySelector('#container'),
-        View = yamvc.backup.View,
+        View = ya.backup.View,
         views = [],
         models = {};
 
     loops(100);
 
-    models.likes = new yamvc.Model({
+    models.likes = new ya.Model({
         config: {
             namespace: 'test'
         },
@@ -49,13 +49,13 @@ Measure.suit('v0.1.8 View rendering', function (start, stop, loops) {
  */
 Measure.suit('v0.1.9 view rendering', function (start, stop, loops) {
     var container = document.querySelector('#container'),
-        View = yamvc.View,
+        View = ya.View,
         views = [],
         models = {};
 
     loops(100);
 
-    models.likes = new yamvc.Model({
+    models.likes = new ya.Model({
         config: {
             namespace: 'test'
         },

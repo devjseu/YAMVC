@@ -66,8 +66,8 @@ yamvc.$onReady(function () {
         config: {
             name: 'Main',
             views: {
-                likeBtn: yamvc.ViewManager.get('test-liker'),
-                likeBtn2: yamvc.ViewManager.get('test-liker-2')
+                likeBtn: yamvc.viewManager.get('test-liker'),
+                likeBtn2: yamvc.viewManager.get('test-liker-2')
             },
             events: {
                 '.liker': {

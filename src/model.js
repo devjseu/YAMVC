@@ -1,11 +1,11 @@
 (function (window, undefined) {
     "use strict";
-    var yamvc = window.yamvc || {},
+    var ya = window.ya || {},
         Model,
         config,
         id = 0;
 
-    Model = yamvc.Core.$extend({
+    Model = ya.Core.$extend({
         /**
          * @defaults
          */
@@ -18,10 +18,10 @@
          * @param opts
          */
         init: function (opts) {
-            yamvc.Core.prototype.init.apply(this, arguments);
+            ya.Core.prototype.init.apply(this, arguments);
             var me = this, config;
             opts = opts || {};
-            config = yamvc.$merge(me._config, opts.config);
+            config = ya.$merge(me._config, opts.config);
             me.set('initOpts', opts);
             me.set('config', config);
             me.set('isDirty', true);
@@ -145,8 +145,8 @@
             var me = this,
                 data = me.get('data'),
                 idProperty = me.getIdProperty(),
-                deferred = yamvc.Promise.$deferred(),
-                action = new yamvc.data.Action(),
+                deferred = ya.Promise.$deferred(),
+                action = new ya.data.Action(),
                 opts = {},
                 response;
 
@@ -194,8 +194,8 @@
             var me = this,
                 data = me.get('data'),
                 idProperty = me.getIdProperty(),
-                deferred = yamvc.Promise.$deferred(),
-                action = new yamvc.data.Action(),
+                deferred = ya.Promise.$deferred(),
+                action = new ya.data.Action(),
                 proxy = me.getProxy(),
                 opts = {},
                 response,
@@ -213,7 +213,7 @@
                 response = action.getResponse();
 
                 me.set('isProcessing', false);
-                if (action.getStatus() === yamvc.data.Action.Status.SUCCESS) {
+                if (action.getStatus() === ya.data.Action.Status.SUCCESS) {
 
                     me.set('isDirty', false);
                     me.set('data', response.result);
@@ -256,8 +256,8 @@
             var me = this,
                 data = me.get('data'),
                 idProperty = me.getIdProperty(),
-                deferred = yamvc.Promise.$deferred(),
-                action = new yamvc.data.Action(),
+                deferred = ya.Promise.$deferred(),
+                action = new ya.data.Action(),
                 proxy = me.getProxy(),
                 opts = {},
                 response;
@@ -270,7 +270,7 @@
 
                 response = action.getResponse();
 
-                if (action.getStatus() === yamvc.data.Action.Status.SUCCESS) {
+                if (action.getStatus() === ya.data.Action.Status.SUCCESS) {
 
                     me.set('isDirty', false);
                     me.set('data', {});
@@ -308,6 +308,6 @@
         }
     });
 
-    window.yamvc = yamvc;
-    window.yamvc.Model = Model;
+    window.ya = ya;
+    window.ya.Model = Model;
 }(window));

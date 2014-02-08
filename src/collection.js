@@ -1,9 +1,9 @@
 (function (window, undefined) {
     "use strict";
-    var yamvc = window.yamvc || {},
+    var ya = window.ya || {},
         Collection;
 
-    Collection = yamvc.Core.$extend({
+    Collection = ya.Core.$extend({
         defaults: {
             namespace: null,
             proxy: null
@@ -19,7 +19,7 @@
             var me = this, config;
 
             opts = opts || {};
-            config = yamvc.$merge(me._config, opts.config);
+            config = ya.$merge(me._config, opts.config);
 
             me.set('initOpts', opts);
             me.set('config', config);
@@ -83,7 +83,8 @@
                 );
 
                 me._cache.push(record);
-                me.fireEvent('cacheChanged');
+
+                me.fireEvent('pushed', record);
 
             }
 
@@ -202,7 +203,7 @@
         /**
          * get record at
          * @param index
-         * @returns {yamvc.Model}
+         * @returns {ya.Model}
          */
         getAt: function (index) { // Return record by index.
             return this._set[index];
@@ -283,9 +284,9 @@
             var me = this,
                 data = me.get('data'),
                 idProperty = me.get('idProperty'),
-                deferred = yamvc.Promise.$deferred(),
+                deferred = ya.Promise.$deferred(),
                 namespace = me.getNamespace(),
-                action = new yamvc.data.Action(),
+                action = new ya.data.Action(),
                 callback,
                 key, i = 0;
 
@@ -326,7 +327,7 @@
         },
         save: function () {
             var me = this,
-                deferred = yamvc.Promise.$deferred(),
+                deferred = ya.Promise.$deferred(),
                 action,
                 toCreate = [],
                 toUpdate = [],
@@ -371,7 +372,7 @@
 
                 toFinish--;
 
-                if (action.getStatus() === yamvc.data.Action.Status.SUCCESS) {
+                if (action.getStatus() === ya.data.Action.Status.SUCCESS) {
 
                     var response = action.getResponse(),
                         data = response.result,
@@ -431,7 +432,7 @@
 
                 toFinish++;
 
-                action = new yamvc.data.Action();
+                action = new ya.data.Action();
 
                 action
                     .setOptions({
@@ -448,7 +449,7 @@
 
                 toFinish++;
 
-                action = new yamvc.data.Action();
+                action = new ya.data.Action();
 
                 action
                     .setOptions({
@@ -464,7 +465,7 @@
 
                 toFinish++;
 
-                action = new yamvc.data.Action();
+                action = new ya.data.Action();
 
                 action
                     .setOptions({
@@ -548,6 +549,6 @@
         }
     });
 
-    window.yamvc = yamvc;
-    window.yamvc.Collection = Collection;
+    window.ya = ya;
+    window.ya.Collection = Collection;
 }(window));

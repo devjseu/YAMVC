@@ -1,17 +1,17 @@
 (function (window, undefined) {
     "use strict";
 
-    var yamvc = window.yamvc || {},
+    var ya = window.ya || {},
         Template;
 
-    Template = yamvc.Core.$extend({
+    Template = ya.Core.$extend({
         init: function (opts) {
             var me = this, config;
 
             Template.Parent.init.apply(this, arguments);
 
             opts = opts || {};
-            config = yamvc.$merge(me._config, opts.config);
+            config = ya.$merge(me._config, opts.config);
 
             me.set('initOpts', opts);
             me.set('config', config);
@@ -27,7 +27,7 @@
             Template.Parent.initConfig.apply(this);
 
             if (!config.id)
-                throw new Error("yamvc.data.Template: Template need to have id");
+                throw new Error("ya.data.Template: Template need to have id");
 
             return me;
         },
@@ -49,7 +49,7 @@
         }
     });
 
-    window.yamvc = yamvc;
-    window.yamvc.view = window.yamvc.view || {};
-    window.yamvc.view.Template = Template;
+    window.ya = ya;
+    window.ya.view = window.ya.view || {};
+    window.ya.view.Template = Template;
 }(window));

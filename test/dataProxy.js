@@ -2,7 +2,7 @@ module('Proxy');
 test("proxy initialize", function () {
     var proxy;
 
-    proxy = new yamvc.data.Proxy();
+    proxy = new ya.data.Proxy();
 
-    ok(proxy instanceof yamvc.data.Proxy);
+    ok(proxy instanceof ya.data.Proxy);
 });

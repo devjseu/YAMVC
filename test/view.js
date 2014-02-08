@@ -2,21 +2,21 @@ module('View');
 test("initialize", function () {
     var view;
 
-    view = new yamvc.View({
+    view = new ya.View({
         config: {
             tpl: 'container'
         }
     });
 
-    ok(view instanceof  yamvc.View);
+    ok(view instanceof  ya.View);
 });
 
 test("render", function () {
     var view, el;
 
-    (view = new yamvc.View({
+    (view = new ya.View({
         config: {
-            tpl: new yamvc.view.Template({
+            tpl: new ya.view.Template({
                 config: {
                     id: 'tpl-bar',
                     tpl: [
@@ -36,9 +36,9 @@ test("render", function () {
 test("render with children", function () {
     var view, el;
 
-    (view = new yamvc.View({
+    (view = new ya.View({
         config: {
-            tpl: new yamvc.view.Template({
+            tpl: new ya.view.Template({
                 config: {
                     id: 'tpl-test-1',
                     tpl: [
@@ -47,9 +47,9 @@ test("render with children", function () {
                 }
             }),
             children: [
-                new yamvc.View({
+                new ya.View({
                     config: {
-                        tpl: new yamvc.view.Template({
+                        tpl: new ya.view.Template({
                             config: {
                                 id: 'tpl-child',
                                 tpl: [
@@ -73,9 +73,9 @@ test("render with children", function () {
 test("remove child", function () {
     var view;
 
-    (view = new yamvc.View({
+    (view = new ya.View({
         config: {
-            tpl: new yamvc.view.Template({
+            tpl: new ya.view.Template({
                 config: {
                     id: 'tpl-test-2',
                     tpl: [
@@ -84,10 +84,10 @@ test("remove child", function () {
                 }
             }),
             children: [
-                new yamvc.View({
+                new ya.View({
                     config: {
                         id: 'child',
-                        tpl: new yamvc.view.Template({
+                        tpl: new ya.view.Template({
                             config: {
                                 id: 'tpl-child',
                                 tpl: [
@@ -112,7 +112,7 @@ test("remove child", function () {
 test("bind with model", function () {
     var view, model;
 
-    model = new yamvc.Model({
+    model = new ya.Model({
         config: {
             namespace: 'example',
             data: {
@@ -122,12 +122,12 @@ test("bind with model", function () {
         }
     });
 
-    view = new yamvc.View({
+    view = new ya.View({
         config: {
             models: [
                 model
             ],
-            tpl: new yamvc.view.Template({
+            tpl: new ya.view.Template({
                 config: {
                     id: 'tpl-example-3',
                     tpl: [
@@ -155,7 +155,7 @@ test("bind with model", function () {
 test("rendered two times", function () {
     var view, model;
 
-    model = new yamvc.Model({
+    model = new ya.Model({
         config: {
             namespace: 'example',
             data: {
@@ -165,12 +165,12 @@ test("rendered two times", function () {
         }
     });
 
-    view = new yamvc.View({
+    view = new ya.View({
         config: {
             models: [
                 model
             ],
-            tpl: new yamvc.view.Template({
+            tpl: new ya.view.Template({
                 config: {
                     id: 'tpl-example-4',
                     tpl: [
@@ -200,7 +200,7 @@ test("rendered two times", function () {
 test("bind with collection", function () {
     var view, collection;
 
-    collection = new yamvc.Collection({
+    collection = new ya.Collection({
         config: {
             namespace: 'example',
             data: [
@@ -220,12 +220,12 @@ test("bind with collection", function () {
         }
     });
 
-    view = new yamvc.View({
+    view = new ya.View({
         config: {
             collections: [
                 collection
             ],
-            tpl: new yamvc.view.Template({
+            tpl: new ya.view.Template({
                 config: {
                     id: 'tpl-example-5',
                     tpl: [

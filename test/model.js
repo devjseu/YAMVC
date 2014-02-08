@@ -2,22 +2,22 @@ module('Model');
 test("initialize", function () {
     var model;
 
-    model = new yamvc.Model({
+    model = new ya.Model({
         config: {
             namespace: 'test'
         }
     });
 
-    ok(model instanceof  yamvc.Model);
+    ok(model instanceof  ya.Model);
 });
 
 test("we are able to set proxy for model", function () {
     var model,
         proxy;
 
-    proxy = new yamvc.data.Proxy();
+    proxy = new ya.data.Proxy();
 
-    model = new yamvc.Model({
+    model = new ya.Model({
         config: {
             namespace: 'test'
         }
@@ -25,7 +25,7 @@ test("we are able to set proxy for model", function () {
 
     model.setProxy(proxy);
 
-    ok(model.getProxy() instanceof yamvc.data.Proxy, "Proxy was set");
+    ok(model.getProxy() instanceof ya.data.Proxy, "Proxy was set");
 
 });
 
@@ -34,9 +34,9 @@ asyncTest("we are able to save model to db", function () {
         proxy,
         promise;
 
-    proxy = new yamvc.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.Localstorage();
 
-    model = new yamvc.Model({
+    model = new ya.Model({
         config: {
             namespace: 'testModel',
             proxy: proxy
@@ -56,18 +56,18 @@ asyncTest("we are able to save model to db", function () {
 
             equal(
                 x.action.getStatus(),
-                yamvc.data.Action.Status.SUCCESS,
+                ya.data.Action.Status.SUCCESS,
                 "Model was saved"
             );
 
-            yamvc.data.proxy.Localstorage.$clear('testModel');
+            ya.data.proxy.Localstorage.$clear('testModel');
 
             start();
 
         })
         .then(0, function () {
 
-            yamvc.data.proxy.Localstorage.$clear('testModel');
+            ya.data.proxy.Localstorage.$clear('testModel');
             start();
 
         });
@@ -79,9 +79,9 @@ asyncTest("we are able to load model from db", function () {
         proxy,
         promise;
 
-    proxy = new yamvc.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.Localstorage();
 
-    model = new yamvc.Model({
+    model = new ya.Model({
         config: {
             namespace: 'testModel2',
             proxy: proxy
@@ -101,16 +101,16 @@ asyncTest("we are able to load model from db", function () {
 
             equal(
                 x.action.getStatus(),
-                yamvc.data.Action.Status.SUCCESS,
+                ya.data.Action.Status.SUCCESS,
                 "Model was saved"
             );
 
-            yamvc.data.proxy.Localstorage.$clear('testModel2');
+            ya.data.proxy.Localstorage.$clear('testModel2');
             start();
         })
         .then(0, function () {
 
-            yamvc.data.proxy.Localstorage.$clear('testModel2');
+            ya.data.proxy.Localstorage.$clear('testModel2');
             start();
 
         });
@@ -124,9 +124,9 @@ asyncTest("we are able to update model from db", function () {
         promise,
         updateFn;
 
-    proxy = new yamvc.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.Localstorage();
 
-    model = new yamvc.Model({
+    model = new ya.Model({
         config: {
             namespace: 'testModel3',
             proxy: proxy
@@ -144,16 +144,16 @@ asyncTest("we are able to update model from db", function () {
 
                 equal(
                     x.action.getStatus(),
-                    yamvc.data.Action.Status.SUCCESS,
+                    ya.data.Action.Status.SUCCESS,
                     "Record was updated"
                 );
 
-                yamvc.data.proxy.Localstorage.$clear('testModel3');
+                ya.data.proxy.Localstorage.$clear('testModel3');
                 start();
             })
             .then(0, function () {
 
-                yamvc.data.proxy.Localstorage.$clear('testModel');
+                ya.data.proxy.Localstorage.$clear('testModel');
                 start();
 
             });
@@ -174,7 +174,7 @@ asyncTest("we are able to update model from db", function () {
         )
         .then(0, function () {
 
-            yamvc.data.proxy.Localstorage.$clear('testModel3');
+            ya.data.proxy.Localstorage.$clear('testModel3');
             start();
 
         });
@@ -188,9 +188,9 @@ asyncTest("we are able to remove model from db", function () {
         promise,
         removeFn;
 
-    proxy = new yamvc.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.Localstorage();
 
-    model = new yamvc.Model({
+    model = new ya.Model({
         config: {
             namespace: 'testModel4',
             proxy: proxy
@@ -206,7 +206,7 @@ asyncTest("we are able to remove model from db", function () {
 
                 equal(
                     x.action.getStatus(),
-                    yamvc.data.Action.Status.SUCCESS,
+                    ya.data.Action.Status.SUCCESS,
                     "Record was removed"
                 );
 
@@ -214,7 +214,7 @@ asyncTest("we are able to remove model from db", function () {
             })
             .then(0, function () {
 
-                yamvc.data.proxy.Localstorage.$clear('testModel');
+                ya.data.proxy.Localstorage.$clear('testModel');
                 start();
 
             });
@@ -235,7 +235,7 @@ asyncTest("we are able to remove model from db", function () {
         )
         .then(0, function () {
 
-            yamvc.data.proxy.Localstorage.$clear('testModel4');
+            ya.data.proxy.Localstorage.$clear('testModel4');
             start();
 
         });

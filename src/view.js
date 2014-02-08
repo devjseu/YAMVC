@@ -41,7 +41,7 @@
 (function (window, undefined) {
     "use strict";
 
-    var yamvc = window.yamvc || {},
+    var ya = window.ya || {},
         style = document.createElement('style'),
         VM,
         VTM,
@@ -71,7 +71,7 @@
     }
 
     function fireResizeEvent() {
-        // Fire yamvc resize event only on components
+        // Fire ya resize event only on components
         // which need to be fitted to their parents.
         var views,
             l,
@@ -102,7 +102,7 @@
     fillAttrs = makeMap("checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected");
 
     // Append some basic css to document.
-    style.innerHTML = ".yamvc.inline {display:inline;} .yamvc.hidden {display: none !important;}";
+    style.innerHTML = ".ya.inline {display:inline;} .ya.hidden {display: none !important;}";
     style.setAttribute('type', 'text/css');
 
     document.body.appendChild(style);
@@ -112,7 +112,7 @@
     /**
      * @type {{views: [], i: number, add: Function, get: Function}}
      */
-        // `yamvc.ViewManager` stores all created views and allow as to
+        // `ya.viewManager` stores all created views and allow as to
         // use `get` method (with id as argument) to return requested view.
     VM = {
         views: [],
@@ -163,8 +163,8 @@
      * @params opts Object with configuration properties
      * @type {function}
      */
-    View = yamvc.Core.$extend({
-        // `yamvc.View` accept few configuration properties:
+    View = ya.Core.$extend({
+        // `ya.View` accept few configuration properties:
         // * `parent` - pointer to parent view
         // * `fit` - if true, component will fire resize event when size
         // of window was changed
@@ -185,12 +185,12 @@
          */
         init: function (opts) {
 
-            yamvc.Core.prototype.init.apply(this);
+            ya.Core.prototype.init.apply(this);
 
             var me = this, config, id;
 
             opts = opts || {};
-            config = yamvc.$merge(me._config, opts.config);
+            config = ya.$merge(me._config, opts.config);
             config.id = id = config.id || 'view-' + VM.i;
             config.children = config.children || [];
 
@@ -207,7 +207,7 @@
          */
         initConfig: function () {
 
-            yamvc.Core.prototype.initConfig.apply(this);
+            ya.Core.prototype.initConfig.apply(this);
 
             this.initTemplate();
             this.initModels();
@@ -229,7 +229,7 @@
 
             }
 
-            if (config.tpl instanceof yamvc.view.Template) {
+            if (config.tpl instanceof ya.view.Template) {
 
                 div.innerHTML = config.tpl.getHtml().innerHTML;
 
@@ -276,7 +276,7 @@
         },
         /**
          * @param namespace
-         * @returns {yamvc.Model}
+         * @returns {ya.Model}
          */
         getModel: function (namespace) {
             var me = this,
@@ -527,7 +527,7 @@
             }
 
             el.setAttribute('id', config.id);
-            el.classList.add('yamvc');
+            el.classList.add('ya');
 
             me.set('el', el);
             me.set('bindings', bindings);
@@ -880,6 +880,12 @@
 
             }
 
+
+            views.push(me);
+            config.parent = parent;
+            me.fireEvent('append', null, me, parent);
+
+
             if (!me.isInDOM() && parent.isInDOM()) {
 
                 if (!me._el) {
@@ -896,11 +902,6 @@
                 }
 
             }
-
-
-            views.push(me);
-
-            config.parent = parent;
             return me;
         },
         /**
@@ -973,7 +974,7 @@
     });
 
 
-    yamvc.ViewManager = VM;
-    window.yamvc = yamvc;
-    window.yamvc.View = View;
+    ya.viewManager = VM;
+    window.ya = ya;
+    window.ya.View = View;
 }(window));

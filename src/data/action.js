@@ -1,6 +1,6 @@
 (function (window, undefined) {
     "use strict";
-    var yamvc = window.yamvc || {},
+    var ya = window.ya || {},
         Action,
         Status;
 
@@ -10,14 +10,14 @@
         FAIL: 2
     };
 
-    Action = yamvc.Core.$extend({
+    Action = ya.Core.$extend({
         init: function (opts) {
             var me = this, config;
 
             Action.Parent.init.apply(this, arguments);
 
             opts = opts || {};
-            config = yamvc.$merge(me._config, opts.config);
+            config = ya.$merge(me._config, opts.config);
 
             me.set('initOpts', opts);
             me.set('config', config);
@@ -58,7 +58,7 @@
             }
 
             if (!check)
-                throw new Error('yamvc.data.Action: Wrong status');
+                throw new Error('ya.data.Action: Wrong status');
 
             return this.set('status', status);
         },
@@ -70,7 +70,7 @@
     // statics
     Action.Status = Status;
 
-    window.yamvc = yamvc;
-    window.yamvc.data = window.yamvc.data || {};
-    window.yamvc.data.Action = Action;
+    window.ya = ya;
+    window.ya.data = window.ya.data || {};
+    window.ya.data.Action = Action;
 }(window));

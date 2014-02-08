@@ -2,19 +2,19 @@ module('Controller');
 test("initialize", function () {
     var controller;
 
-    controller = new yamvc.Controller();
+    controller = new ya.Controller();
 
-    ok(controller instanceof  yamvc.Controller);
+    ok(controller instanceof  ya.Controller);
 });
 
 test("bind events to view",function () {
     var view, ctr;
 
-    view = new yamvc.View({
+    view = new ya.View({
         config: {
             autoCreate: true,
             models: [
-                new yamvc.Model({
+                ya.Model.$create({
                     config : {
                         namespace : 'example',
                         data : {
@@ -24,7 +24,7 @@ test("bind events to view",function () {
                     }
                 })
             ],
-            tpl: new yamvc.view.Template({
+            tpl: ya.view.Template.$create({
                 config: {
                     id: 'tpl-example-4',
                     tpl: [
@@ -38,7 +38,7 @@ test("bind events to view",function () {
         }
     });
 
-    ctr = new yamvc.Controller({
+    ctr = ya.Controller.$create({
         config: {
             name: 'Main',
             views: {

@@ -3,13 +3,13 @@ module('Collection');
 test("after initialization", function () {
     var collection;
 
-    collection = new yamvc.Collection({
+    collection = new ya.Collection({
         config: {
-            model: yamvc.Model
+            model: ya.Model
         }
     });
 
-    ok(collection instanceof yamvc.Collection, "is instance of yamvc.Collection");
+    ok(collection instanceof ya.Collection, "is instance of ya.Collection");
 });
 
 
@@ -19,9 +19,9 @@ test("has model", function () {
         modelInstance,
         namespace;
 
-    collection = new yamvc.Collection({
+    collection = new ya.Collection({
         config: {
-            model: yamvc.Model,
+            model: ya.Model,
             namespace: 'test'
         }
     });
@@ -37,7 +37,7 @@ test("has model", function () {
         }
     );
 
-    ok(modelInstance instanceof yamvc.Model);
+    ok(modelInstance instanceof ya.Model);
 });
 
 test("has data and record is turned into model", function () {
@@ -51,9 +51,9 @@ test("has data and record is turned into model", function () {
         {id: 2, name: 'Anonymous 3', surname: 'Anonymous 3', age: 21}
     ];
 
-    collection = new yamvc.Collection({
+    collection = new ya.Collection({
         config: {
-            model: yamvc.Model,
+            model: ya.Model,
             namespace: 'test2',
             data: data
         }
@@ -78,9 +78,9 @@ test("is countable", function () {
         {id: 2, name: 'Anonymous 3', surname: 'Anonymous 3', age: 21}
     ];
 
-    collection = new yamvc.Collection({
+    collection = new ya.Collection({
         config: {
-            model: yamvc.Model,
+            model: ya.Model,
             namespace: 'test3',
             data: data
         }
@@ -101,9 +101,9 @@ test("we are able to filter the collection by custom function", function () {
         {id: 2, name: 'Anonymous 3', surname: 'Anonymous 3', age: 21}
     ];
 
-    collection = new yamvc.Collection({
+    collection = new ya.Collection({
         config: {
-            model: yamvc.Model,
+            model: ya.Model,
             namespace: 'test4',
             data: data
         }
@@ -134,9 +134,9 @@ test("we are able to clear filters from collection", function () {
         {id: 2, name: 'Anonymous 3', surname: 'Anonymous 3', age: 21}
     ];
 
-    collection = new yamvc.Collection({
+    collection = new ya.Collection({
         config: {
-            model: yamvc.Model,
+            model: ya.Model,
             namespace: 'test5',
             data: data
         }
@@ -163,18 +163,18 @@ test("we are able to set proxy for collection", function () {
     var collection,
         proxy;
 
-    proxy = new yamvc.data.Proxy();
+    proxy = new ya.data.Proxy();
 
-    collection = new yamvc.Collection({
+    collection = new ya.Collection({
         config: {
-            model: yamvc.Model,
+            model: ya.Model,
             namespace: 'test6'
         }
     });
 
     collection.setProxy(proxy);
 
-    ok(collection.getProxy() instanceof yamvc.data.Proxy, "Proxy was set");
+    ok(collection.getProxy() instanceof ya.data.Proxy, "Proxy was set");
 
 });
 
@@ -182,11 +182,11 @@ test("we are able to add records to collection", function () {
     var collection,
         proxy;
 
-    proxy = new yamvc.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.Localstorage();
 
-    collection = new yamvc.Collection({
+    collection = new ya.Collection({
         config: {
-            model: yamvc.Model,
+            model: ya.Model,
             namespace: 'test7',
             proxy: proxy
         }
@@ -219,11 +219,11 @@ test("we are able to get record from collection", function () {
         proxy,
         record;
 
-    proxy = new yamvc.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.Localstorage();
 
-    collection = new yamvc.Collection({
+    collection = new ya.Collection({
         config: {
-            model: yamvc.Model,
+            model: ya.Model,
             namespace: 'test8',
             proxy: proxy
         }
@@ -261,11 +261,11 @@ test("we are able to get records from collection", function () {
         proxy,
         records = [];
 
-    proxy = new yamvc.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.Localstorage();
 
-    collection = new yamvc.Collection({
+    collection = new ya.Collection({
         config: {
-            model: yamvc.Model,
+            model: ya.Model,
             namespace: 'test9',
             proxy: proxy
         }
@@ -302,11 +302,11 @@ asyncTest("we are able to save collection records to storage", function () {
         proxy,
         promise;
 
-    proxy = new yamvc.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.Localstorage();
 
-    collection = new yamvc.Collection({
+    collection = new ya.Collection({
         config: {
-            model: yamvc.Model,
+            model: ya.Model,
             namespace: 'test10',
             proxy: proxy
         }
@@ -341,13 +341,13 @@ asyncTest("we are able to save collection records to storage", function () {
                 "Collection was saved"
             );
 
-            yamvc.data.proxy.Localstorage.$clear('test8');
+            ya.data.proxy.Localstorage.$clear('test8');
             start();
         })
         .then(0, function () {
 
             console.log(arguments);
-            yamvc.data.proxy.Localstorage.$clear('test8');
+            ya.data.proxy.Localstorage.$clear('test8');
             start();
         });
 
@@ -357,17 +357,17 @@ asyncTest("we are able to load collection from storage", function () {
     var collection,
         proxy;
 
-    proxy = new yamvc.data.Proxy();
+    proxy = new ya.data.Proxy();
 
-    collection = new yamvc.Collection({
+    collection = new ya.Collection({
         config: {
-            model: yamvc.Model,
+            model: ya.Model,
             namespace: 'test11',
             proxy: proxy
         }
     });
 
-    ok(collection.getProxy() instanceof yamvc.data.Proxy, "Proxy was set");
+    ok(collection.getProxy() instanceof ya.data.Proxy, "Proxy was set");
 
     start();
 });

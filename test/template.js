@@ -1,7 +1,7 @@
 module('Template');
 
 test("initialize", function () {
-    var tpl = new yamvc.view.Template({
+    var tpl = new ya.view.Template({
         config : {
             id : 'tpl-test',
             tpl : [
@@ -10,7 +10,7 @@ test("initialize", function () {
         }
     });
 
-    ok(tpl instanceof yamvc.view.Template);
+    ok(tpl instanceof ya.view.Template);
     ok(tpl.getHtml().hasChildNodes(), "Template was read");
 
 });

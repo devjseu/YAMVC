@@ -1,7 +1,7 @@
 (function (window, undefined) {
     "use strict";
-    var yamvc = window.yamvc || {},
-        mixins = yamvc.mixins || {},
+    var ya = window.ya || {},
+        mixins = ya.mixins || {},
         Observable;
 
     Observable = {
@@ -94,6 +94,6 @@
     };
 
     mixins.Observable = Observable;
-    window.yamvc = yamvc;
-    window.yamvc.mixins = mixins;
+    window.ya = ya;
+    window.ya.mixins = mixins;
 }(window));

@@ -1,10 +1,10 @@
 module('Promises');
 
 test("initialize", function () {
-    var promise = new yamvc.Promise();
+    var promise = new ya.Promise();
 
     equal(typeof promise.then, 'function', 'Promise provide a then function');
-    equal(promise.getState(), yamvc.Promise.State.PENDING, 'Promise has status pending');
+    equal(promise.getState(), ya.Promise.State.PENDING, 'Promise has status pending');
 
 });
 
@@ -13,7 +13,7 @@ asyncTest("fulfill", function () {
         this._start = start;
         this.add = function (number) {
             var me = this,
-                deferred = yamvc.Promise.$deferred();
+                deferred = ya.Promise.$deferred();
 
             setTimeout(function () {
                 me._start += number;
@@ -41,7 +41,7 @@ asyncTest("reject", function () {
         this._start = start;
         this.add = function (number) {
             var me = this,
-                deferred = yamvc.Promise.$deferred();
+                deferred = ya.Promise.$deferred();
 
             setTimeout(function () {
                 me._start += number;

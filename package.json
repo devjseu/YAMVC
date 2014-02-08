@@ -1,6 +1,6 @@
 {
     "name": "YAMVC",
-    "version": "0.1.12",
+    "version": "0.1.13",
     "description": "Fast and ease to extend MVC Framework for one page desktop and mobile app",
     "main": "./distrib/YAMVC-all.js",
     "repository": {

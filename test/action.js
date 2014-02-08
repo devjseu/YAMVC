@@ -3,17 +3,17 @@ module('Action');
 test("after initialization", function () {
     var action;
 
-    action = yamvc.data.Action.$create();
+    action = ya.data.Action.$create();
 
-    ok(action instanceof  yamvc.data.Action, "is instance of yamvc.data.Action");
-    equal(action.get('status'), yamvc.data.Action.Status.PENDING, "has status pending");
+    ok(action instanceof  ya.data.Action, "is instance of ya.data.Action");
+    equal(action.get('status'), ya.data.Action.Status.PENDING, "has status pending");
 
 });
 
 test("has method", function () {
     var action;
 
-    action = yamvc.data.Action.$create();
+    action = ya.data.Action.$create();
 
     ok(typeof action.setOptions !== "undefined", "to set options");
     ok(typeof action.getOptions !== "undefined", "to get options");
@@ -29,7 +29,7 @@ test("has method", function () {
 test("shouldnt accept", function () {
     var action, err;
 
-    action = new yamvc.data.Action();
+    action = new ya.data.Action();
 
     try {
 

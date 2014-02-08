@@ -5,7 +5,7 @@
 (function (window, undefined) {
     "use strict";
 
-    var yamvc = window.yamvc || {},
+    var ya = window.ya || {},
         Promise,
         State,
         resolve;
@@ -217,6 +217,6 @@
         };
     };
 
-    yamvc.Promise = Promise;
-    window.yamvc = yamvc;
+    ya.Promise = Promise;
+    window.ya = ya;
 }(window));

@@ -1,9 +1,9 @@
 (function (window, undefined) {
     "use strict";
-    var yamvc = window.yamvc || {},
+    var ya = window.ya || {},
         Localstorage,
-        Proxy = yamvc.data.Proxy,
-        Action = yamvc.data.Action;
+        Proxy = ya.data.Proxy,
+        Action = ya.data.Action;
 
     /**
      * Extend Proxy class
@@ -122,7 +122,7 @@
                 response.result = records;
 
                 action
-                    .setStatus(yamvc.data.Action.Status.SUCCESS)
+                    .setStatus(ya.data.Action.Status.SUCCESS)
                     .setResponse(response);
 
                 callback(me, action);
@@ -181,7 +181,7 @@
                         response.result = result;
 
                         action
-                            .setStatus(yamvc.data.Action.Status.SUCCESS)
+                            .setStatus(ya.data.Action.Status.SUCCESS)
                             .setResponse(response);
 
                         callback(me, action);
@@ -190,7 +190,7 @@
                     }
                 }
 
-                me.setStatus(yamvc.data.Action.Status.FAIL);
+                me.setStatus(ya.data.Action.Status.FAIL);
                 response.error = new Error("Not found");
                 callback(me, action);
             };
@@ -505,8 +505,8 @@
         }
     });
 
-    window.yamvc = yamvc;
-    window.yamvc.data = window.yamvc.data || {};
-    window.yamvc.data.proxy = window.yamvc.data.proxy || {};
-    window.yamvc.data.proxy.Localstorage = Localstorage;
+    window.ya = ya;
+    window.ya.data = window.ya.data || {};
+    window.ya.data.proxy = window.ya.data.proxy || {};
+    window.ya.data.proxy.Localstorage = Localstorage;
 }(window));

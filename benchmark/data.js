@@ -58,7 +58,7 @@ Measure.suit('Serializing, filtering and getting by id using object', function (
     var user = {},
         filterFn = function (record) {
             return record.age > 5000;
-        };
+        }, results, result, i, id;
 
     localStorage["users"] = {
 
@@ -68,7 +68,7 @@ Measure.suit('Serializing, filtering and getting by id using object', function (
     start();
 
     /* save 10000 records */
-    for (var i = 0; i < 10000; i++) {
+    for (i = 0; i < 10000; i++) {
         user['test' + i] = {
             id: 'test' + i,
             name: 'Sebastian' + i,
@@ -84,8 +84,8 @@ Measure.suit('Serializing, filtering and getting by id using object', function (
     user = JSON.parse(localStorage["users"]);
 
     /* using conditions */
-    var results = [];
-    for (var id in user) {
+    results = [];
+    for (id in user) {
         if (user.hasOwnProperty(id)) {
             if (filterFn(user[id])) {
                 results.push(user[id]);
@@ -94,7 +94,7 @@ Measure.suit('Serializing, filtering and getting by id using object', function (
     }
 
     /* by id */
-    var result = {};
+    result = {};
     result = user['test999'];
 
     // finish test
@@ -108,7 +108,7 @@ Measure.suit('Serializing, filtering and getting by id using array', function (s
     var user = [],
         filterFn = function (record) {
             return record.age > 5000;
-        };
+        }, i, results, l;
 
     localStorage["users"] = {
 
@@ -118,7 +118,7 @@ Measure.suit('Serializing, filtering and getting by id using array', function (s
     start();
 
     /* save 10000 records */
-    for (var i = 0; i < 10000; i++) {
+    for (i = 0; i < 10000; i++) {
         user.push({
             id: 'test' + i,
             name: 'Sebastian' + i,
@@ -131,8 +131,8 @@ Measure.suit('Serializing, filtering and getting by id using array', function (s
 
     user = JSON.parse(localStorage["users"]);
 
-    var results = [];
-    for (var i = 0, l = user.length; i < l; i++) {
+    results = [];
+    for (i = 0, l = user.length; i < l; i++) {
         if (filterFn(user[i])) {
             results.push(user[i]);
         }
@@ -140,7 +140,7 @@ Measure.suit('Serializing, filtering and getting by id using array', function (s
 
     /* by id */
     var result = {};
-    for (var i = 0, l = user.length; i < l; i++) {
+    for (i = 0, l = user.length; i < l; i++) {
         if (user[i].id === 'test999') {
             result = user[i];
         }

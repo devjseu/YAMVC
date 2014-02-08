@@ -479,7 +479,7 @@
     });
 
 
-    yamvc.ViewManager = VM;
+    yamvc.viewManager = VM;
     window.yamvc = yamvc;
     window.yamvc.backup = window.yamvc.backup || {};
     window.yamvc.backup.View = View;

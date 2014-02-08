@@ -1,7 +1,7 @@
 (function (window, undefined) {
     "use strict";
 
-    var yamvc = window.yamvc || {},
+    var ya = window.ya || {},
         Core,
         onReadyCallbacks = [],
         readyStateCheckInterval;
@@ -17,7 +17,7 @@
     /**
      * @param callback
      */
-    yamvc.$onReady = function (callback) {
+    ya.$onReady = function (callback) {
         onReadyCallbacks.push(callback);
         if (!readyStateCheckInterval && document.readyState !== "complete") {
             readyStateCheckInterval = setInterval(function () {
@@ -35,7 +35,7 @@
      * @param obj2
      * @returns {*}
      */
-    yamvc.$merge = function (obj1, obj2) {
+    ya.$merge = function (obj1, obj2) {
         var nObj = {},
             property;
 
@@ -55,12 +55,12 @@
     };
 
     //
-    yamvc.$clone = function (obj) {
+    ya.$clone = function (obj) {
         return JSON.parse(JSON.stringify(obj));
     };
 
     // Definition of Core object.
-    Core = yamvc.Core || (function () {
+    Core = ya.Core || (function () {
 
         /**
          *
@@ -214,7 +214,7 @@
                     }
                     Core.apply(this, arguments);
                 },
-                defaults = yamvc.$merge(Parent.__defaults__ || {}, opts.defaults),
+                defaults = ya.$merge(Parent.__defaults__ || {}, opts.defaults),
                 mixins = opts.mixins || [],
                 statics = opts.static || {},
                 __hasProp = {}.hasOwnProperty,
@@ -267,14 +267,14 @@
         };
 
         // Add Getters and Setters.
-        Core.$mixin(yamvc.mixins.GetSet);
+        Core.$mixin(ya.mixins.GetSet);
 
         // Add observable methods.
-        Core.$mixin(yamvc.mixins.Observable);
+        Core.$mixin(ya.mixins.Observable);
 
         return Core;
     }());
 
-    yamvc.Core = Core;
-    window.yamvc = yamvc;
+    ya.Core = Core;
+    window.ya = ya;
 }(window));

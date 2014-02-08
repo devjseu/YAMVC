@@ -2,7 +2,7 @@ module('Core');
 test("initialize", function () {
     var core;
 
-    core = yamvc.Core.$create();
+    core = ya.Core.$create();
 
-    ok(core instanceof  yamvc.Core);
+    ok(core instanceof  ya.Core);
 });
