@@ -45,4 +45,4 @@ filtering function
 * `ya.Collection` has now method `clearFilter`
 
 ##0.1.13
-* namespace was changed from `ya` to `ya` (suggested by Łukasz Sudoł)
+* namespace was changed from `yamvc` to `ya` (suggested by Łukasz Sudoł)
