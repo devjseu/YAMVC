@@ -10,7 +10,7 @@ test("initialize", function () {
 test("bind events to view",function () {
     var view, ctr;
 
-    view = new ya.View({
+    ya.View.$create({
         config: {
             autoCreate: true,
             models: [
@@ -38,15 +38,17 @@ test("bind events to view",function () {
         }
     });
 
-    ctr = ya.Controller.$create({
+    ya.Controller.$create({
         config: {
             name: 'Main',
-            views: {
-                test: view
-            },
             events: {
-                'button': {
+                '$list li': {
                     click: function () {
+                    }
+                },
+                '$list span': {
+                    click: function () {
+
                     }
                 }
             },
