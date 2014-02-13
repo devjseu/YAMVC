@@ -2,6 +2,7 @@
     "use strict";
     var ya = window.ya || {},
         __find = ya.mixins.Array.find,
+        __each = ya.mixins.Array.each,
         Dispatcher;
 
     /**
@@ -11,7 +12,12 @@
         defaults: {
             delegates: null
         },
+        /**
+         * @param opts
+         * @returns {Dispatcher}
+         */
         init: function (opts) {
+            // Standard way of initialization.
             var me = this, config;
 
             Dispatcher.Parent.init.apply(this, arguments);
@@ -29,12 +35,19 @@
         initConfig: function () {
             var me = this;
 
+            // After calling parent method
             Dispatcher.Parent.initConfig.apply(this, arguments);
 
+            // set defaults.
             me.setDelegates([]);
 
             return me;
         },
+        /**
+         * @param scope
+         * @param e
+         * @returns {Dispatcher}
+         */
         add: function (scope, e) {
             var me = this,
                 query = Object.keys(e).pop(),
@@ -51,13 +64,14 @@
                 pos = me.findGroup(view);
                 if (pos >= 0) {
 
-                    dGroup = me.getDelegatesGroup(pos);
+                    dGroup = me.getGroup(pos);
                     pos = __find.call(dGroup.selectors, 'selector', query);
                     if (pos >= 0) {
                         dGroup.selectors[0].events.push(event);
-                    }else{
+                    } else {
 
                         dGroup.selectors.push({
+                            scope: scope,
                             selector: query,
                             events: [
                                 event
@@ -71,6 +85,7 @@
                     dGroup.viewId = view;
                     dGroup.selectors = [
                         {
+                            scope: scope,
                             selector: query,
                             events: [
                                 event
@@ -86,33 +101,77 @@
 
             return me;
         },
+        /**
+         * @param viewId
+         * @returns {number}
+         */
         findGroup: function (viewId) {
-            var delegates = this.getDelegates(),
-                len = delegates.length,
-                del;
+            return __find.call(this.getDelegates(), 'viewId', viewId);
+        },
+        /**
+         * @param pos
+         * @returns {*}
+         */
+        getGroup: function (pos) {
+            return this.getDelegates()[pos];
+        },
+        /**
+         * @param view
+         */
+        apply: function (view) {
+            /*jshint -W083 */
+            // Apply delegated events.
+            var me = this,
+                newScope = function (func, scope, arg) {
+                    return func.bind(scope, arg);
+                },
+                els, group;
 
-            while (len--) {
+            while (view) {
 
-                del = delegates[len];
-                if (del.viewId === viewId) {
+                group = me.findGroup(view.getId());
+                if (group >= 0) {
 
-                    break;
+                    group = me.getGroup(group);
+                    __each.call(group.selectors, function (r, i, a) {
+
+                        if (r.selector)
+                            els = view.queryEls(r.selector);
+                        else
+                            els = [view.get('el')];
+
+                        if (els.length) {
+
+                            __each.call(els, function (node) {
+
+                                __each.call(r.events, function (e) {
+
+                                    for (var eType in e) {
+                                        if (e.hasOwnProperty(eType)) {
+
+                                            node.addEventListener(eType, newScope(e[eType], r.scope, view), false);
+
+                                        }
+                                    }
+
+                                });
+
+                            });
+
+                        }
+
+                    });
 
                 }
 
+                view = view.getParent();
             }
-
-            return len;
-        },
-        getDelegatesGroup: function (pos) {
-            return this.getDelegates()[pos];
-        },
-        dispatch: function (view) {
 
         }
     });
 
     window.ya = ya;
     window.ya.event = window.ya.event || {};
+    window.ya.event.Dispatcher = Dispatcher;
     window.ya.event.dispatcher = Dispatcher.$create();
 }(window));

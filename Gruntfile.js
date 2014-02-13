@@ -71,6 +71,7 @@ module.exports = function (grunt) {
         watch: {
             default: {
                 files: [
+                    'experimental/**/*.js',
                     'src/**/*.js',
                     'src/*.js',
                     'test/**/*.js',

@@ -100,9 +100,12 @@
             me.set('views', config.views || {});
 
             me.initConfig();
-            me.renderViews();
-            me.restoreRouter();
             CM.add(id, me);
+
+            ya.$onReady(function () {
+                me.renderViews();
+                me.restoreRouter();
+            });
 
             return me;
         },

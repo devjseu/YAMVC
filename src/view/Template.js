@@ -5,6 +5,9 @@
         Template;
 
     Template = ya.Core.$extend({
+        defaults : {
+            tpl : null
+        },
         init: function (opts) {
             var me = this, config;
 
