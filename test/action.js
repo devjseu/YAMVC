@@ -29,7 +29,7 @@ test("has method", function () {
 test("shouldnt accept", function () {
     var action, err;
 
-    action = new ya.data.Action();
+    action = ya.data.Action.$create();
 
     try {
 

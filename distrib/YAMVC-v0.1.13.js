@@ -1,5 +1,110 @@
-/*! YAMVC v0.1.13 - 2014-02-08 
+/*! YAMVC v0.1.13 - 2014-02-13 
  *  License:  */
+(function (window, undefined) {
+    "use strict";
+    var ya = window.ya || {},
+        mixins = ya.mixins || {},
+        YArray;
+
+    YArray = {
+        /**
+         *
+         * @param key
+         * @returns {Number}
+         */
+        find: function (key /*[, value]*/) {
+            var len = this.length,
+                argsLen = arguments.length,
+                val = argsLen > 1 ? arguments[1] : null,
+                rec;
+
+            while (len--) {
+
+                rec = this[len];
+                if (argsLen > 1) {
+
+                    if (rec[key] === val) {
+                        break;
+                    }
+
+                } else if (rec === key) {
+                    break;
+                }
+            }
+
+            return len;
+        },
+        /**
+         *
+         * @param key
+         * @returns {Array}
+         */
+        findAll: function (key /*[, value]*/) {
+            var len = this.length,
+                argsLen = arguments.length,
+                val = argsLen > 1 ? arguments[1] : null,
+                result = [],
+                rec;
+
+            while (len--) {
+
+                rec = this[len];
+                if (argsLen > 1) {
+
+                    if (rec[key] === val) {
+                        result.push(len);
+                    }
+
+                } else if (rec === key) {
+                    result.push(len);
+                }
+            }
+
+            return result;
+        },
+        /**
+         *
+         * @param {Function} fn
+         * @returns {Array}
+         */
+        findAllByFn: function (fn) {
+            var len = this.length,
+                result = [];
+
+            while (len--) {
+
+                if (fn(this[len])) {
+
+                    result.push(len);
+
+                }
+
+            }
+
+            return result;
+        },
+        each: Array.prototype.forEach || function (fun /*, thisArg */) {
+
+            if (this === void 0 || this === null)
+                throw new TypeError();
+
+            var t = Object(this);
+            var len = t.length >>> 0;
+            if (typeof fun !== "function")
+                throw new TypeError();
+
+            var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
+            for (var i = 0; i < len; i++) {
+                if (i in t)
+                    fun.call(thisArg, t[i], i, t);
+            }
+        }
+    };
+
+    mixins.Array = YArray;
+    window.ya = ya;
+    window.ya.mixins = mixins;
+}(window));
 (function (window, undefined) {
     "use strict";
     var ya = window.ya || {},
@@ -1076,9 +1181,12 @@
             me.set('views', config.views || {});
 
             me.initConfig();
-            me.renderViews();
-            me.restoreRouter();
             CM.add(id, me);
+
+            ya.$onReady(function () {
+                me.renderViews();
+                me.restoreRouter();
+            });
 
             return me;
         },
@@ -1894,6 +2002,184 @@
     window.ya.data = window.ya.data || {};
     window.ya.data.proxy = window.ya.data.proxy || {};
     window.ya.data.proxy.Localstorage = Localstorage;
+}(window));
+
+(function (window, undefined) {
+    "use strict";
+    var ya = window.ya || {},
+        __find = ya.mixins.Array.find,
+        __each = ya.mixins.Array.each,
+        Dispatcher;
+
+    /**
+     * @type {Dispatcher}
+     */
+    Dispatcher = ya.Core.$extend({
+        defaults: {
+            delegates: null
+        },
+        /**
+         * @param opts
+         * @returns {Dispatcher}
+         */
+        init: function (opts) {
+            // Standard way of initialization.
+            var me = this, config;
+
+            Dispatcher.Parent.init.apply(this, arguments);
+
+            opts = opts || {};
+            config = ya.$merge(me._config, opts.config);
+
+            me.set('initOpts', opts);
+            me.set('config', config);
+
+            me.initConfig();
+
+            return me;
+        },
+        initConfig: function () {
+            var me = this;
+
+            // After calling parent method
+            Dispatcher.Parent.initConfig.apply(this, arguments);
+
+            // set defaults.
+            me.setDelegates([]);
+
+            return me;
+        },
+        /**
+         * @param scope
+         * @param e
+         * @returns {Dispatcher}
+         */
+        add: function (scope, e) {
+            var me = this,
+                query = Object.keys(e).pop(),
+                event = e[query],
+                dGroup = {},
+                pos, view;
+
+            query = query.split(" ");
+            view = query.shift();
+            if (view.search(/\$/) === 0) {
+
+                view = view.replace("$", "");
+                query = query.join(" ");
+                pos = me.findGroup(view);
+                if (pos >= 0) {
+
+                    dGroup = me.getGroup(pos);
+                    pos = __find.call(dGroup.selectors, 'selector', query);
+                    if (pos >= 0) {
+                        dGroup.selectors[0].events.push(event);
+                    } else {
+
+                        dGroup.selectors.push({
+                            scope: scope,
+                            selector: query,
+                            events: [
+                                event
+                            ]
+                        });
+
+                    }
+
+                } else {
+
+                    dGroup.viewId = view;
+                    dGroup.selectors = [
+                        {
+                            scope: scope,
+                            selector: query,
+                            events: [
+                                event
+                            ]
+                        }
+                    ];
+
+                    me.getDelegates().push(dGroup);
+
+                }
+
+            }
+
+            return me;
+        },
+        /**
+         * @param viewId
+         * @returns {number}
+         */
+        findGroup: function (viewId) {
+            return __find.call(this.getDelegates(), 'viewId', viewId);
+        },
+        /**
+         * @param pos
+         * @returns {*}
+         */
+        getGroup: function (pos) {
+            return this.getDelegates()[pos];
+        },
+        /**
+         * @param view
+         */
+        apply: function (view) {
+            /*jshint -W083 */
+            // Apply delegated events.
+            var me = this,
+                newScope = function (func, scope, arg) {
+                    return func.bind(scope, arg);
+                },
+                els, group;
+
+            while (view) {
+
+                group = me.findGroup(view.getId());
+                if (group >= 0) {
+
+                    group = me.getGroup(group);
+                    __each.call(group.selectors, function (r, i, a) {
+
+                        if (r.selector)
+                            els = view.queryEls(r.selector);
+                        else
+                            els = [view.get('el')];
+
+                        if (els.length) {
+
+                            __each.call(els, function (node) {
+
+                                __each.call(r.events, function (e) {
+
+                                    for (var eType in e) {
+                                        if (e.hasOwnProperty(eType)) {
+
+                                            node.addEventListener(eType, newScope(e[eType], r.scope, view), false);
+
+                                        }
+                                    }
+
+                                });
+
+                            });
+
+                        }
+
+                    });
+
+                }
+
+                view = view.getParent();
+            }
+
+        }
+    });
+
+    window.ya = ya;
+    window.ya.event = window.ya.event || {};
+    window.ya.event.Dispatcher = Dispatcher;
+    window.ya.event.dispatcher = Dispatcher.$create();
 }(window));
 
 (function (window, undefined) {
@@ -2846,9 +3132,19 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
          * @returns {View}
          */
         init: function (opts) {
+            var me = this;
 
-            ya.Core.prototype.init.apply(this);
+            ya.Core.prototype.init.apply(me);
 
+            me.initDefaults(opts);
+            me.initConfig();
+            me.initTemplate();
+            me.initModels();
+            me.initParent();
+
+            return me;
+        },
+        initDefaults: function (opts) {
             var me = this, config, id;
 
             opts = opts || {};
@@ -2858,23 +3154,8 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
 
             me.set('initOpts', opts);
             me.set('config', config);
-
-            me.initConfig();
             VM.add(id, me);
 
-            return me;
-        },
-        /**
-         * @returns {View}
-         */
-        initConfig: function () {
-
-            ya.Core.prototype.initConfig.apply(this);
-
-            this.initTemplate();
-            this.initModels();
-
-            return this;
         },
         /**
          * @returns {View}
@@ -2922,6 +3203,17 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
             var me = this;
 
             return me;
+        },
+        initParent: function () {
+            var me = this,
+                parent = me.getParent();
+
+            if (parent) {
+
+                parent.getChildren().push(me);
+
+            }
+
         },
         /**
          * @returns {View}
@@ -3616,11 +3908,11 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
         toggle: function () {
             var me = this;
 
-            if(me._visible){
+            if (me._visible) {
 
                 me.hide();
 
-            }else{
+            } else {
 
                 me.show();
 
@@ -3647,6 +3939,9 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
         Template;
 
     Template = ya.Core.$extend({
+        defaults : {
+            tpl : null
+        },
         init: function (opts) {
             var me = this, config;
 

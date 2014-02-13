@@ -184,9 +184,19 @@
          * @returns {View}
          */
         init: function (opts) {
+            var me = this;
 
-            ya.Core.prototype.init.apply(this);
+            ya.Core.prototype.init.apply(me);
 
+            me.initDefaults(opts);
+            me.initConfig();
+            me.initTemplate();
+            me.initModels();
+            me.initParent();
+
+            return me;
+        },
+        initDefaults: function (opts) {
             var me = this, config, id;
 
             opts = opts || {};
@@ -196,23 +206,8 @@
 
             me.set('initOpts', opts);
             me.set('config', config);
-
-            me.initConfig();
             VM.add(id, me);
 
-            return me;
-        },
-        /**
-         * @returns {View}
-         */
-        initConfig: function () {
-
-            ya.Core.prototype.initConfig.apply(this);
-
-            this.initTemplate();
-            this.initModels();
-
-            return this;
         },
         /**
          * @returns {View}
@@ -260,6 +255,17 @@
             var me = this;
 
             return me;
+        },
+        initParent: function () {
+            var me = this,
+                parent = me.getParent();
+
+            if (parent) {
+
+                parent.getChildren().push(me);
+
+            }
+
         },
         /**
          * @returns {View}
@@ -954,11 +960,11 @@
         toggle: function () {
             var me = this;
 
-            if(me._visible){
+            if (me._visible) {
 
                 me.hide();
 
-            }else{
+            } else {
 
                 me.show();
 

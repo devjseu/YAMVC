@@ -36,13 +36,15 @@ YAMVC - change log
 * classList polifill by Eli Grey
 
 ##0.1.12
-* addListener and removeListener are now addEventListener and removeEventListener
+* `addListener` and `removeListener` are now `addEventListener` and `removeEventListener`
 * `ya.View` can be now rerender
-* `Core` and object that inherited from it contains now static factory method '$create' which should be used instead of
-new keyword
+* `Core` and objects that inherited from it contains now static factory method '$create' which should be used instead of
+`new` keyword
 * `filter` method in `ya.Collection` can takes now two arguments where first is id of passed filter and second is
 filtering function
 * `ya.Collection` has now method `clearFilter`
 
 ##0.1.13
 * namespace was changed from `yamvc` to `ya` (suggested by Łukasz Sudoł)
+* `ya.event.dispatcher` introduced. This singleton object will manage event dispatching and delegation in controllers
+* `ya.mixin.array` was added.

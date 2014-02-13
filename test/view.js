@@ -197,51 +197,51 @@ test("rendered two times", function () {
     equal(view.queryEl('.example').getAttribute('style'), 'display: block;');
 });
 
-test("bind with collection", function () {
-    var view, collection;
-
-    collection = new ya.Collection({
-        config: {
-            namespace: 'example',
-            data: [
-                {
-                    name: "Seba",
-                    display: "true"
-                },
-                {
-                    name: "Seba 2",
-                    display: "none"
-                },
-                {
-                    name: "Seba 3",
-                    display: "true"
-                }
-            ]
-        }
-    });
-
-    view = new ya.View({
-        config: {
-            collections: [
-                collection
-            ],
-            tpl: new ya.view.Template({
-                config: {
-                    id: 'tpl-example-5',
-                    tpl: [
-                        '<div>',
-                        '<ul reapeat="">',
-                        '<li>{{}}</li>',
-                        '</ul>',
-                        '</div>'
-                    ]
-                }
-            }),
-            renderTo: '#test-6'
-        }
-    });
-
-    view.render();
-
-    equal(view.queryEl('.example').innerText, 'Hi Seba');
-});
+//test("bind with collection", function () {
+//    var view, collection;
+//
+//    collection = new ya.Collection({
+//        config: {
+//            namespace: 'example',
+//            data: [
+//                {
+//                    name: "Seba",
+//                    display: "true"
+//                },
+//                {
+//                    name: "Seba 2",
+//                    display: "none"
+//                },
+//                {
+//                    name: "Seba 3",
+//                    display: "true"
+//                }
+//            ]
+//        }
+//    });
+//
+//    view = new ya.View({
+//        config: {
+//            collections: [
+//                collection
+//            ],
+//            tpl: new ya.view.Template({
+//                config: {
+//                    id: 'tpl-example-5',
+//                    tpl: [
+//                        '<div>',
+//                        '<ul reapeat="">',
+//                        '<li>{{}}</li>',
+//                        '</ul>',
+//                        '</div>'
+//                    ]
+//                }
+//            }),
+//            renderTo: '#test-6'
+//        }
+//    });
+//
+//    view.render();
+//
+//    equal(view.queryEl('.example').innerText, 'Hi Seba');
+//});
