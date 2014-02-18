@@ -1,10 +1,11 @@
-yamvc.$onReady(function () {
+
+ya.$onReady(function () {
     "use strict";
 
-    (new yamvc.View({
+    ya.View.$create({
         config: {
             models: [
-                new yamvc.Model({
+                ya.Model.$create({
                     config: {
                         namespace: 'names'
                     },
@@ -14,7 +15,7 @@ yamvc.$onReady(function () {
                 })
             ],
             id: 'bar',
-            tpl: new yamvc.view.Template({
+            tpl: yamvc.view.Template.$create({
                 config: {
                     id: 'tpl-bar',
                     tpl: [
@@ -24,6 +25,6 @@ yamvc.$onReady(function () {
             }),
             renderTo: '#container'
         }
-    })).render();
+    }).render();
 
 });

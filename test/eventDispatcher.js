@@ -16,6 +16,8 @@ test("has", function () {
 test("may adopt events which will be dispatched", function () {
     var delegates;
 
+    ya.event.dispatcher.clear();
+
     ya.event.dispatcher.add(this, {
         '$list span': {
             click: function () {
@@ -46,10 +48,8 @@ test("may adopt events which will be dispatched", function () {
         }
     });
 
-    equal(delegates.length, 2);
-    equal(delegates[0].viewId, "list");
-    equal(delegates[0].selectors.length, 1);
-    equal(delegates[0].selectors[0].events.length, 2);
+    equal(delegates[0].selector.match('^\\$(.*)[\\s]')[1], "list");
+    ok(typeof delegates[0].selector !== undefined);
 
 });
 
@@ -113,7 +113,7 @@ test("assign listeners for new view", function () {
 test("assign listeners only for appended view", function () {
     var view, view2;
 
-    ya.experimental.event.dispatcher.add(this, {
+    ya.event.dispatcher.add(this, {
         '$test2 span': {
             click: function (view, e) {
                 var el = e.target || e.srcElement;
@@ -127,7 +127,7 @@ test("assign listeners only for appended view", function () {
         }
     });
 
-    ya.experimental.event.dispatcher.add(this, {
+    ya.event.dispatcher.add(this, {
         '$test2': {
             click: function () {
 
@@ -178,7 +178,7 @@ test("assign listeners only for appended view", function () {
 
     view2.render();
 
-    ya.experimental.event.dispatcher.apply(view2);
+    ya.event.dispatcher.apply(view2);
 
     view.queryEls('span')[0].click();
     view.queryEls('span')[1].click();
@@ -190,7 +190,7 @@ test("assign listeners only for appended view", function () {
 
 test("assign listeners for multiple views", function () {
 
-    ya.experimental.event.dispatcher.add(this, {
+    ya.event.dispatcher.add(this, {
         '$test3b li': {
             click: function (view, e) {
                 var el = e.target || e.srcElement;
@@ -201,7 +201,7 @@ test("assign listeners for multiple views", function () {
         }
     });
 
-    ya.experimental.event.dispatcher.add(this, {
+    ya.event.dispatcher.add(this, {
         '$test3 div li': {
             click: function (view, e) {
                 var el = e.target || e.srcElement;
@@ -336,7 +336,7 @@ test("assign listeners for multiple views", function () {
     ya.viewManager.get('test3ba').addChild(li1, 'ul');
     ya.viewManager.get('test3ba').addChild(li2, 'ul');
 
-    ya.experimental.event.dispatcher.apply(li1);
+    ya.event.dispatcher.apply(li1);
 
     li1.get('el').click();
     li2.get('el').click();

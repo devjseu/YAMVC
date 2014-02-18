@@ -1986,13 +1986,46 @@
     var ya = window.ya || {},
         __findAllByFn = ya.mixins.Array.findAllByFn,
         __each = ya.mixins.Array.each,
-        __slice = Array.prototype.slice,
         Dispatcher;
 
     /**
      * @type {Dispatcher}
      */
-    Dispatcher = ya.event.Dispatcher.$extend({
+    Dispatcher = ya.Core.$extend({
+        defaults: {
+            delegates: null
+        },
+        /**
+         * @param opts
+         * @returns {Dispatcher}
+         */
+        init: function (opts) {
+            // Standard way of initialization.
+            var me = this, config;
+
+            Dispatcher.Parent.init.apply(this, arguments);
+
+            opts = opts || {};
+            config = ya.$merge(me._config, opts.config);
+
+            me.set('initOpts', opts);
+            me.set('config', config);
+
+            me.initConfig();
+
+            return me;
+        },
+        initConfig: function () {
+            var me = this;
+
+            // After calling parent method
+            Dispatcher.Parent.initConfig.apply(this, arguments);
+
+            // set defaults.
+            me.setDelegates([]);
+
+            return me;
+        },
         /**
          * @param scope
          * @param e
@@ -2077,7 +2110,7 @@
 
                                             if (cpSelector.length === 0) {
 
-                                                me.assignEvents(delegate, view);
+                                                me.assignEvents(el, delegate, view);
 
                                                 break;
                                             }
@@ -2090,7 +2123,7 @@
 
                                 } else {
 
-                                    me.assignEvents(delegate, view);
+                                    me.assignEvents(el, delegate, view);
 
                                 }
 
@@ -2109,7 +2142,7 @@
 
 
         },
-        assignEvents: function (delegate, view) {
+        assignEvents: function (el, delegate, view) {
             var e = delegate.events,
                 eType;
             for (eType in e) {
@@ -2119,47 +2152,22 @@
 
                 }
             }
+        },
+        /**
+         * Clear delegates array
+         * @returns {Dispatcher}
+         */
+        clear : function () {
+            this.getDelegates().length = 0;
+            return this;
         }
     });
 
     window.ya = ya;
-    window.ya.experimental = window.ya.experimental || {};
-    window.ya.experimental.event = window.ya.experimental.event || {};
-    window.ya.experimental.event.dispatcher = Dispatcher.$create();
+    window.ya.event = window.ya.event || {};
+    window.ya.event.dispatcher = Dispatcher.$create();
 }(window));
 
-function getNearestWeight(value) {
-    var values = [2, 4, 6, 8, 9, 10, 12.5, 20],
-        nearest = values[0],
-        len, h;
-
-    for (var i = 0; i < values.length; i++) {
-
-        len = i + 1 >= values.length ? values.length - 1 : i + 1;
-        if (value >= values[i] && value <= values[len]) {
-
-            h = (values[i] + values[len]) / 2;
-            if (value > h) {
-
-                nearest = values[len];
-
-            } else {
-
-                nearest = values[i];
-
-            }
-
-        } else if (value > values[len]) {
-
-            nearest = values[len];
-
-        }
-    }
-
-    return nearest;
-}
-
-getNearestWeight(9.542);
 (function (window, undefined) {
     "use strict";
     var ya = window.ya || {},
