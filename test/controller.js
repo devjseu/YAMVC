@@ -7,17 +7,18 @@ test("initialize", function () {
     ok(controller instanceof  ya.Controller);
 });
 
-test("bind events to view",function () {
-    var view, ctr;
+test("bind events to view", function () {
+    var alerted = 0;
 
     ya.View.$create({
         config: {
+            id: 'controller-test',
             autoCreate: true,
             models: [
                 ya.Model.$create({
-                    config : {
-                        namespace : 'example',
-                        data : {
+                    config: {
+                        namespace: 'example',
+                        data: {
                             display: false,
                             name: ''
                         }
@@ -42,13 +43,9 @@ test("bind events to view",function () {
         config: {
             name: 'Main',
             events: {
-                '$list li': {
+                '$controller-test button': {
                     click: function () {
-                    }
-                },
-                '$list span': {
-                    click: function () {
-
+                        var value = prompt("Insert answer", "");
                     }
                 }
             },
@@ -58,5 +55,16 @@ test("bind events to view",function () {
         }
     });
 
-    ok(true);
+    var oldPrompt = window.prompt;
+
+    window.prompt = function MockPrompt() {
+        alerted++;
+    };
+
+    ya.viewManager.get('controller-test').queryEl('button').click();
+
+    equal(alerted, 1, "Event fired!");
+
+    window.prompt = oldPrompt;
+
 });

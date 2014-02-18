@@ -58,8 +58,8 @@
          * @param id
          * @param view
          */
-        add: function (id, view) {
-            this.controller.push(view);
+        add: function (id, controller) {
+            this.controller.push(controller);
             this.i++;
         },
         // Get view by its id
@@ -103,7 +103,6 @@
             CM.add(id, me);
 
             ya.$onReady(function () {
-                me.renderViews();
                 me.restoreRouter();
             });
 
@@ -115,9 +114,8 @@
                 routes = me.get('routes'),
                 events = me.get('events'),
                 views = me.get('views'),
-                query,
-                rx = /(^\$|,$)/,
-                view;
+                rx = new RegExp('^\\$(.*)[\\s]'),
+                matches, view;
 
             if (routes) {
                 for (var k in routes) {
@@ -128,63 +126,40 @@
                 }
             }
 
-            if (events && views) {
-                for (view in views) {
+            if (events) {
 
-                    if (views.hasOwnProperty(view)) {
+                for (var e in events) {
 
-                        views[view].addEventListener('render', me.resolveEvents.bind(me));
+                    if (events.hasOwnProperty(e)) {
 
-                    }
+                        matches = e.match(rx);
+                        if (matches) {
+                            view = ya
+                                .viewManager
+                                .get(matches[1]);
 
-                }
+                            if (view.isInDOM()) {
 
-                for (query in events) {
+                                me.resolveEvents(view);
 
-                    if (events.hasOwnProperty(query)) {
+                            } else {
 
-                        if (rx.test(query)) {
-
-                            view = views[query.substr(1)];
-
-                            if (view) {
-
-                                for (var event in events[query]) {
-
-                                    if (events[query].hasOwnProperty(event)) {
-                                        view.addEventListener(event, events[query][event].bind(me, view));
-                                    }
-
-                                }
+                                view.addEventListener('render', me.resolveEvents.bind(me));
 
                             }
 
-                            delete events[query];
-                        }
-                    }
 
+                        }else{
+
+                            throw new Error('Event query should begin from id of the view (current query: ' + e + ')');
+
+                        }
+
+                    }
                 }
 
             }
             return this;
-        },
-        renderViews: function () {
-            var me = this,
-                views = me.get('views');
-
-            for (var view in views) {
-
-                if (views.hasOwnProperty(view)) {
-
-                    if (views[view].getAutoCreate && views[view].getAutoCreate()) {
-
-                        views[view].render();
-
-                    }
-                }
-
-            }
-
         },
         resolveEvents: function (view) {
             var events = this.get('events'),
@@ -193,6 +168,7 @@
                     return func.bind(scope, arg);
                 },
                 elements,
+                selector,
                 scope;
 
             for (var query in events) {
@@ -200,7 +176,8 @@
                 if (events.hasOwnProperty(query)) {
 
                     viewEvents = events[query];
-                    elements = view.get('el').querySelectorAll(query);
+                    selector = query.split(" ").slice(1);
+                    elements = view.get('el').querySelectorAll(selector.join(" "));
                     for (var i = 0, l = elements.length; i < l; i++) {
 
                         for (var event in viewEvents) {

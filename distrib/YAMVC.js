@@ -1139,8 +1139,8 @@
          * @param id
          * @param view
          */
-        add: function (id, view) {
-            this.controller.push(view);
+        add: function (id, controller) {
+            this.controller.push(controller);
             this.i++;
         },
         // Get view by its id
@@ -1184,7 +1184,6 @@
             CM.add(id, me);
 
             ya.$onReady(function () {
-                me.renderViews();
                 me.restoreRouter();
             });
 
@@ -1196,9 +1195,8 @@
                 routes = me.get('routes'),
                 events = me.get('events'),
                 views = me.get('views'),
-                query,
-                rx = /(^\$|,$)/,
-                view;
+                rx = new RegExp('^\\$(.*)[\\s]'),
+                matches, view;
 
             if (routes) {
                 for (var k in routes) {
@@ -1209,63 +1207,40 @@
                 }
             }
 
-            if (events && views) {
-                for (view in views) {
+            if (events) {
 
-                    if (views.hasOwnProperty(view)) {
+                for (var e in events) {
 
-                        views[view].addEventListener('render', me.resolveEvents.bind(me));
+                    if (events.hasOwnProperty(e)) {
 
-                    }
+                        matches = e.match(rx);
+                        if (matches) {
+                            view = ya
+                                .viewManager
+                                .get(matches[1]);
 
-                }
+                            if (view.isInDOM()) {
 
-                for (query in events) {
+                                me.resolveEvents(view);
 
-                    if (events.hasOwnProperty(query)) {
+                            } else {
 
-                        if (rx.test(query)) {
-
-                            view = views[query.substr(1)];
-
-                            if (view) {
-
-                                for (var event in events[query]) {
-
-                                    if (events[query].hasOwnProperty(event)) {
-                                        view.addEventListener(event, events[query][event].bind(me, view));
-                                    }
-
-                                }
+                                view.addEventListener('render', me.resolveEvents.bind(me));
 
                             }
 
-                            delete events[query];
-                        }
-                    }
 
+                        }else{
+
+                            throw new Error('Event query should begin from id of the view (current query: ' + e + ')');
+
+                        }
+
+                    }
                 }
 
             }
             return this;
-        },
-        renderViews: function () {
-            var me = this,
-                views = me.get('views');
-
-            for (var view in views) {
-
-                if (views.hasOwnProperty(view)) {
-
-                    if (views[view].getAutoCreate && views[view].getAutoCreate()) {
-
-                        views[view].render();
-
-                    }
-                }
-
-            }
-
         },
         resolveEvents: function (view) {
             var events = this.get('events'),
@@ -1274,6 +1249,7 @@
                     return func.bind(scope, arg);
                 },
                 elements,
+                selector,
                 scope;
 
             for (var query in events) {
@@ -1281,7 +1257,8 @@
                 if (events.hasOwnProperty(query)) {
 
                     viewEvents = events[query];
-                    elements = view.get('el').querySelectorAll(query);
+                    selector = query.split(" ").slice(1);
+                    elements = view.get('el').querySelectorAll(selector.join(" "));
                     for (var i = 0, l = elements.length; i < l; i++) {
 
                         for (var event in viewEvents) {
@@ -3066,6 +3043,7 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
         // use `get` method (with id as argument) to return requested view.
     VM = {
         views: [],
+        toRender: [],
         i: 0,
         // Add view to manager
         /**
@@ -3073,6 +3051,13 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
          * @param view
          */
         add: function (id, view) {
+
+            if (view.getAutoCreate()) {
+
+                view.render();
+
+            }
+
             this.views.push(view);
             this.i++;
         },
@@ -3108,6 +3093,7 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
             return this.tpl[id];
         }
     };
+
     /**
      * @constructor
      * @params opts Object with configuration properties
@@ -3123,7 +3109,8 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
             parent: null,
             fit: false,
             hidden: false,
-            models: null
+            models: null,
+            autoCreate: false
         },
         // Initializing function in which we call parent method, merge previous
         // configuration with new one, set id of component, initialize config
@@ -3141,22 +3128,21 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
             me.initDefaults(opts);
             me.initConfig();
             me.initTemplate();
-            me.initModels();
             me.initParent();
+            VM.add(me.getId(), me);
 
             return me;
         },
         initDefaults: function (opts) {
-            var me = this, config, id;
+            var me = this, config;
 
             opts = opts || {};
             config = ya.$merge(me._config, opts.config);
-            config.id = id = config.id || 'view-' + VM.i;
+            config.id = config.id || 'view-' + VM.i;
             config.children = config.children || [];
 
             me.set('initOpts', opts);
             me.set('config', config);
-            VM.add(id, me);
 
         },
         /**
@@ -3195,14 +3181,6 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
             }
 
             me.set('tpl', div);
-
-            return me;
-        },
-        /**
-         * @returns {View}
-         */
-        initModels: function () {
-            var me = this;
 
             return me;
         },
@@ -3252,7 +3230,6 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
         },
         /**
          * @version 0.1.11
-         * @param {Boolean} force
          * @returns {Node}
          */
         render: function () {
@@ -3709,7 +3686,7 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
         },
         /**
          * @param selector
-         * @returns {Array} 
+         * @returns {Array}
          */
         queryEls: function (selector) {
             var results = __slice.call(this.get('el').querySelectorAll(selector) || [], 0);

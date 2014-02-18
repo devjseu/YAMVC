@@ -117,6 +117,7 @@
         // use `get` method (with id as argument) to return requested view.
     VM = {
         views: [],
+        toRender: [],
         i: 0,
         // Add view to manager
         /**
@@ -124,6 +125,13 @@
          * @param view
          */
         add: function (id, view) {
+
+            if (view.getAutoCreate()) {
+
+                view.render();
+
+            }
+
             this.views.push(view);
             this.i++;
         },
@@ -159,6 +167,7 @@
             return this.tpl[id];
         }
     };
+
     /**
      * @constructor
      * @params opts Object with configuration properties
@@ -174,7 +183,8 @@
             parent: null,
             fit: false,
             hidden: false,
-            models: null
+            models: null,
+            autoCreate: false
         },
         // Initializing function in which we call parent method, merge previous
         // configuration with new one, set id of component, initialize config
@@ -192,22 +202,21 @@
             me.initDefaults(opts);
             me.initConfig();
             me.initTemplate();
-            me.initModels();
             me.initParent();
+            VM.add(me.getId(), me);
 
             return me;
         },
         initDefaults: function (opts) {
-            var me = this, config, id;
+            var me = this, config;
 
             opts = opts || {};
             config = ya.$merge(me._config, opts.config);
-            config.id = id = config.id || 'view-' + VM.i;
+            config.id = config.id || 'view-' + VM.i;
             config.children = config.children || [];
 
             me.set('initOpts', opts);
             me.set('config', config);
-            VM.add(id, me);
 
         },
         /**
@@ -246,14 +255,6 @@
             }
 
             me.set('tpl', div);
-
-            return me;
-        },
-        /**
-         * @returns {View}
-         */
-        initModels: function () {
-            var me = this;
 
             return me;
         },
@@ -303,7 +304,6 @@
         },
         /**
          * @version 0.1.11
-         * @param {Boolean} force
          * @returns {Node}
          */
         render: function () {
