@@ -760,7 +760,7 @@
         },
         /**
          * @param selector
-         * @returns {Array} 
+         * @returns {Array}
          */
         queryEls: function (selector) {
             var results = __slice.call(this.get('el').querySelectorAll(selector) || [], 0);

@@ -3,8 +3,8 @@ YAMVC
 Yet Another MVC library. Why? Because. Without reason...
 
 ##Pros
-* Light, use native API as much as possible
-* Auto model <-> view binding
+* Light, focused on performance
+* 
 * Easily extendable
 
 ##Cons
