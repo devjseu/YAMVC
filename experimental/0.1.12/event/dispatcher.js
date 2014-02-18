@@ -33,57 +33,93 @@
         apply: function (view) {
             // Apply delegated events.
             var me = this,
+            // Get all delegated events.
                 delegates = me.getDelegates(),
+            // Define array in which matched events from delegation array
+            // will be stored.
                 matchPos = [],
+            // Cache new view in other variable.
                 newView = view,
+            // Define array for elements which match to last part
+            // of query from delegated event object
                 els = [],
-                newScope = function (func, scope, arg) {
-                    return func.bind(scope, arg);
-                },
+            // Function which will be used to match if there are any
+            // delegated events for particular view.
                 matchIdFn = function (r) {
-
-                    return r.selector.search(view.getId()) >= 0;
+                    return r.selector.search(regExp) >= 0;
 
                 },
-                selector, delegate, e;
+            // Other variables which need to be defined.
+                selector, delegate, regExp, cpSelector, e;
+
 
             while (view) {
-
+                // If view is not null define regexp for
+                // searching view id in delegated event
+                // query.
+                regExp = new RegExp('^\\$' + view.getId() + "[\\s]");
+                // Get position for events which were matched.
                 matchPos = __findAllByFn.call(delegates, matchIdFn);
                 if (matchPos.length) {
-
+                    // If we found any events which need to be delegated,
                     __each.call(matchPos, function (r) {
-
+                        // iterate through all of them.
+                        // As first step clear the array of elements
                         els.length = 0;
                         delegate = delegates[r];
+                        //
                         selector = delegate
                             .selector
                             .split(" ");
+                        // Remove item id from selectors array.
                         selector.shift();
 
                         if (selector.length) {
+                            // If still anything left get last part
+                            // from query and find in new view elements
+                            // which match to the selector.
+                            els = newView.queryEls(selector.pop());
+                            // Copy array with rest of them
+                            cpSelector = selector.slice();
+                            __each.call(els, function (el) {
+                                // and iterate through all founded elements.
+                                if (cpSelector.length) {
 
-                            els = __slice.call(newView.queryEls(selector.join(" ")), 0);
-                            if (selector.length === 1 && newView.get('el').nodeName.toLowerCase() === selector[0]) {
-                                els.push(newView.get('el'));
-                            }
+                                    var node = el,
+                                        lastSelector = cpSelector.pop();
+                                    while (view.getId() !== node.getAttribute('id')) {
 
-                        } else {
+                                        if (node.tagName.toLowerCase() === lastSelector) {
 
-                            els.push(view.get('el'));
+                                            if (cpSelector.length === 0) {
 
-                        }
+                                                e = delegate.events;
+                                                for (var eType in e) {
+                                                    if (e.hasOwnProperty(eType)) {
 
-                        if (els.length) {
+                                                        el.addEventListener(eType, e[eType].bind(delegate.scope, view), false);
 
-                            __each.call(els, function (node) {
+                                                    }
+                                                }
 
-                                e = delegate.events;
-                                for (var eType in e) {
-                                    if (e.hasOwnProperty(eType)) {
+                                                break;
+                                            }
+                                            lastSelector = cpSelector.pop();
 
-                                        node.addEventListener(eType, newScope(e[eType], delegate.scope, view), false);
+                                        }
+                                        node = node.parentNode;
 
+                                    }
+
+                                } else {
+
+                                    e = delegate.events;
+                                    for (var eType in e) {
+                                        if (e.hasOwnProperty(eType)) {
+
+                                            el.addEventListener(eType, e[eType].bind(delegate.scope, view), false);
+
+                                        }
                                     }
                                 }
 
@@ -91,17 +127,15 @@
 
                         }
 
-                        console.log(delegates[r]
-                            .selector, els);
-
                     });
 
                 }
 
-
                 view = view.getParent();
 
+
             }
+
 
         }
     });
@@ -111,3 +145,36 @@
     window.ya.experimental.event = window.ya.experimental.event || {};
     window.ya.experimental.event.dispatcher = Dispatcher.$create();
 }(window));
+
+function getNearestWeight(value) {
+    var values = [2, 4, 6, 8, 9, 10, 12.5, 20],
+        nearest = values[0],
+        len, h;
+
+    for (var i = 0; i < values.length; i++) {
+
+        len = i + 1 >= values.length ? values.length - 1 : i + 1;
+        if (value >= values[i] && value <= values[len]) {
+
+            h = (values[i] + values[len]) / 2;
+            if (value > h) {
+
+                nearest = values[len];
+
+            } else {
+
+                nearest = values[i];
+
+            }
+
+        } else if (value > values[len]) {
+
+            nearest = values[len];
+
+        }
+    }
+
+    return nearest;
+}
+
+getNearestWeight(9.542);

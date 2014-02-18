@@ -180,11 +180,11 @@ test("assign listeners only for appended view", function () {
 
     ya.experimental.event.dispatcher.apply(view2);
 
-    view.queryEls('span').item(0).click();
-    view.queryEls('span').item(1).click();
+    view.queryEls('span')[0].click();
+    view.queryEls('span')[1].click();
 
-    equal(view.queryEls('span').item(0).innerHTML, '');
-    equal(view.queryEls('span').item(1).innerHTML, '1');
+    equal(view.queryEls('span')[0].innerHTML, '');
+    equal(view.queryEls('span')[1].innerHTML, '1');
 
 });
 
@@ -193,14 +193,20 @@ test("assign listeners for multiple views", function () {
     ya.experimental.event.dispatcher.add(this, {
         '$test3b li': {
             click: function (view, e) {
+                var el = e.target || e.srcElement;
+
+                el.innerHTML = '1';
 
             }
         }
     });
 
     ya.experimental.event.dispatcher.add(this, {
-        '$test3b li button': {
-            click: function () {
+        '$test3 div li': {
+            click: function (view, e) {
+                var el = e.target || e.srcElement;
+
+                el.setAttribute('passed', '1');
 
             }
         }
@@ -291,13 +297,57 @@ test("assign listeners for multiple views", function () {
     });
 
 
-
     ya.viewManager.get('test3').render();
 
+    var li1, li2;
+
+    li1 = ya.View.$create({
+        config: {
+            id: 'test3baa',
+            renderTo: '.content',
+            tpl: ya.view.Template.$create({
+                config: {
+                    id: 'tpl-test3ba',
+                    tpl: [
+                        '<li>',
+                        '</li>'
+                    ]
+                }
+            })
+        }
+    });
+
+    li2 = ya.View.$create({
+        config: {
+            id: 'test3bab',
+            renderTo: '.content',
+            tpl: ya.view.Template.$create({
+                config: {
+                    id: 'tpl-test3ba',
+                    tpl: [
+                        '<li>',
+                        '</li>'
+                    ]
+                }
+            })
+        }
+    });
+
+    ya.viewManager.get('test3ba').addChild(li1, 'ul');
+    ya.viewManager.get('test3ba').addChild(li2, 'ul');
+
+    ya.experimental.event.dispatcher.apply(li1);
+
+    li1.get('el').click();
+    li2.get('el').click();
+
+    equal(li1.get('el').innerHTML, '1');
+    equal(li1.get('el').getAttribute('passed'), '1');
+
+    equal(li2.get('el').innerHTML, '');
+    equal(li2.get('el').getAttribute('passed'), null);
+
 //    ya.experimental.event.dispatcher.apply(view2);
-
-
-    equal(ya.viewManager.get('test3'), '');
 
 });
 

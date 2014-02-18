@@ -43,6 +43,7 @@
 
     var ya = window.ya || {},
         style = document.createElement('style'),
+        __slice = Array.prototype.slice,
         VM,
         VTM,
         View,
@@ -754,14 +755,23 @@
          * @returns {Node}
          */
         queryEl: function (selector) {
-            return this.get('el').querySelector(selector);
+            return selector, this.get('el').querySelector(selector) ||
+                (this.get('el').nodeName.toLowerCase() === selector ? this.get('el') : null);
         },
         /**
          * @param selector
-         * @returns {NodeList}
+         * @returns {Array}
          */
         queryEls: function (selector) {
-            return this.get('el').querySelectorAll(selector);
+            var results = __slice.call(this.get('el').querySelectorAll(selector) || [], 0);
+
+            if (this.get('el').nodeName.toLowerCase() === selector) {
+
+                results.push(this.get('el'));
+
+            }
+
+            return results;
         },
         /**
          * @param view

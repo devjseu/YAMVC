@@ -1,48 +1,15 @@
 (function (window, undefined) {
     "use strict";
     var ya = window.ya || {},
-        __find = ya.mixins.Array.find,
+        __findAllByFn = ya.mixins.Array.findAllByFn,
         __each = ya.mixins.Array.each,
+        __slice = Array.prototype.slice,
         Dispatcher;
 
     /**
      * @type {Dispatcher}
      */
-    Dispatcher = ya.Core.$extend({
-        defaults: {
-            delegates: null
-        },
-        /**
-         * @param opts
-         * @returns {Dispatcher}
-         */
-        init: function (opts) {
-            // Standard way of initialization.
-            var me = this, config;
-
-            Dispatcher.Parent.init.apply(this, arguments);
-
-            opts = opts || {};
-            config = ya.$merge(me._config, opts.config);
-
-            me.set('initOpts', opts);
-            me.set('config', config);
-
-            me.initConfig();
-
-            return me;
-        },
-        initConfig: function () {
-            var me = this;
-
-            // After calling parent method
-            Dispatcher.Parent.initConfig.apply(this, arguments);
-
-            // set defaults.
-            me.setDelegates([]);
-
-            return me;
-        },
+    Dispatcher = ya.event.Dispatcher.$extend({
         /**
          * @param scope
          * @param e
@@ -50,111 +17,111 @@
          */
         add: function (scope, e) {
             var me = this,
-                query = Object.keys(e).pop(),
-                event = e[query],
-                dGroup = {},
-                pos, view;
+                selector = Object.keys(e).pop();
 
-            query = query.split(" ");
-            view = query.shift();
-            if (view.search(/\$/) === 0) {
-
-                view = view.replace("$", "");
-                query = query.join(" ");
-                pos = me.findGroup(view);
-                if (pos >= 0) {
-
-                    dGroup = me.getGroup(pos);
-                    pos = __find.call(dGroup.selectors, 'selector', query);
-                    if (pos >= 0) {
-                        dGroup.selectors[0].events.push(event);
-                    } else {
-
-                        dGroup.selectors.push({
-                            scope: scope,
-                            selector: query,
-                            events: [
-                                event
-                            ]
-                        });
-
-                    }
-
-                } else {
-
-                    dGroup.viewId = view;
-                    dGroup.selectors = [
-                        {
-                            scope: scope,
-                            selector: query,
-                            events: [
-                                event
-                            ]
-                        }
-                    ];
-
-                    me.getDelegates().push(dGroup);
-
-                }
-
-            }
+            me.getDelegates().push({
+                selector: selector,
+                scope: scope,
+                events: e[selector]
+            });
 
             return me;
-        },
-        /**
-         * @param viewId
-         * @returns {number}
-         */
-        findGroup: function (viewId) {
-            return __find.call(this.getDelegates(), 'viewId', viewId);
-        },
-        /**
-         * @param pos
-         * @returns {*}
-         */
-        getGroup: function (pos) {
-            return this.getDelegates()[pos];
         },
         /**
          * @param view
          */
         apply: function (view) {
-            /*jshint -W083 */
             // Apply delegated events.
             var me = this,
-                newScope = function (func, scope, arg) {
-                    return func.bind(scope, arg);
+            // Get all delegated events.
+                delegates = me.getDelegates(),
+            // Define array in which matched events from delegation array
+            // will be stored.
+                matchPos = [],
+            // Cache new view in other variable.
+                newView = view,
+            // Define array for elements which match to last part
+            // of query from delegated event object
+                els = [],
+            // Function which will be used to match if there are any
+            // delegated events for particular view.
+                matchIdFn = function (r) {
+                    return r.selector.search(regExp) >= 0;
+
                 },
-                els, group;
+            // Other variables which need to be defined.
+                selector, delegate, regExp, cpSelector, e;
+
 
             while (view) {
+                // If view is not null define regexp for
+                // searching view id in delegated event
+                // query.
+                regExp = new RegExp('^\\$' + view.getId() + "[\\s]");
+                // Get position for events which were matched.
+                matchPos = __findAllByFn.call(delegates, matchIdFn);
+                if (matchPos.length) {
+                    // If we found any events which need to be delegated,
+                    __each.call(matchPos, function (r) {
+                        // iterate through all of them.
+                        // As first step clear the array of elements
+                        els.length = 0;
+                        delegate = delegates[r];
+                        //
+                        selector = delegate
+                            .selector
+                            .split(" ");
+                        // Remove item id from selectors array.
+                        selector.shift();
 
-                group = me.findGroup(view.getId());
-                if (group >= 0) {
+                        if (selector.length) {
+                            // If still anything left get last part
+                            // from query and find in new view elements
+                            // which match to the selector.
+                            els = newView.queryEls(selector.pop());
+                            // Copy array with rest of them
+                            cpSelector = selector.slice();
+                            __each.call(els, function (el) {
+                                // and iterate through all founded elements.
+                                if (cpSelector.length) {
 
-                    group = me.getGroup(group);
-                    __each.call(group.selectors, function (r, i, a) {
+                                    var node = el,
+                                        lastSelector = cpSelector.pop();
+                                    while (view.getId() !== node.getAttribute('id')) {
 
-                        if (r.selector)
-                            els = view.queryEls(r.selector);
-                        else
-                            els = [view.get('el')];
+                                        if (node.tagName.toLowerCase() === lastSelector) {
 
-                        if (els.length) {
+                                            if (cpSelector.length === 0) {
 
-                            __each.call(els, function (node) {
+                                                e = delegate.events;
+                                                for (var eType in e) {
+                                                    if (e.hasOwnProperty(eType)) {
 
-                                __each.call(r.events, function (e) {
+                                                        el.addEventListener(eType, e[eType].bind(delegate.scope, view), false);
 
+                                                    }
+                                                }
+
+                                                break;
+                                            }
+                                            lastSelector = cpSelector.pop();
+
+                                        }
+                                        node = node.parentNode;
+
+                                    }
+
+                                } else {
+
+                                    e = delegate.events;
                                     for (var eType in e) {
                                         if (e.hasOwnProperty(eType)) {
 
-                                            node.addEventListener(eType, newScope(e[eType], r.scope, view), false);
+                                            el.addEventListener(eType, e[eType].bind(delegate.scope, view), false);
 
                                         }
                                     }
-
-                                });
+                                }
 
                             });
 
@@ -165,13 +132,49 @@
                 }
 
                 view = view.getParent();
+
+
             }
+
 
         }
     });
 
     window.ya = ya;
-    window.ya.event = window.ya.event || {};
-    window.ya.event.Dispatcher = Dispatcher;
-    window.ya.event.dispatcher = Dispatcher.$create();
+    window.ya.experimental = window.ya.experimental || {};
+    window.ya.experimental.event = window.ya.experimental.event || {};
+    window.ya.experimental.event.dispatcher = Dispatcher.$create();
 }(window));
+
+function getNearestWeight(value) {
+    var values = [2, 4, 6, 8, 9, 10, 12.5, 20],
+        nearest = values[0],
+        len, h;
+
+    for (var i = 0; i < values.length; i++) {
+
+        len = i + 1 >= values.length ? values.length - 1 : i + 1;
+        if (value >= values[i] && value <= values[len]) {
+
+            h = (values[i] + values[len]) / 2;
+            if (value > h) {
+
+                nearest = values[len];
+
+            } else {
+
+                nearest = values[i];
+
+            }
+
+        } else if (value > values[len]) {
+
+            nearest = values[len];
+
+        }
+    }
+
+    return nearest;
+}
+
+getNearestWeight(9.542);

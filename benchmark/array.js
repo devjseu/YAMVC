@@ -70,3 +70,116 @@ Measure.suit('indexOf', function (start, stop) {
     // finish test
     stop();
 });
+
+/**
+ * test 3
+ */
+
+Measure.suit('clone array using slice', function (start, stop, loop) {
+    var a = [1, 2, 3, 4, 5, 6, 7, 8, 9, '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+        b = [];
+    //loop each test
+    loop(3000);
+
+    // start test
+    start();
+
+    b = a.slice();
+
+    // finish test
+    stop();
+});
+/**
+ * test 4
+ */
+
+Measure.suit('clone array using concat', function (start, stop, loop) {
+    var a = [1, 2, 3, 4, 5, 6, 7, 8, 9, '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+        b = [];
+    //loop each test
+    loop(3000);
+
+    // start test
+    start();
+
+    b = [].concat(a);
+
+    // finish test
+    stop();
+});
+
+/**
+ * test 5
+ */
+Measure.suit('clone array using for-unshift', function (start, stop, loop) {
+    var a = [1, 2, 3, 4, 5, 6, 7, 8, 9, '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+        b = [];
+    //loop each test
+    loop(3000);
+
+    // start test
+    start();
+
+    for (var i = a.length; i--; ) {
+        b.unshift(a[i]);
+    }
+
+    // finish test
+    stop();
+});
+
+/**
+ * test 6
+ */
+Measure.suit('clone array using for-push', function (start, stop, loop) {
+    var a = [1, 2, 3, 4, 5, 6, 7, 8, 9, '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+        b = [];
+    //loop each test
+    loop(3000);
+
+    // start test
+    start();
+
+    for (var i = 0, l = a.length; i < l; i++) {
+        b.push(a[i]);
+    }
+
+    // finish test
+    stop();
+});
+
+/**
+ * test 7
+ */
+Measure.suit('clone array using a.concat()', function (start, stop, loop) {
+    var a = [1, 2, 3, 4, 5, 6, 7, 8, 9, '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+        b = [];
+    //loop each test
+    loop(3000);
+
+    // start test
+    start();
+
+    b = a.concat();
+
+    // finish test
+    stop();
+});
+
+/**
+ * test 8
+ */
+Measure.suit('clone array using Array.apply', function (start, stop, loop) {
+    var a = [1, 2, 3, 4, 5, 6, 7, 8, 9, '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+        b = [];
+    //loop each test
+    loop(3000);
+
+    // start test
+    start();
+
+    b = Array.apply(undefined,a);
+
+    // finish test
+    stop();
+});
