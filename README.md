@@ -3,12 +3,13 @@ YAMVC
 Yet Another MVC library. Why? Because. Without reason...
 
 ##Pros
-* Light, focused on performance
-* 
-* Easily extendable
+* written in MVC in mind
+* light, focused on performance
+* provide automatic data binding with template
+* open for extension
 
 ##Cons
-* No compatibility for IE8 and less
+* no compatibility with IE8 and less
 
 ##Docs
 * [Under Construction](http://devjseu.github.io/YAMVC.html "Under Construction")
