@@ -755,12 +755,12 @@
          * @returns {Node}
          */
         queryEl: function (selector) {
-            return selector, this.get('el').querySelector(selector) ||
+            return this.get('el').querySelector(selector) ||
                 (this.get('el').nodeName.toLowerCase() === selector ? this.get('el') : null);
         },
         /**
          * @param selector
-         * @returns {Array}
+         * @returns {Array} 
          */
         queryEls: function (selector) {
             var results = __slice.call(this.get('el').querySelectorAll(selector) || [], 0);

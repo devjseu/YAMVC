@@ -61,6 +61,7 @@
                 // Get position for events which were matched.
                 matchPos = __findAllByFn.call(delegates, matchIdFn);
                 if (matchPos.length) {
+                    /*jshint -W083 */
                     // If we found any events which need to be delegated,
                     __each.call(matchPos, function (r) {
                         // iterate through all of them.
@@ -93,14 +94,7 @@
 
                                             if (cpSelector.length === 0) {
 
-                                                e = delegate.events;
-                                                for (var eType in e) {
-                                                    if (e.hasOwnProperty(eType)) {
-
-                                                        el.addEventListener(eType, e[eType].bind(delegate.scope, view), false);
-
-                                                    }
-                                                }
+                                                me.assignEvents(delegate, view);
 
                                                 break;
                                             }
@@ -113,14 +107,8 @@
 
                                 } else {
 
-                                    e = delegate.events;
-                                    for (var eType in e) {
-                                        if (e.hasOwnProperty(eType)) {
+                                    me.assignEvents(delegate, view);
 
-                                            el.addEventListener(eType, e[eType].bind(delegate.scope, view), false);
-
-                                        }
-                                    }
                                 }
 
                             });
@@ -137,6 +125,17 @@
             }
 
 
+        },
+        assignEvents: function (delegate, view) {
+            var e = delegate.events,
+                eType;
+            for (eType in e) {
+                if (e.hasOwnProperty(eType)) {
+
+                    el.addEventListener(eType, e[eType].bind(delegate.scope, view), false);
+
+                }
+            }
         }
     });
 
