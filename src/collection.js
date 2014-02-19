@@ -84,7 +84,7 @@
 
                 me._cache.push(record);
 
-                me.fireEvent('pushed', record);
+                me.fireEvent('pushed', me, record);
 
             }
 

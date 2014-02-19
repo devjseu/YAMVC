@@ -197,6 +197,56 @@ test("rendered two times", function () {
     equal(view.queryEl('.example').getAttribute('style'), 'display: block;');
 });
 
+test("check if query match", function () {
+    var view, el;
+
+    ya.View.$create({
+        config: {
+            id: 'selector-test',
+            tpl: ya.view.Template.$create({
+                config: {
+                    id: 'tpl-test-1',
+                    tpl: [
+                        '<div class="employee senior" id="selector-test">',
+                        '<p>',
+                        '</p>',
+                        '</div>'
+                    ]
+                }
+            }),
+            children: [
+                ya.View.$create({
+                    config: {
+                        tpl: ya.view.Template.$create({
+                            config: {
+                                id: 'tpl-child',
+                                tpl: [
+                                    'Hello World!'
+                                ]
+                            }
+                        }),
+                        renderTo: 'p'
+                    }
+                })
+            ],
+            renderTo: '#test-2'
+        }
+    }).render();
+
+    el = ya.viewManager.get('selector-test').isQueryMatch('div#selector-test.employee.senior');
+
+    ok(el);
+
+    el = ya.viewManager.get('selector-test').isQueryMatch('span');
+
+    ok(!el);
+
+    el = ya.viewManager.get('selector-test').isQueryMatch('#selector-test.senior');
+
+    ok(el);
+});
+
+
 //test("bind with collection", function () {
 //    var view, collection;
 //

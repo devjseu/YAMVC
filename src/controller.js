@@ -115,7 +115,7 @@
                 events = me.get('events'),
                 views = [],
                 rx = new RegExp('\\$([^\\s]+)'),
-                matches, view, l;
+                matches, view, l, obj;
 
             if (routes) {
                 for (var k in routes) {
@@ -131,6 +131,10 @@
                 for (var e in events) {
 
                     if (events.hasOwnProperty(e)) {
+
+                        obj = {};
+                        obj[e] = events[e];
+                        ya.event.dispatcher.add(me, obj);
 
                         matches = e.match(rx);
                         if (matches) {
@@ -221,8 +225,6 @@
 
                         }
                     }
-
-
 
 
                 }

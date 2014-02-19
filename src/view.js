@@ -752,11 +752,55 @@
         },
         /**
          * @param selector
+         */
+        isQueryMatch: function (selector) {
+            var el = this._el, match = true, tag, id, classes;
+
+            if (selector.search(" ") === -1) {
+
+                tag = selector.match(/^[^\.#]+/gi);
+                id = selector.match(/#[^\.#]+/gi);
+                classes = selector.match(/\.[^\.#]+/gi);
+
+                if (tag && el.nodeName.toLowerCase() !== tag.pop()) {
+
+                    match = false;
+
+                }
+
+                if (classes) {
+                    while (classes.length) {
+
+                        if (!el.classList.contains(classes.pop().substring(1))) {
+                            match = false;
+                            break;
+                        }
+
+                    }
+                }
+
+                if (id && el.getAttribute('id') !== id.pop().substring(1)) {
+
+                    match = false;
+
+                }
+
+            } else {
+
+                match = false;
+
+            }
+
+            return match;
+
+        },
+        /**
+         * @param selector
          * @returns {Node}
          */
         queryEl: function (selector) {
             return this.get('el').querySelector(selector) ||
-                (this.get('el').nodeName.toLowerCase() === selector ? this.get('el') : null);
+                (this.isQueryMatch(selector) ? this.get('el') : null);
         },
         /**
          * @param selector
@@ -765,7 +809,7 @@
         queryEls: function (selector) {
             var results = __slice.call(this.get('el').querySelectorAll(selector) || [], 0);
 
-            if (this.get('el').nodeName.toLowerCase() === selector) {
+            if (this.isQueryMatch(selector)) {
 
                 results.push(this.get('el'));
 
@@ -781,6 +825,7 @@
         addChild: function (view, selector) {
             var me = this;
             view.appendTo(me, selector);
+            ya.event.dispatcher.apply(view);
             me.fireEvent('elementAdded', me, view);
             return me;
         },
@@ -907,6 +952,7 @@
                 if (!me._el) {
 
                     me.render();
+                    ya.event.dispatcher.apply(me);
 
                 } else {
 

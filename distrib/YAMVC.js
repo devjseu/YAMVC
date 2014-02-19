@@ -610,7 +610,7 @@
 
                 me._cache.push(record);
 
-                me.fireEvent('pushed', record);
+                me.fireEvent('pushed', me, record);
 
             }
 
@@ -1196,7 +1196,7 @@
                 events = me.get('events'),
                 views = [],
                 rx = new RegExp('\\$([^\\s]+)'),
-                matches, view, l;
+                matches, view, l, obj;
 
             if (routes) {
                 for (var k in routes) {
@@ -1212,6 +1212,10 @@
                 for (var e in events) {
 
                     if (events.hasOwnProperty(e)) {
+
+                        obj = {};
+                        obj[e] = events[e];
+                        ya.event.dispatcher.add(me, obj);
 
                         matches = e.match(rx);
                         if (matches) {
@@ -1302,8 +1306,6 @@
 
                         }
                     }
-
-
 
 
                 }
@@ -2019,6 +2021,47 @@
         __each = ya.mixins.Array.each,
         Dispatcher;
 
+    function isQueryMatch(el, selector) {
+        var match = true, tag, id, classes;
+
+        if (selector.search(" ") === -1) {
+
+            tag = selector.match(/^[^\.#]+/gi);
+            id = selector.match(/#[^\.#]+/gi);
+            classes = selector.match(/\.[^\.#]+/gi);
+
+            if (tag && el.nodeName.toLowerCase() !== tag.pop()) {
+
+                match = false;
+
+            }
+
+            if (classes) {
+                while (classes.length) {
+
+                    if (!el.classList.contains(classes.pop().substring(1))) {
+                        match = false;
+                        break;
+                    }
+
+                }
+            }
+
+            if (id && el.getAttribute('id') !== id.pop().substring(1)) {
+
+                match = false;
+
+            }
+
+        } else {
+
+            match = false;
+
+        }
+
+        return match;
+    }
+
     /**
      * @type {Dispatcher}
      */
@@ -2137,7 +2180,7 @@
                                         lastSelector = cpSelector.pop();
                                     while (view.getId() !== node.getAttribute('id')) {
 
-                                        if (node.tagName.toLowerCase() === lastSelector) {
+                                        if (isQueryMatch(node, lastSelector)) {
 
                                             if (cpSelector.length === 0) {
 
@@ -2188,7 +2231,7 @@
          * Clear delegates array
          * @returns {Dispatcher}
          */
-        clear : function () {
+        clear: function () {
             this.getDelegates().length = 0;
             return this;
         }
@@ -3717,11 +3760,55 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
         },
         /**
          * @param selector
+         */
+        isQueryMatch: function (selector) {
+            var el = this._el, match = true, tag, id, classes;
+
+            if (selector.search(" ") === -1) {
+
+                tag = selector.match(/^[^\.#]+/gi);
+                id = selector.match(/#[^\.#]+/gi);
+                classes = selector.match(/\.[^\.#]+/gi);
+
+                if (tag && el.nodeName.toLowerCase() !== tag.pop()) {
+
+                    match = false;
+
+                }
+
+                if (classes) {
+                    while (classes.length) {
+
+                        if (!el.classList.contains(classes.pop().substring(1))) {
+                            match = false;
+                            break;
+                        }
+
+                    }
+                }
+
+                if (id && el.getAttribute('id') !== id.pop().substring(1)) {
+
+                    match = false;
+
+                }
+
+            } else {
+
+                match = false;
+
+            }
+
+            return match;
+
+        },
+        /**
+         * @param selector
          * @returns {Node}
          */
         queryEl: function (selector) {
             return this.get('el').querySelector(selector) ||
-                (this.get('el').nodeName.toLowerCase() === selector ? this.get('el') : null);
+                (this.isQueryMatch(selector) ? this.get('el') : null);
         },
         /**
          * @param selector
@@ -3730,7 +3817,7 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
         queryEls: function (selector) {
             var results = __slice.call(this.get('el').querySelectorAll(selector) || [], 0);
 
-            if (this.get('el').nodeName.toLowerCase() === selector) {
+            if (this.isQueryMatch(selector)) {
 
                 results.push(this.get('el'));
 
@@ -3746,6 +3833,7 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
         addChild: function (view, selector) {
             var me = this;
             view.appendTo(me, selector);
+            ya.event.dispatcher.apply(view);
             me.fireEvent('elementAdded', me, view);
             return me;
         },
@@ -3872,6 +3960,7 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
                 if (!me._el) {
 
                     me.render();
+                    ya.event.dispatcher.apply(me);
 
                 } else {
 

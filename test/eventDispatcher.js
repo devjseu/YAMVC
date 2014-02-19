@@ -320,7 +320,6 @@ test("assign listeners for multiple views", function () {
     li2 = ya.View.$create({
         config: {
             id: 'test3bab',
-            renderTo: '.content',
             tpl: ya.view.Template.$create({
                 config: {
                     id: 'tpl-test3ba',
@@ -334,9 +333,7 @@ test("assign listeners for multiple views", function () {
     });
 
     ya.viewManager.get('test3ba').addChild(li1, 'ul');
-    ya.viewManager.get('test3ba').addChild(li2, 'ul');
-
-    ya.event.dispatcher.apply(li1);
+    li2.render();
 
     li1.get('el').click();
     li2.get('el').click();

@@ -5,6 +5,47 @@
         __each = ya.mixins.Array.each,
         Dispatcher;
 
+    function isQueryMatch(el, selector) {
+        var match = true, tag, id, classes;
+
+        if (selector.search(" ") === -1) {
+
+            tag = selector.match(/^[^\.#]+/gi);
+            id = selector.match(/#[^\.#]+/gi);
+            classes = selector.match(/\.[^\.#]+/gi);
+
+            if (tag && el.nodeName.toLowerCase() !== tag.pop()) {
+
+                match = false;
+
+            }
+
+            if (classes) {
+                while (classes.length) {
+
+                    if (!el.classList.contains(classes.pop().substring(1))) {
+                        match = false;
+                        break;
+                    }
+
+                }
+            }
+
+            if (id && el.getAttribute('id') !== id.pop().substring(1)) {
+
+                match = false;
+
+            }
+
+        } else {
+
+            match = false;
+
+        }
+
+        return match;
+    }
+
     /**
      * @type {Dispatcher}
      */
@@ -123,7 +164,7 @@
                                         lastSelector = cpSelector.pop();
                                     while (view.getId() !== node.getAttribute('id')) {
 
-                                        if (node.tagName.toLowerCase() === lastSelector) {
+                                        if (isQueryMatch(node, lastSelector)) {
 
                                             if (cpSelector.length === 0) {
 
@@ -174,7 +215,7 @@
          * Clear delegates array
          * @returns {Dispatcher}
          */
-        clear : function () {
+        clear: function () {
             this.getDelegates().length = 0;
             return this;
         }
