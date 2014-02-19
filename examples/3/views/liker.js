@@ -1,10 +1,10 @@
 (function (window, undefined) {
     "use strict";
 
-    var yamvc = window.yamvc,
+    var ya = window.ya,
         Liker;
 
-    Liker = yamvc.View.$extend();
+    Liker = ya.View.$extend();
 
     window.Liker = Liker;
 

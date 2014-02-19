@@ -1,11 +1,11 @@
 (function (window, undefined) {
     "use strict";
 
-    var yamvc = window.yamvc || {},
+    var ya = window.ya || {},
         app = window.app || {},
         Bar;
 
-    Bar = yamvc.View.$extend({
+    Bar = ya.View.$extend({
         tpl : ""
     });
 

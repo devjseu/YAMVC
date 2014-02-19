@@ -1,46 +1,45 @@
-yamvc.$onReady(function () {
+ya.$onReady(function () {
     "use strict";
 
-    // create main controller to
-    new yamvc.Controller({
+    app.view.Bar.$create({
         config: {
-            name: 'Main',
-            views: {
-                topBar: new app.view.Bar({
+            autoCreate: true,
+            models: [
+                ya.Model.$create({
                     config: {
-                        autoCreate: true,
-                        models: [
-                            new yamvc.Model({
-                                config: {
-                                    namespace: 'likes',
-                                    data: {
-                                        count: 0
-                                    }
-                                },
-                                incrementCount: function () {
-                                    var me = this;
-                                    me.data('count', me.data('count') + 1);
-                                }
-                            })
-                        ],
-                        id: 'bar',
-                        tpl: new yamvc.view.Template({
-                            config: {
-                                id: 'tpl-bar',
-                                tpl: [
-                                    '<div class="bar">',
-                                    'Count : {{likes.count}}',
-                                    '<button>+</button>',
-                                    '</div>'
-                                ]
-                            }
-                        }),
-                        renderTo: '#container'
+                        namespace: 'likes',
+                        data: {
+                            count: 0
+                        }
+                    },
+                    incrementCount: function () {
+                        var me = this;
+                        me.data('count', me.data('count') + 1);
                     }
                 })
-            },
+            ],
+            id: 'bar',
+            tpl: ya.view.Template.$create({
+                config: {
+                    id: 'tpl-bar',
+                    tpl: [
+                        '<div class="bar">',
+                        'Count : {{likes.count}}',
+                        '<button css="cursor: pointer;">+</button>',
+                        '</div>'
+                    ]
+                }
+            }),
+            renderTo: '#container'
+        }
+    });
+
+    // create main controller to
+    ya.Controller.$create({
+        config: {
+            name: 'Main',
             events: {
-                button: {
+                '$bar button': {
                     click: function (view, event) {
                         view.getModel('likes').incrementCount();
                     }

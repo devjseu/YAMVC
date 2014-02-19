@@ -1,96 +1,101 @@
-yamvc.$onReady(function () {
+ya.$onReady(function () {
     "use strict";
 
-    var models, models2, liker, app = {views: {}, ctr: {}};
-
-    models = [
-        new yamvc.Model({
-            config: {
-                namespace: 'likes',
-                data: {
-                    text: 'Likes',
-                    count: 0,
-                    disabled: true
-                }
-            },
-            incrementLikes: function () {
-                this.data('count', this._data.count + 1);
-            },
-            toggleDisabled: function () {
-                this.data('disabled', !this._data.disabled);
-            }
-        })
-    ];
-
-    models2 = [
-        new yamvc.Model({
-            config: {
-                namespace: 'likes',
-                data: {
-                    text: 'Likes',
-                    count: 0,
-                    disabled: false
-                }
-            },
-            incrementLikes: function () {
-                this.data('count', this.data('count') + 1);
-            },
-            toggleDisabled: function () {
-                this.data('disabled', !this.data('disabled'));
-            }
-        })
-    ];
+    var liker, app = {views: {}, ctr: {}};
 
 
     app.views.liker = new Liker({
         config: {
             autoCreate: true,
-            models: models,
+            models: [
+                ya.Model.$create({
+                    config: {
+                        namespace: 'likes',
+                        data: {
+                            text: 'Likes',
+                            count: 0,
+                            disabled: true
+                        }
+                    },
+                    incrementLikes: function () {
+                        this.data('count', this._data.count + 1);
+                    },
+                    toggleDisabled: function () {
+                        this.data('disabled', !this._data.disabled);
+                    }
+                })
+            ],
             id: 'test-liker',
             tpl: 'tpl-liker',
             renderTo: '#container'
         }
     });
 
-    app.views.liker2 = new Liker({
+    app.views.liker2 = Liker.$create({
         config: {
             autoCreate: true,
-            models: models2,
+            models: [
+                ya.Model.$create({
+                    config: {
+                        namespace: 'likes',
+                        data: {
+                            text: 'Likes',
+                            count: 0,
+                            disabled: false
+                        }
+                    },
+                    incrementLikes: function () {
+                        this.data('count', this.data('count') + 1);
+                    },
+                    toggleDisabled: function () {
+                        this.data('disabled', !this.data('disabled'));
+                    }
+                })
+            ],
             id: 'test-liker-2',
             tpl: 'tpl-liker',
             renderTo: '#container'
         }
     });
 
-    app.ctr.main = new yamvc.Controller({
+    app.ctr.main = ya.Controller.$create({
         config: {
-            name: 'Main',
-            views: {
-                likeBtn: yamvc.viewManager.get('test-liker'),
-                likeBtn2: yamvc.viewManager.get('test-liker-2')
-            },
-            events: {
-                '.liker': {
-                    click: function (view, e) {
-                        view.getModel('likes').incrementLikes();
-                    }
+            name: 'Main'
+        },
+        init: function (opts) {
+            var me = this;
+
+            opts.config.events = {
+                '$test-liker .liker': {
+                    click: me.onClick
                 },
-                '.container-liker': {
-                    click: function (view, e) {
-                        view.getModel('likes').toggleDisabled();
-                    }
+                '$test-liker .container-liker': {
+                    click: me.onContainerClick
                 },
-                $likeBtn: {
-                    render: function (view) {
-                        alert('Button 1 rendered disabled');
-                    }
+                '$test-liker-2 .liker': {
+                    click: me.onClick
                 },
-                $likeBtn2: {
-                    render: function (view) {
-                        alert('Button 2 rendered enabled');
-                    }
+                '$test-liker-2 .container-liker': {
+                    click: me.onContainerClick
+                },
+                '$test-liker': {
+                    render: me.onRender
+                },
+                '$test-liker-2': {
+                    render: me.onRender
                 }
-            }
+            };
+
+            ya.Controller.prototype.init.call(this, opts);
+        },
+        onClick : function (view, e) {
+            view.getModel('likes').incrementLikes();
+        },
+        onContainerClick: function (view, e) {
+            view.getModel('likes').toggleDisabled();
+        },
+        onRender: function (view) {
+            alert('Button ' + view.getId() + ' rendered enabled');
         }
     });
 

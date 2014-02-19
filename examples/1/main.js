@@ -15,7 +15,7 @@ ya.$onReady(function () {
                 })
             ],
             id: 'bar',
-            tpl: yamvc.view.Template.$create({
+            tpl: ya.view.Template.$create({
                 config: {
                     id: 'tpl-bar',
                     tpl: [

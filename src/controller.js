@@ -113,9 +113,9 @@
             var me = this,
                 routes = me.get('routes'),
                 events = me.get('events'),
-                views = me.get('views'),
-                rx = new RegExp('^\\$(.*)[\\s]'),
-                matches, view;
+                views = [],
+                rx = new RegExp('\\$([^\\s]+)'),
+                matches, view, l;
 
             if (routes) {
                 for (var k in routes) {
@@ -134,24 +134,38 @@
 
                         matches = e.match(rx);
                         if (matches) {
-                            view = ya
-                                .viewManager
-                                .get(matches[1]);
 
-                            if (view.isInDOM()) {
+                            if (views.indexOf(matches[1]) < 0) {
 
-                                me.resolveEvents(view);
-
-                            } else {
-
-                                view.addEventListener('render', me.resolveEvents.bind(me));
+                                views.push(matches[1]);
 
                             }
 
-
-                        }else{
+                        } else {
 
                             throw new Error('Event query should begin from id of the view (current query: ' + e + ')');
+
+                        }
+
+                    }
+
+                }
+
+                l = views.length;
+                while (l--) {
+
+                    view = ya
+                        .viewManager
+                        .get(views[l]);
+                    if (view) {
+
+                        if (view.isInDOM()) {
+
+                            me.resolveEvents(view);
+
+                        } else {
+
+                            view.addEventListener('render', me.resolveEvents.bind(me));
 
                         }
 
@@ -163,10 +177,12 @@
         },
         resolveEvents: function (view) {
             var events = this.get('events'),
-                viewEvents,
                 newScope = function (func, scope, arg) {
                     return func.bind(scope, arg);
                 },
+                rx = new RegExp('\\$([^\\s]+)'),
+                matches,
+                viewEvents,
                 elements,
                 selector,
                 scope;
@@ -175,24 +191,39 @@
 
                 if (events.hasOwnProperty(query)) {
 
-                    viewEvents = events[query];
-                    selector = query.split(" ").slice(1);
-                    elements = view.get('el').querySelectorAll(selector.join(" "));
-                    for (var i = 0, l = elements.length; i < l; i++) {
+                    matches = query.match(rx);
+                    if (matches && matches[1] === view.getId()) {
+                        viewEvents = events[query];
+                        selector = query.split(" ").slice(1);
+                        if (selector.length) {
 
-                        for (var event in viewEvents) {
+                            elements = view.get('el').querySelectorAll(selector.join(" "));
 
-                            if (viewEvents.hasOwnProperty(event)) {
+                        } else {
 
-                                scope = newScope(viewEvents[event], this, view);
+                            elements = [view.get('el')];
 
-                                elements[i].addEventListener(event, scope);
+                        }
+
+                        for (var i = 0, l = elements.length; i < l; i++) {
+
+                            for (var event in viewEvents) {
+
+                                if (viewEvents.hasOwnProperty(event)) {
+
+                                    scope = newScope(viewEvents[event], this, view);
+
+                                    elements[i].addEventListener(event, scope);
+
+                                }
 
                             }
 
                         }
-
                     }
+
+
+
 
                 }
 
