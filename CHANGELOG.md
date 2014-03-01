@@ -48,3 +48,9 @@ filtering function
 * namespace was changed from `yamvc` to `ya` (suggested by Łukasz Sudoł)
 * `ya.event.dispatcher` introduced. This singleton object will manage event dispatching and delegation in controllers
 * `ya.mixin.array` was added.
+* event delegation is supported from now
+
+##0.2.0
+* base method segregated and moved to new files
+* overridden method can be now executed using `__super` method
+* when extending object now you need to pass an alias for newly created one

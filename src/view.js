@@ -1,44 +1,8 @@
 /**
- *
- * ## View Manager usage
- * View Manager is singleton object and helps to get proper view instance Cored on passed id
- *
- *      @example
- *      VM
- *          .get('layout')
- *          .render();
- *
- * ## Basic view
- * Views are an excellent way to bind template with the data from proper models.
- *
- *     @example
- *     var view = new View({
- *         config: {
- *             id: 'users',
- *             tpl: 'user-lists',
- *             models : window.users
- *             renderTo: '#body'
- *         }
- *     });
- *
- * ## Configuration properties
- *
- * @cfg config.id {String} Unique id of the view. If not passed id will be assigned automatically
- * @cfg config.tpl {String} Id of the template
- * @cfg config.models {String} Simple object storing appropriate data
- * @cfg config.renderTo {String} Selector to which view should be rendered
- *
- * ## Extending views
- * Views are easily expendable, so you can fell free to add more awesome functionality to it.
- *
- *     @example
- *     window.OverlayView = View.$extend({
- *
- *     });
- *
+ * @author Sebastian Widelak <sebakpl@gmail.com>
  *
  */
-(function (window, undefined) {
+(function (undefined) {
     "use strict";
 
     var ya = window.ya || {},
@@ -113,7 +77,7 @@
     /**
      * @type {{views: [], i: number, add: Function, get: Function}}
      */
-        // `ya.viewManager` stores all created views and allow as to
+        // `ya.view.Manager` stores all created views and allow as to
         // use `get` method (with id as argument) to return requested view.
     VM = {
         views: [],
@@ -125,6 +89,7 @@
          * @param view
          */
         add: function (id, view) {
+            var me = this;
 
             if (view.getAutoCreate()) {
 
@@ -132,8 +97,8 @@
 
             }
 
-            this.views.push(view);
-            this.i++;
+            me.views.push(view);
+            me.i++;
         },
         // Get view by its id
         /**
@@ -141,15 +106,16 @@
          * @returns {View}
          */
         get: function (id) {
-            var len = this.views.length;
+            var me = this,
+                len = me.views.length;
 
             while (len--) {
 
-                if (this.views[len].getId() === id) break;
+                if (me.views[len].getId() === id) break;
 
             }
 
-            return this.views[len];
+            return me.views[len];
         }
     };
 
@@ -161,19 +127,27 @@
     VTM = {
         tpl: {},
         add: function (id, view) {
-            this.tpl[id] = view;
+            var me = this;
+
+            me.tpl[id] = view;
         },
         get: function (id) {
-            return this.tpl[id];
+            var me = this;
+
+            return me.tpl[id];
         }
     };
+
+    ya.$set('ya', 'view.Manager', VM);
 
     /**
      * @constructor
      * @params opts Object with configuration properties
      * @type {function}
      */
-    View = ya.Core.$extend({
+    ya.Core.$extend({
+        module: 'ya',
+        alias: 'View',
         // `ya.View` accept few configuration properties:
         // * `parent` - pointer to parent view
         // * `fit` - if true, component will fire resize event when size
@@ -186,6 +160,9 @@
             models: null,
             autoCreate: false
         },
+        mixins : [
+            ya.mixins.Selector
+        ],
         // Initializing function in which we call parent method, merge previous
         // configuration with new one, set id of component, initialize config
         // and save reference to component in View Manager.
@@ -197,7 +174,7 @@
         init: function (opts) {
             var me = this;
 
-            ya.Core.prototype.init.apply(me);
+            me.__super();
 
             me.initDefaults(opts);
             me.initConfig();
@@ -339,8 +316,8 @@
 
             if (parent) {// If parent is set,
 
-                if (id && parent.queryEl(id)) { // search for element to which we will append component.
-                    parent = parent.queryEl(id);
+                if (id && parent.querySelector(id)) { // search for element to which we will append component.
+                    parent = parent.querySelector(id);
                 } else {// If not found, append to parent root element.
                     parent = parent._el;
                 }
@@ -567,6 +544,7 @@
         },
         /**
          * @version 0.1.12
+         * @param model
          */
         resolveModelBindings: function (model) {
             var me = this,
@@ -752,53 +730,9 @@
         },
         /**
          * @param selector
-         */
-        isQueryMatch: function (selector) {
-            var el = this._el, match = true, tag, id, classes;
-
-            if (selector.search(" ") === -1) {
-
-                tag = selector.match(/^[^\.#]+/gi);
-                id = selector.match(/#[^\.#]+/gi);
-                classes = selector.match(/\.[^\.#]+/gi);
-
-                if (tag && el.nodeName.toLowerCase() !== tag.pop()) {
-
-                    match = false;
-
-                }
-
-                if (classes) {
-                    while (classes.length) {
-
-                        if (!el.classList.contains(classes.pop().substring(1))) {
-                            match = false;
-                            break;
-                        }
-
-                    }
-                }
-
-                if (id && el.getAttribute('id') !== id.pop().substring(1)) {
-
-                    match = false;
-
-                }
-
-            } else {
-
-                match = false;
-
-            }
-
-            return match;
-
-        },
-        /**
-         * @param selector
          * @returns {Node}
          */
-        queryEl: function (selector) {
+        querySelector: function (selector) {
             return this.get('el').querySelector(selector) ||
                 (this.isQueryMatch(selector) ? this.get('el') : null);
         },
@@ -806,7 +740,7 @@
          * @param selector
          * @returns {Array}
          */
-        queryEls: function (selector) {
+        querySelectorAll: function (selector) {
             var results = __slice.call(this.get('el').querySelectorAll(selector) || [], 0);
 
             if (this.isQueryMatch(selector)) {
@@ -825,7 +759,7 @@
         addChild: function (view, selector) {
             var me = this;
             view.appendTo(me, selector);
-            ya.event.dispatcher.apply(view);
+            ya.event.$dispatcher.apply(view);
             me.fireEvent('elementAdded', me, view);
             return me;
         },
@@ -841,6 +775,11 @@
 
             return me.findChild(id);
         },
+        /**
+         *
+         * @param id
+         * @returns {*|length|length|Function|length|length}
+         */
         findChild: function (id) {
             var views = this.getChildren(),
                 l = views.length;
@@ -852,6 +791,11 @@
 
             return l;
         },
+        /**
+         *
+         * @param id
+         * @returns {*|null}
+         */
         removeChild: function (id) {
             var views = this.getChildren(),
                 l = views.length,
@@ -952,7 +896,7 @@
                 if (!me._el) {
 
                     me.render();
-                    ya.event.dispatcher.apply(me);
+                    ya.event.$dispatcher.apply(me);
 
                 } else {
 
@@ -1035,8 +979,4 @@
         }
     });
 
-
-    ya.viewManager = VM;
-    window.ya = ya;
-    window.ya.View = View;
-}(window));
+}());

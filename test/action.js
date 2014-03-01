@@ -6,7 +6,7 @@ test("after initialization", function () {
     action = ya.data.Action.$create();
 
     ok(action instanceof  ya.data.Action, "is instance of ya.data.Action");
-    equal(action.get('status'), ya.data.Action.Status.PENDING, "has status pending");
+    equal(action.get('status'), ya.data.Action.$status.PENDING, "has status pending");
 
 });
 

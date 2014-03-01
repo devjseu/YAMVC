@@ -1,10 +1,9 @@
 ya.$onReady(function () {
     "use strict";
 
-    var liker, app = {views: {}, ctr: {}};
+    var Liker = ya.$get('Liker');
 
-
-    app.views.liker = new Liker({
+    Liker.$create({
         config: {
             autoCreate: true,
             models: [
@@ -31,7 +30,7 @@ ya.$onReady(function () {
         }
     });
 
-    app.views.liker2 = Liker.$create({
+    Liker.$create({
         config: {
             autoCreate: true,
             models: [
@@ -58,7 +57,7 @@ ya.$onReady(function () {
         }
     });
 
-    app.ctr.main = ya.Controller.$create({
+    ya.Controller.$create({
         config: {
             name: 'Main'
         },

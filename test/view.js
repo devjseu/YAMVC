@@ -142,13 +142,13 @@ test("bind with model", function () {
     });
     view.render();
 
-    equal(view.queryEl('.example').innerText, 'Hi Seba');
+    equal(view.querySelector('.example').innerText, 'Hi Seba');
 
-    equal(view.queryEl('.example').getAttribute('style'), 'display: none;');
+    equal(view.querySelector('.example').getAttribute('style'), 'display: none;');
 
     model.data('display', 'block');
 
-    equal(view.queryEl('.example').getAttribute('style'), 'display: block;');
+    equal(view.querySelector('.example').getAttribute('style'), 'display: block;');
 });
 
 
@@ -186,15 +186,15 @@ test("rendered two times", function () {
 
     view.render();
 
-    equal(view.queryEl('.example').innerText, 'Hi Seba');
+    equal(view.querySelector('.example').innerText, 'Hi Seba');
 
-    equal(view.queryEl('.example').getAttribute('style'), 'display: none;');
+    equal(view.querySelector('.example').getAttribute('style'), 'display: none;');
 
     view.render();
 
     model.data('display', 'block');
 
-    equal(view.queryEl('.example').getAttribute('style'), 'display: block;');
+    equal(view.querySelector('.example').getAttribute('style'), 'display: block;');
 });
 
 test("check if query match", function () {
@@ -233,17 +233,11 @@ test("check if query match", function () {
         }
     }).render();
 
-    el = ya.viewManager.get('selector-test').isQueryMatch('div#selector-test.employee.senior');
+    ok(ya.view.Manager.get('selector-test').isQueryMatch('div#selector-test.employee.senior'));
 
-    ok(el);
+    ok(!ya.view.Manager.get('selector-test').isQueryMatch('span'));
 
-    el = ya.viewManager.get('selector-test').isQueryMatch('span');
-
-    ok(!el);
-
-    el = ya.viewManager.get('selector-test').isQueryMatch('#selector-test.senior');
-
-    ok(el);
+    ok(ya.view.Manager.get('selector-test').isQueryMatch('#selector-test.senior'));
 });
 
 
@@ -293,5 +287,5 @@ test("check if query match", function () {
 //
 //    view.render();
 //
-//    equal(view.queryEl('.example').innerText, 'Hi Seba');
+//    equal(view.querySelector('.example').innerText, 'Hi Seba');
 //});

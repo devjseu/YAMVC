@@ -1,313 +1,315 @@
-(function (window, undefined) {
-    "use strict";
-    var ya = window.ya || {},
-        Model,
-        config,
-        id = 0;
+ya.Core.$extend({
+    module: 'ya',
+    alias: 'Model',
+    static: {
+        id: 0,
+        idGenerator: function () {
+            return ya.Model.$id++;
+        }
+    },
+    /**
+     * @defaults
+     */
+    defaults: {
+        idProperty: 'id',
+        proxy: null
+    },
+    /**
+     *
+     * @param opts
+     */
+    init: function (opts) {
+        var me = this, config;
 
-    Model = ya.Core.$extend({
-        /**
-         * @defaults
-         */
-        defaults: {
-            idProperty: 'id',
-            proxy: null
-        },
-        /**
-         *
-         * @param opts
-         */
-        init: function (opts) {
-            ya.Core.prototype.init.apply(this, arguments);
-            var me = this, config;
-            opts = opts || {};
-            config = ya.$merge(me._config, opts.config);
-            me.set('initOpts', opts);
-            me.set('config', config);
+        me.__super(opts);
+
+        opts = opts || {};
+        config = ya.$merge(me._config, opts.config);
+
+        me.set('initOpts', opts);
+        me.set('config', config);
+        me.set('isDirty', true);
+
+        me.initConfig();
+        me.initData();
+
+    },
+    /**
+     *
+     * @returns {Model}
+     */
+    initConfig: function () {
+        var me = this,
+            config = me._config;
+
+        if (!config.namespace)
+            throw new Error("Model need to have namespace");
+
+        if (!config.data)
+            config.data = {};
+
+        me.set('clientId', config.namespace + '-' + ya.Model.$idGenerator());
+
+        me.__super();
+
+        return me;
+    },
+    /**
+     *
+     */
+    initData: function () {
+        var me = this;
+
+        me.set('data', me.getData() || {});
+
+        return me;
+    },
+    /**
+     *
+     * @param property
+     * @param value
+     */
+    setDataProperty: function (property, value) {
+        var me = this,
+            data = me._data,
+            oldVal = data[property];
+        if (value !== oldVal) {
+            data[property] = value;
             me.set('isDirty', true);
-            me.initConfig();
-            me.initData();
-        },
-        /**
-         *
-         * @returns {Model}
-         */
-        initConfig: function () {
-            var me = this,
-                config = me._config;
+            me.fireEvent('data' + property.charAt(0).toUpperCase() + property.slice(1) + 'Change', me, value, oldVal);
+        }
+    },
+    /**
+     *
+     * @param property
+     * @returns {*}
+     */
+    getDataProperty: function (property) {
+        return this.get('data')[property];
+    },
+    // alias for set and get data property
+    // if two arguments are passed data will be set
+    // in other case data will be returned
+    /**
+     * @param property name of property in data
+     * @param data Optional | if passed data will be set
+     * @returns {*}
+     *
+     */
+    data: function (property, data) {
+        var me = this,
+            len = arguments.length,
+            key;
 
-            if (!config.namespace)
-                throw new Error("Model need to have namespace");
+        if (len > 1) {
 
-            if (!config.data)
-                config.data = {};
+            this.setDataProperty.apply(this, arguments);
 
-            me.set('clientId', config.namespace + '-' + id++);
+        } else {
 
-            Model.Parent.initConfig.apply(this);
+            if (typeof property === 'object') {
 
-            return me;
-        },
-        /**
-         *
-         */
-        initData: function () {
-            var me = this;
+                for (key in property) {
 
-            me.set('data', me.getData() || {});
+                    if (property.hasOwnProperty(key)) {
 
-            return me;
-        },
-        /**
-         *
-         * @param property
-         * @param value
-         */
-        setDataProperty: function (property, value) {
-            var me = this,
-                data = me._data,
-                oldVal = data[property];
-            if (value !== oldVal) {
-                data[property] = value;
-                me.set('isDirty', true);
-                me.fireEvent('data' + property.charAt(0).toUpperCase() + property.slice(1) + 'Change', me, value, oldVal);
-            }
-        },
-        /**
-         *
-         * @param property
-         * @returns {*}
-         */
-        getDataProperty: function (property) {
-            return this.get('data')[property];
-        },
-        // alias for set and get data property
-        // if two arguments are passed data will be set
-        // in other case data will be returned
-        /**
-         * @param property name of property in data
-         * @param data Optional | if passed data will be set
-         * @returns {*}
-         *
-         */
-        data: function (property, data) {
-            var me = this,
-                len = arguments.length,
-                key;
-
-            if (len > 1) {
-
-                this.setDataProperty.apply(this, arguments);
-
-            } else {
-
-                if (typeof property === 'object') {
-
-                    for (key in property) {
-
-                        if (property.hasOwnProperty(key)) {
-
-                            me.setDataProperty(key, property[key]);
-
-                        }
+                        me.setDataProperty(key, property[key]);
 
                     }
 
-                } else {
-                    return this.getDataProperty.apply(this, arguments);
                 }
 
+            } else {
+                return this.getDataProperty.apply(this, arguments);
             }
 
-            return me;
-        },
-        /**
-         *
-         */
-        clear: function () {
-            var me = this,
-                data = me.get('data'),
-                key;
+        }
 
-            for (key in data) {
-                if (data.hasOwnProperty(key)) {
-                    me.data(key, null);
-                }
+        return me;
+    },
+    /**
+     *
+     */
+    clear: function () {
+        var me = this,
+            data = me.get('data'),
+            key;
+
+        for (key in data) {
+            if (data.hasOwnProperty(key)) {
+                me.data(key, null);
             }
-            me.set('data', {});
-            me.fireEvent('dataChange', me, data);
-        },
-        /**
-         *
-         * @param params
-         */
-        load: function (params) {
-            var me = this,
-                data = me.get('data'),
-                idProperty = me.getIdProperty(),
-                deferred = ya.Promise.$deferred(),
-                action = new ya.data.Action(),
-                opts = {},
-                response;
+        }
+        me.set('data', {});
+        me.fireEvent('dataChange', me, data);
+    },
+    /**
+     *
+     * @param params
+     */
+    load: function (params) {
+        var me = this,
+            data = me.get('data'),
+            idProperty = me.getIdProperty(),
+            deferred = ya.promise.$deferred(),
+            action = new ya.data.Action(),
+            opts = {},
+            response;
 
-            if (
-                typeof params[idProperty] === 'undefined' && typeof data[idProperty] === 'undefined'
-                )
-                throw new Error('You need to pass id to load model');
+        if (
+            typeof params[idProperty] === 'undefined' && typeof data[idProperty] === 'undefined'
+            )
+            throw new Error('You need to pass id to load model');
 
-            params[idProperty] = data[idProperty];
+        params[idProperty] = data[idProperty];
 
-            opts.namespace = me.getNamespace();
-            opts.params = params;
-            opts.callback = function () {
+        opts.namespace = me.getNamespace();
+        opts.params = params;
+        opts.callback = function () {
 
-                response = me.getProxy().getResponse();
+            response = me.getProxy().getResponse();
 
-                if (me.getProxy().getStatus() === 'success') {
+            if (me.getProxy().getStatus() === 'success') {
 
-                    me.set('isDirty', false);
-                    me.set('data', response);
+                me.set('isDirty', false);
+                me.set('data', response);
 
-                    deferred.resolve({scope: me, response: response, action: 'read'});
-                    me.fireEvent('loaded', me, response, 'read');
-
-                } else {
-
-                    deferred.reject({scope: me, response: response, action: 'read'});
-                    me.fireEvent('error', me, response, 'read');
-
-                }
-
-            };
-
-            action.setOptions(opts);
-
-            me.getProxy().read(action);
-
-            return deferred.promise;
-        },
-        /**
-         *
-         * @returns {boolean}
-         */
-        save: function () {
-            var me = this,
-                data = me.get('data'),
-                idProperty = me.getIdProperty(),
-                deferred = ya.Promise.$deferred(),
-                action = new ya.data.Action(),
-                proxy = me.getProxy(),
-                opts = {},
-                response,
-                type;
-
-            if (me.get('isProcessing') || !me.get('isDirty')) {
-                return false;
-            }
-
-            me.set('isProcessing', true);
-
-            opts.namespace = me.getNamespace();
-            opts.callback = function (proxy, action) {
-
-                response = action.getResponse();
-
-                me.set('isProcessing', false);
-                if (action.getStatus() === ya.data.Action.Status.SUCCESS) {
-
-                    me.set('isDirty', false);
-                    me.set('data', response.result);
-
-                    deferred.resolve({scope: me, action: action, type: type});
-                    me.fireEvent('saved', me, action, type);
-
-                } else {
-
-                    deferred.reject({scope: me, action: action, type: type});
-                    me.fireEvent('error', me, action, type);
-
-                }
-
-            };
-
-            action
-                .setOptions(opts)
-                .setData(data);
-
-
-            if (typeof data[idProperty] === 'undefined') {
-
-                type = 'create';
-                proxy.create(action);
+                deferred.resolve({scope: me, response: response, action: 'read'});
+                me.fireEvent('loaded', me, response, 'read');
 
             } else {
 
-                type = 'update';
-                proxy.update(action);
+                deferred.reject({scope: me, response: response, action: 'read'});
+                me.fireEvent('error', me, response, 'read');
 
             }
 
-            return deferred.promise;
-        },
-        /**
-         *
-         */
-        remove: function () {
-            var me = this,
-                data = me.get('data'),
-                idProperty = me.getIdProperty(),
-                deferred = ya.Promise.$deferred(),
-                action = new ya.data.Action(),
-                proxy = me.getProxy(),
-                opts = {},
-                response;
+        };
 
-            if (typeof data[idProperty] === 'undefined')
-                throw new Error('Can not remove empty model');
+        action.setOptions(opts);
 
-            opts.namespace = me.getNamespace();
-            opts.callback = function (proxy, action) {
+        me.getProxy().read(action);
 
-                response = action.getResponse();
+        return deferred.promise;
+    },
+    /**
+     *
+     * @returns {boolean}
+     */
+    save: function () {
+        var me = this,
+            data = me.get('data'),
+            idProperty = me.getIdProperty(),
+            deferred = ya.promise.$deferred(),
+            action = new ya.data.Action(),
+            proxy = me.getProxy(),
+            opts = {},
+            response,
+            type;
 
-                if (action.getStatus() === ya.data.Action.Status.SUCCESS) {
-
-                    me.set('isDirty', false);
-                    me.set('data', {});
-
-                    deferred.resolve({scope: me, action: action, type: 'remove'});
-                    me.fireEvent('removed', me, 'remove');
-
-                } else {
-
-                    deferred.reject({scope: me, action: action, type: 'remove'});
-                    me.fireEvent('error', me, 'remove');
-
-                }
-
-            };
-
-            action
-                .setOptions(opts)
-                .setData(data);
-
-            proxy.destroy(action);
-            proxy.destroy(action);
-
-            return deferred.promise;
-        },
-        hasId: function () {
-            return !!this._data[this._config.idProperty];
-        },
-        setDirty: function (dirty) {
-            this.set('isDirty', !!dirty);
-            return this;
-        },
-        isDirty: function () {
-            return this._isDirty;
+        if (me.get('isProcessing') || !me.get('isDirty')) {
+            return false;
         }
-    });
 
-    window.ya = ya;
-    window.ya.Model = Model;
-}(window));
+        me.set('isProcessing', true);
+
+        opts.namespace = me.getNamespace();
+        opts.callback = function (proxy, action) {
+
+            response = action.getResponse();
+
+            me.set('isProcessing', false);
+            if (action.getStatus() === ya.data.Action.$status.SUCCESS) {
+
+                me.set('isDirty', false);
+                me.set('data', response.result);
+
+                deferred.resolve({scope: me, action: action, type: type});
+                me.fireEvent('saved', me, action, type);
+
+            } else {
+
+                deferred.reject({scope: me, action: action, type: type});
+                me.fireEvent('error', me, action, type);
+
+            }
+
+        };
+
+        action
+            .setOptions(opts)
+            .setData(data);
+
+
+        if (typeof data[idProperty] === 'undefined') {
+
+            type = 'create';
+            proxy.create(action);
+
+        } else {
+
+            type = 'update';
+            proxy.update(action);
+
+        }
+
+        return deferred.promise;
+    },
+    /**
+     *
+     */
+    remove: function () {
+        var me = this,
+            data = me.get('data'),
+            idProperty = me.getIdProperty(),
+            deferred = ya.promise.$deferred(),
+            action = new ya.data.Action(),
+            proxy = me.getProxy(),
+            opts = {},
+            response;
+
+        if (typeof data[idProperty] === 'undefined')
+            throw new Error('Can not remove empty model');
+
+        opts.namespace = me.getNamespace();
+        opts.callback = function (proxy, action) {
+
+            response = action.getResponse();
+
+            if (action.getStatus() === ya.data.Action.$status.SUCCESS) {
+
+                me.set('isDirty', false);
+                me.set('data', {});
+
+                deferred.resolve({scope: me, action: action, type: 'remove'});
+                me.fireEvent('removed', me, 'remove');
+
+            } else {
+
+                deferred.reject({scope: me, action: action, type: 'remove'});
+                me.fireEvent('error', me, 'remove');
+
+            }
+
+        };
+
+        action
+            .setOptions(opts)
+            .setData(data);
+
+        proxy.destroy(action);
+        proxy.destroy(action);
+
+        return deferred.promise;
+    },
+    hasId: function () {
+        return !!this._data[this._config.idProperty];
+    },
+    setDirty: function (dirty) {
+        this.set('isDirty', !!dirty);
+        return this;
+    },
+    isDirty: function () {
+        return this._isDirty;
+    }
+});

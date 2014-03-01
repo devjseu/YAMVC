@@ -61,7 +61,7 @@ test("bind events to view", function () {
         alerted++;
     };
 
-    ya.viewManager.get('controller-test').queryEl('button').click();
+    ya.view.Manager.get('controller-test').querySelector('button').click();
 
     equal(alerted, 1, "Event fired!");
 

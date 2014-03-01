@@ -11,6 +11,7 @@ test("initialize", function () {
     });
 
     ok(tpl instanceof ya.view.Template);
-    ok(tpl.getHtml().hasChildNodes(), "Template was read");
+
+//    ok(tpl.getViewDOM() instanceof ya.view.DOM, "DOM object was generated");
 
 });

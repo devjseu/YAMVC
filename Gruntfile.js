@@ -46,7 +46,7 @@ module.exports = function (grunt) {
                 sourceMappingURL: sourceMapUrl
             },
             target: {
-                src: ['src/mixins/**/*.js', 'src/core.js', 'src/**/*.js'],
+                src: ['src/ya.js','src/mixins/**/*.js', 'src/core.js', 'src/**/*.js'],
                 dest: minRelease
             }
         },
@@ -55,7 +55,7 @@ module.exports = function (grunt) {
                 banner: bannerContent
             },
             target: {
-                src: ['src/mixins/**/*.js', 'src/core.js', 'src/**/*.js'],
+                src: ['src/ya.js','src/mixins/**/*.js', 'src/core.js', 'src/**/*.js'],
                 dest: devRelease
             }
         },

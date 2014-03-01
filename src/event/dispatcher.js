@@ -1,55 +1,7 @@
-(function (window, undefined) {
-    "use strict";
-    var ya = window.ya || {},
-        __findAllByFn = ya.mixins.Array.findAllByFn,
-        __each = ya.mixins.Array.each,
-        Dispatcher;
-
-    function isQueryMatch(el, selector) {
-        var match = true, tag, id, classes;
-
-        if (selector.search(" ") === -1) {
-
-            tag = selector.match(/^[^\.#]+/gi);
-            id = selector.match(/#[^\.#]+/gi);
-            classes = selector.match(/\.[^\.#]+/gi);
-
-            if (tag && el.nodeName.toLowerCase() !== tag.pop()) {
-
-                match = false;
-
-            }
-
-            if (classes) {
-                while (classes.length) {
-
-                    if (!el.classList.contains(classes.pop().substring(1))) {
-                        match = false;
-                        break;
-                    }
-
-                }
-            }
-
-            if (id && el.getAttribute('id') !== id.pop().substring(1)) {
-
-                match = false;
-
-            }
-
-        } else {
-
-            match = false;
-
-        }
-
-        return match;
-    }
-
-    /**
-     * @type {Dispatcher}
-     */
-    Dispatcher = ya.Core.$extend({
+ya.Core.$extend({
+    module : 'ya',
+    singleton : true,
+    alias : 'event.$dispatcher',
         defaults: {
             delegates: null
         },
@@ -61,7 +13,7 @@
             // Standard way of initialization.
             var me = this, config;
 
-            Dispatcher.Parent.init.apply(this, arguments);
+            me.__super(opts);
 
             opts = opts || {};
             config = ya.$merge(me._config, opts.config);
@@ -77,7 +29,7 @@
             var me = this;
 
             // After calling parent method
-            Dispatcher.Parent.initConfig.apply(this, arguments);
+            me.__super.apply(me, arguments);
 
             // set defaults.
             me.setDelegates([]);
@@ -123,6 +75,9 @@
                     return r.selector.search(regExp) >= 0;
 
                 },
+                isQueryMatch = ya.mixins.Selector.isQueryMatch,
+                __findAllByFn = ya.mixins.Array.findAllByFn,
+                __each = ya.mixins.Array.each,
             // Other variables which need to be defined.
                 selector, delegate, regExp, cpSelector, e;
 
@@ -153,7 +108,7 @@
                             // If still anything left get last part
                             // from query and find in new view elements
                             // which match to the selector.
-                            els = newView.queryEls(selector.pop());
+                            els = newView.querySelectorAll(selector.pop());
                             // Copy array with rest of them
                             cpSelector = selector.slice();
                             __each.call(els, function (el) {
@@ -164,7 +119,7 @@
                                         lastSelector = cpSelector.pop();
                                     while (view.getId() !== node.getAttribute('id')) {
 
-                                        if (isQueryMatch(node, lastSelector)) {
+                                        if (isQueryMatch(lastSelector, node)) {
 
                                             if (cpSelector.length === 0) {
 
@@ -203,12 +158,15 @@
         assignEvents: function (el, delegate, view) {
             var e = delegate.events,
                 eType;
+
             for (eType in e) {
+
                 if (e.hasOwnProperty(eType)) {
 
                     el.addEventListener(eType, e[eType].bind(delegate.scope, view), false);
 
                 }
+
             }
         },
         /**
@@ -220,8 +178,3 @@
             return this;
         }
     });
-
-    window.ya = ya;
-    window.ya.event = window.ya.event || {};
-    window.ya.event.dispatcher = Dispatcher.$create();
-}(window));

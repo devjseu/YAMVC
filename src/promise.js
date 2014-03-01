@@ -1,222 +1,356 @@
 /**
- * @author rhysbrettbowen
+ * @author angularjs
  * @contributed mkalafior
  */
-(function (window, undefined) {
+ya.$set('ya', 'promise', function (undefined) {
     "use strict";
 
     var ya = window.ya || {},
-        Promise,
-        State,
-        resolve;
+        isFunction = function (func) {
+            return typeof func === 'function';
+        },
+        forEach = ya.mixins.Array.each,
+        _promise;
 
 
     /**
-     * @type {{PENDING: number, FULFILLED: number, REJECTED: number}}
+     * Constructs a promise manager.
+     * @returns {object} Promise manager.
      */
-    State = { // Promise has 3 state, pending when initialized, fulfilled and rejected in case of result.
-        PENDING: 0,
-        FULFILLED: 1,
-        REJECTED: 2
-    };
+    function promise(exceptionHandler) {
 
-    /**
-     * @param fn
-     * @constructor
-     */
-    Promise = function (fn) {
-        var me = this,
-            onResolve,
-            onReject;
+        /**
+         * @description
+         * Creates a `Deferred` object which represents a task which will finish in the future.
+         *
+         * @returns {Deferred} Returns a new instance of deferred.
+         */
+        var defer = function () {
+            var pending = [],
+                value, deferred;
 
-        me._state = State.PENDING;
-        me._queue = [];
+            deferred = {
 
-        onResolve = function (value) {
-            resolve(me, value);
-        };
+                resolve: function (val) {
+                    if (pending) {
+                        var callbacks = pending;
+                        pending = undefined;
+                        value = ref(val);
 
-        onReject = function (reason) {
-            me.transition(State.REJECTED, reason);
-        };
-
-        if (fn) fn(onResolve, onReject);
-    };
-
-    /**
-     * @param state
-     * @param value
-     * @returns {boolean}
-     */
-    Promise.prototype.transition = function (state, value) {
-        var me = this;
-
-        if (me._state == state ||          // must change the state
-            me._state !== State.PENDING || // can only change from pending
-            (state != State.FULFILLED &&    // can only change to fulfill or reject
-                state != State.REJECTED) ||
-            arguments.length < 2) {         // must provide value/reason
-            return false;
-        }
-
-        me._state = state;                 // change state
-        me._value = value;
-        me.run();
-    };
-
-
-    Promise.prototype.run = function () {
-        var me = this,
-            value,
-            fulfill,
-            reject;
-
-        fulfill = function (x) {
-            return x;
-        };
-
-        reject = function (x) {
-            throw x;
-        };
-
-        if (me._state == State.PENDING) return;
-        setTimeout(function () {
-            while (me._queue.length) {
-                var obj = me._queue.shift();
-                try {
-                    // resolve returned promise based on return
-                    value = (me._state == State.FULFILLED ?
-                        (obj.fulfill || fulfill) :
-                        (obj.reject || reject))
-                        (me._value);
-                } catch (e) {
-                    // reject if an error is thrown
-                    obj.promise.transition(State.REJECTED, e);
-                    continue;
-                }
-                resolve(obj.promise, value);
-            }
-        }, 0);
-    };
-
-    /**
-     * @param onFulfilled
-     * @param onRejected
-     * @returns {Promise}
-     */
-    Promise.prototype.then = function (onFulfilled, onRejected) {
-        // need to return a promise
-        var me = this,
-            promise = new Promise();
-
-        me._queue.push({
-            fulfill: typeof onFulfilled == 'function' && onFulfilled,
-            reject: typeof onRejected == 'function' && onRejected,
-            promise: promise
-        });
-        me.run();
-
-        return promise;
-    };
-
-    /**
-     * @param promise
-     * @param x
-     */
-    Promise.prototype.resolve = function (promise, x) {
-        if (promise === x) {
-            promise.transition(State.REJECTED, new TypeError());
-        } else if (x && x.constructor == Promise) { // must know it’s implementation
-            if (x.state == State.PENDING) { // 2.3.2.1
-                x.then(function (value) {
-                    resolve(promise, value);
-                }, function (reason) {
-                    promise.transition(State.REJECTED, reason);
-                });
-            } else {
-                promise.transition(x.state, x.value);
-            }
-        } else if ((typeof x == 'object' || typeof x == 'function') && x !== null) {
-            var called = false;
-            try {
-                var then = x.then;
-                if (typeof then == 'function') {
-                    then.call(x, function (y) {
-                        if (!called) {
-                            resolve(promise, y);
-                            called = true;
+                        if (callbacks.length) {
+                            setTimeout(function () {
+                                var callback;
+                                for (var i = 0, ii = callbacks.length; i < ii; i++) {
+                                    callback = callbacks[i];
+                                    value.then(callback[0], callback[1], callback[2]);
+                                }
+                            }, 0);
                         }
-                    }, function (r) {
-                        if (!called) {
-                            promise.transition(State.REJECTED, r);
-                            called = true;
+                    }
+                },
+
+
+                reject: function (reason) {
+                    deferred.resolve(createInternalRejectedPromise(reason));
+                },
+
+
+                notify: function (progress) {
+                    if (pending) {
+                        var callbacks = pending;
+
+                        if (pending.length) {
+                            setTimeout(function () {
+                                var callback;
+                                for (var i = 0, ii = callbacks.length; i < ii; i++) {
+                                    callback = callbacks[i];
+                                    callback[2](progress);
+                                }
+                            }, 0);
+                        }
+                    }
+                },
+
+
+                promise: {
+                    then: function (callback, errback, progressback) {
+                        var result = defer();
+
+                        var wrappedCallback = function (value) {
+                            try {
+                                result.resolve((isFunction(callback) ? callback : defaultCallback)(value));
+                            } catch (e) {
+                                result.reject(e);
+                                exceptionHandler(e);
+                            }
+                        };
+
+                        var wrappedErrback = function (reason) {
+                            try {
+                                result.resolve((isFunction(errback) ? errback : defaultErrback)(reason));
+                            } catch (e) {
+                                result.reject(e);
+                                exceptionHandler(e);
+                            }
+                        };
+
+                        var wrappedProgressback = function (progress) {
+                            try {
+                                result.notify((isFunction(progressback) ? progressback : defaultCallback)(progress));
+                            } catch (e) {
+                                exceptionHandler(e);
+                            }
+                        };
+
+                        if (pending) {
+                            pending.push([wrappedCallback, wrappedErrback, wrappedProgressback]);
+                        } else {
+                            value.then(wrappedCallback, wrappedErrback, wrappedProgressback);
+                        }
+
+                        return result.promise;
+                    },
+
+                    "catch": function (callback) {
+                        return this.then(null, callback);
+                    },
+
+                    "finally": function (callback) {
+
+                        function makePromise(value, resolved) {
+                            var result = defer();
+                            if (resolved) {
+                                result.resolve(value);
+                            } else {
+                                result.reject(value);
+                            }
+                            return result.promise;
+                        }
+
+                        function handleCallback(value, isResolved) {
+                            var callbackOutput = null;
+                            try {
+                                callbackOutput = (callback || defaultCallback)();
+                            } catch (e) {
+                                return makePromise(e, false);
+                            }
+                            if (callbackOutput && isFunction(callbackOutput.then)) {
+                                return callbackOutput.then(function () {
+                                    return makePromise(value, isResolved);
+                                }, function (error) {
+                                    return makePromise(error, false);
+                                });
+                            } else {
+                                return makePromise(value, isResolved);
+                            }
+                        }
+
+                        return this.then(function (value) {
+                            return handleCallback(value, true);
+                        }, function (error) {
+                            return handleCallback(error, false);
+                        });
+                    }
+                }
+            };
+
+            return deferred;
+        };
+
+
+        var ref = function (value) {
+            if (value && isFunction(value.then)) return value;
+            return {
+                then: function (callback) {
+                    var result = defer();
+                    setTimeout(function () {
+                        result.resolve(callback(value));
+                    }, 0);
+                    return result.promise;
+                }
+            };
+        };
+
+
+        /**
+         * @description
+         * Creates a promise that is resolved as rejected with the specified `reason`. This api should be
+         * used to forward rejection in a chain of promises. If you are dealing with the last promise in
+         * a promise chain, you don't need to worry about it.
+         *
+         * When comparing deferreds/promises to the familiar behavior of try/catch/throw, think of
+         * `reject` as the `throw` keyword in JavaScript. This also means that if you "catch" an error via
+         * a promise error callback and you want to forward the error to the promise derived from the
+         * current promise, you have to "rethrow" the error by returning a rejection constructed via
+         * `reject`.
+         *
+         * ```js
+         *   promiseB = promiseA.then(function(result) {
+   *     // success: do something and resolve promiseB
+   *     //          with the old or a new result
+   *     return result;
+   *   }, function(reason) {
+   *     // error: handle the error if possible and
+   *     //        resolve promiseB with newPromiseOrValue,
+   *     //        otherwise forward the rejection to promiseB
+   *     if (canHandle(reason)) {
+   *      // handle the error and recover
+   *      return newPromiseOrValue;
+   *     }
+   *     return $q.reject(reason);
+   *   });
+         * ```
+         *
+         * @param {*} reason Constant, message, exception or an object representing the rejection reason.
+         * @returns {Promise} Returns a promise that was already resolved as rejected with the `reason`.
+         */
+        var reject = function (reason) {
+            var result = defer();
+            result.reject(reason);
+            return result.promise;
+        };
+
+        var createInternalRejectedPromise = function (reason) {
+            return {
+                then: function (callback, errback) {
+                    var result = defer();
+                    setTimeout(function () {
+                        try {
+                            result.resolve((isFunction(errback) ? errback : defaultErrback)(reason));
+                        } catch (e) {
+                            result.reject(e);
+                            exceptionHandler(e);
                         }
                     });
-                } else {
-                    promise.transition(State.FULFILLED, x);
+                    return result.promise;
                 }
-            } catch (e) {
-                if (!called) {
-                    promise.transition(State.REJECTED, e);
-                }
-            }
-        } else {
-            promise.transition(State.FULFILLED, x);
-        }
-    };
-
-    /**
-     * @returns {number}
-     */
-    Promise.prototype.getState = function () {
-        return this._state;
-    };
-
-    resolve = Promise.prototype.resolve;
-
-    // static
-    Promise.State = State;
-
-    Promise.$create = function (opts) {
-        var Obj = this;
-        return new Obj(opts);
-    };
-
-    /**
-     * @param value
-     * @returns {Promise}
-     */
-    Promise.$resolved = function (value) {
-        return new Promise(function (res) {
-            res(value);
-        });
-    };
-
-    /**
-     * @param reason
-     * @returns {Promise}
-     */
-    Promise.$rejected = function (reason) {
-        return new Promise(function (res, rej) {
-            rej(reason);
-        });
-    };
-
-    /**
-     * @returns {{promise: Promise, resolve: (Function|resolve|resolve), reject: (*|Function|reject|reject|reject|reject)}}
-     */
-    Promise.$deferred = function () {
-        var resolve, reject;
-        return {
-            promise: Promise.$create(function (res, rej) {
-                resolve = res;
-                reject = rej;
-            }),
-            resolve: resolve,
-            reject: reject
+            };
         };
+
+
+        /**
+         * @function
+         *
+         * @description
+         * Wraps an object that might be a value or a (3rd party) then-able promise into a $q promise.
+         * This is useful when you are dealing with an object that might or might not be a promise, or if
+         * the promise comes from a source that can't be trusted.
+         *
+         * @param {*} value Value or a promise
+         * @returns {Promise} Returns a promise of the passed value or promise
+         */
+        var when = function (value, callback, errback, progressback) {
+            var result = defer(),
+                done;
+
+            var wrappedCallback = function (value) {
+                try {
+                    return (isFunction(callback) ? callback : defaultCallback)(value);
+                } catch (e) {
+                    exceptionHandler(e);
+                    return reject(e);
+                }
+            };
+
+            var wrappedErrback = function (reason) {
+                try {
+                    return (isFunction(errback) ? errback : defaultErrback)(reason);
+                } catch (e) {
+                    exceptionHandler(e);
+                    return reject(e);
+                }
+            };
+
+            var wrappedProgressback = function (progress) {
+                try {
+                    return (isFunction(progressback) ? progressback : defaultCallback)(progress);
+                } catch (e) {
+                    exceptionHandler(e);
+                }
+            };
+
+            setTimeout(function () {
+                ref(value).then(function (value) {
+                    if (done) return;
+                    done = true;
+                    result.resolve(ref(value).then(wrappedCallback, wrappedErrback, wrappedProgressback));
+                }, function (reason) {
+                    if (done) return;
+                    done = true;
+                    result.resolve(wrappedErrback(reason));
+                }, function (progress) {
+                    if (done) return;
+                    result.notify(wrappedProgressback(progress));
+                });
+            });
+
+            return result.promise;
+        };
+
+
+        function defaultCallback(value) {
+            return value;
+        }
+
+
+        function defaultErrback(reason) {
+            return reject(reason);
+        }
+
+
+        /**
+         * @description
+         * Combines multiple promises into a single promise that is resolved when all of the input
+         * promises are resolved.
+         *
+         * @param {Array.<Promise>|Object.<Promise>} promises An array or hash of promises.
+         * @returns {Promise} Returns a single promise that will be resolved with an array/hash of values,
+         *   each value corresponding to the promise at the same index/key in the `promises` array/hash.
+         *   If any of the promises is resolved with a rejection, this resulting promise will be rejected
+         *   with the same rejection value.
+         */
+        function all(promises) {
+            var deferred = defer(),
+                counter = 0,
+                results = isArray(promises) ? [] : {};
+
+            forEach(promises, function (promise, key) {
+                counter++;
+                ref(promise).then(function (value) {
+                    if (results.hasOwnProperty(key)) return;
+                    results[key] = value;
+                    if (!(--counter)) deferred.resolve(results);
+                }, function (reason) {
+                    if (results.hasOwnProperty(key)) return;
+                    deferred.reject(reason);
+                });
+            });
+
+            if (counter === 0) {
+                deferred.resolve(results);
+            }
+
+            return deferred.promise;
+        }
+
+        return {
+            $deferred: defer,
+            $reject: reject,
+            $when: when,
+            $all: all
+        };
+    }
+
+    var stack = [];
+
+    _promise = promise(function (e) {
+        stack.push(e);
+    });
+
+    _promise.getStack = function () {
+        return stack;
     };
 
-    ya.Promise = Promise;
-    window.ya = ya;
-}(window));
+    return _promise;
+
+}());

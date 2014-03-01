@@ -169,7 +169,7 @@ asyncTest("CRUD: proxy read data sorted by name", function () {
 
         response = action.getResponse();
 
-        equal(action.getStatus(), ya.data.Action.Status.SUCCESS, "Record added to storage");
+        equal(action.getStatus(), ya.data.Action.$status.SUCCESS, "Record added to storage");
 
         records = response.result;
 
@@ -318,7 +318,7 @@ asyncTest("CRUD: proxy read data filtered by passed conditions", function () {
         response = action.getResponse();
         records = response.result;
 
-        equal(action.getStatus(), ya.data.Action.Status.SUCCESS, "Record added to storage");
+        equal(action.getStatus(), ya.data.Action.$status.SUCCESS, "Record added to storage");
 
         ok(records.length === 2, "2 records was returned");
 
@@ -356,7 +356,7 @@ asyncTest("CRUD: proxy create records", function () {
 
         response = action.getResponse();
 
-        equal(action.getStatus(), ya.data.Action.Status.SUCCESS, "Record added to storage");
+        equal(action.getStatus(), ya.data.Action.$status.SUCCESS, "Record added to storage");
 
         if (response.success === true) {
             record = response.result;
@@ -406,7 +406,7 @@ asyncTest("CRUD: proxy create batch of records", function () {
         response = action.getResponse();
         records = response.result;
 
-        equal(action.getStatus(), ya.data.Action.Status.SUCCESS, "Records added to storage");
+        equal(action.getStatus(), ya.data.Action.$status.SUCCESS, "Records added to storage");
         equal(records.length, 2, "2 records were created");
 
         for (var i = 0, l = records.length; i < l; i++) {
@@ -475,7 +475,7 @@ asyncTest("CRUD: proxy update data", function () {
         response = action.getResponse();
         record = response.result[1];
 
-        equal(action.getStatus(), ya.data.Action.Status.SUCCESS, "Record was edit and saved");
+        equal(action.getStatus(), ya.data.Action.$status.SUCCESS, "Record was edit and saved");
         equal(record.name, "Anonymous Edited", "Name was updated");
 
         start();
@@ -539,7 +539,7 @@ asyncTest("CRUD: proxy destroy data", function () {
 
         response = action.getResponse();
 
-        equal(action.getStatus(), ya.data.Action.Status.SUCCESS, "Record was removed");
+        equal(action.getStatus(), ya.data.Action.$status.SUCCESS, "Record was removed");
 
         start();
 
@@ -599,7 +599,7 @@ asyncTest("CRUD: proxy batch destroy data", function () {
 
     callback2 = function (proxy, action) {
 
-        equal(action.getStatus(), ya.data.Action.Status.SUCCESS, "Record was removed");
+        equal(action.getStatus(), ya.data.Action.$status.SUCCESS, "Record was removed");
 
         start();
 

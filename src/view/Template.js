@@ -1,58 +1,49 @@
-(function (window, undefined) {
-    "use strict";
+ya.Core.$extend({
+    module : 'ya',
+    alias : 'view.Template',
+    defaults: {
+        tpl: null
+    },
+    init: function (opts) {
+        var me = this, config;
 
-    var ya = window.ya || {},
-        Template;
+        me.__super(opts);
 
-    Template = ya.Core.$extend({
-        defaults : {
-            tpl : null
-        },
-        init: function (opts) {
-            var me = this, config;
+        opts = opts || {};
+        config = ya.$merge(me._config, opts.config);
 
-            Template.Parent.init.apply(this, arguments);
+        me.set('initOpts', opts);
+        me.set('config', config);
 
-            opts = opts || {};
-            config = ya.$merge(me._config, opts.config);
+        me.initConfig();
+        me.initTpl();
 
-            me.set('initOpts', opts);
-            me.set('config', config);
+    },
+    initConfig: function () {
+        var me = this,
+            config = me.get('config');
 
-            me.initConfig();
-            me.initTpl();
+        me.__super();
 
-        },
-        initConfig: function () {
-            var me = this,
-                config = me.get('config');
+        if (!config.id)
+            throw new Error("ya.view.Template: Template need to have id");
 
-            Template.Parent.initConfig.apply(this);
+        return me;
+    },
+    initTpl: function () {
+        var me = this,
+            html = me.getTpl(),
+            tpl = document.createElement('div');
 
-            if (!config.id)
-                throw new Error("ya.data.Template: Template need to have id");
-
-            return me;
-        },
-        initTpl: function () {
-            var me = this,
-                html = me.getTpl(),
-                tpl = document.createElement('div');
-
-            if (Array.isArray(html)) {
-                html = html.join("");
-            }
-
-            tpl.innerHTML = html;
-
-            me.set('html', tpl);
-        },
-        getHtml : function () {
-            return this._html;
+        if (Array.isArray(html)) {
+            html = html.join("");
         }
-    });
 
-    window.ya = ya;
-    window.ya.view = window.ya.view || {};
-    window.ya.view.Template = Template;
-}(window));
+        tpl.innerHTML = html;
+
+        me.set('html', tpl);
+    },
+    getHtml: function () {
+        return this._html;
+    }
+});

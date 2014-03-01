@@ -56,7 +56,7 @@ asyncTest("we are able to save model to db", function () {
 
             equal(
                 x.action.getStatus(),
-                ya.data.Action.Status.SUCCESS,
+                ya.data.Action.$status.SUCCESS,
                 "Model was saved"
             );
 
@@ -101,7 +101,7 @@ asyncTest("we are able to load model from db", function () {
 
             equal(
                 x.action.getStatus(),
-                ya.data.Action.Status.SUCCESS,
+                ya.data.Action.$status.SUCCESS,
                 "Model was saved"
             );
 
@@ -144,7 +144,7 @@ asyncTest("we are able to update model from db", function () {
 
                 equal(
                     x.action.getStatus(),
-                    ya.data.Action.Status.SUCCESS,
+                    ya.data.Action.$status.SUCCESS,
                     "Record was updated"
                 );
 
@@ -206,7 +206,7 @@ asyncTest("we are able to remove model from db", function () {
 
                 equal(
                     x.action.getStatus(),
-                    ya.data.Action.Status.SUCCESS,
+                    ya.data.Action.$status.SUCCESS,
                     "Record was removed"
                 );
 
