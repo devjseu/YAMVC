@@ -13,7 +13,7 @@ Yet Another MVC library. Why? Because. Without reason...
 
 ##Docs
 * [Under Construction](http://devjseu.github.io/YAMVC.html "Under Construction")
-* [Under Construction] `docs/api`
+* `docs/api`
 
 ##Build
 ###Requires
