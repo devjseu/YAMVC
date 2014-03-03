@@ -2,7 +2,13 @@
  * @author angularjs
  * @contributed mkalafior
  */
-ya.$set('ya', 'promise', function (undefined) {
+
+/**
+ * @namespace ya
+ * @class promise
+ * @static
+ */
+ya.$set('ya', '$promise', function (undefined) {
     "use strict";
 
     var ya = window.ya || {},
@@ -20,6 +26,8 @@ ya.$set('ya', 'promise', function (undefined) {
     function promise(exceptionHandler) {
 
         /**
+         * @method $deferred
+         * @static
          * @description
          * Creates a `Deferred` object which represents a task which will finish in the future.
          *
@@ -173,6 +181,8 @@ ya.$set('ya', 'promise', function (undefined) {
 
 
         /**
+         * @static
+         * @method $reject
          * @description
          * Creates a promise that is resolved as rejected with the specified `reason`. This api should be
          * used to forward rejection in a chain of promises. If you are dealing with the last promise in
@@ -186,19 +196,19 @@ ya.$set('ya', 'promise', function (undefined) {
          *
          * ```js
          *   promiseB = promiseA.then(function(result) {
-   *     // success: do something and resolve promiseB
-   *     //          with the old or a new result
-   *     return result;
-   *   }, function(reason) {
-   *     // error: handle the error if possible and
-   *     //        resolve promiseB with newPromiseOrValue,
-   *     //        otherwise forward the rejection to promiseB
-   *     if (canHandle(reason)) {
-   *      // handle the error and recover
-   *      return newPromiseOrValue;
-   *     }
-   *     return $q.reject(reason);
-   *   });
+         *     // success: do something and resolve promiseB
+         *     //          with the old or a new result
+         *     return result;
+         *   }, function(reason) {
+         *     // error: handle the error if possible and
+         *     //        resolve promiseB with newPromiseOrValue,
+         *     //        otherwise forward the rejection to promiseB
+         *     if (canHandle(reason)) {
+         *      // handle the error and recover
+         *      return newPromiseOrValue;
+         *     }
+         *     return promise.reject(reason);
+         *   });
          * ```
          *
          * @param {*} reason Constant, message, exception or an object representing the rejection reason.
@@ -229,10 +239,10 @@ ya.$set('ya', 'promise', function (undefined) {
 
 
         /**
-         * @function
-         *
+         * @static
+         * @method $when
          * @description
-         * Wraps an object that might be a value or a (3rd party) then-able promise into a $q promise.
+         * Wraps an object that might be a value or a (3rd party) then-able promise into a new promise.
          * This is useful when you are dealing with an object that might or might not be a promise, or if
          * the promise comes from a source that can't be trusted.
          *
@@ -299,6 +309,8 @@ ya.$set('ya', 'promise', function (undefined) {
 
 
         /**
+         * @static
+         * @method $all
          * @description
          * Combines multiple promises into a single promise that is resolved when all of the input
          * promises are resolved.
@@ -334,10 +346,10 @@ ya.$set('ya', 'promise', function (undefined) {
         }
 
         return {
-            $deferred: defer,
-            $reject: reject,
-            $when: when,
-            $all: all
+            deferred: defer,
+            reject: reject,
+            when: when,
+            all: all
         };
     }
 

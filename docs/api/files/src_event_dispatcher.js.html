@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>src\event\dispatcher.js - yamvc</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="shortcut icon" type="image/png" href="../assets/favicon.png">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+            
+                <h1><img src="../assets/css/logo.png" title="yamvc"></h1>
+            
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 0.2.0</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+    <h2 class="off-left">APIs</h2>
+    <div id="api-tabview" class="tabview">
+        <ul class="tabs">
+            <li><a href="#api-classes">Classes</a></li>
+            <li><a href="#api-modules">Modules</a></li>
+        </ul>
+
+        <div id="api-tabview-filter">
+            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+        </div>
+
+        <div id="api-tabview-panel">
+            <ul id="api-classes" class="apis classes">
+            
+                <li><a href="../classes/ya.html">ya</a></li>
+            
+                <li><a href="../classes/ya.$viewManager.html">ya.$viewManager</a></li>
+            
+                <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
+            
+                <li><a href="../classes/ya.Core.html">ya.Core</a></li>
+            
+                <li><a href="../classes/ya.data.Action.html">ya.data.Action</a></li>
+            
+                <li><a href="../classes/ya.data.Proxy.html">ya.data.Proxy</a></li>
+            
+                <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
+            
+                <li><a href="../classes/ya.event.$dispatcher.html">ya.event.$dispatcher</a></li>
+            
+                <li><a href="../classes/ya.mixins.Array.html">ya.mixins.Array</a></li>
+            
+                <li><a href="../classes/ya.mixins.CoreStatic.html">ya.mixins.CoreStatic</a></li>
+            
+                <li><a href="../classes/ya.mixins.GetSet.html">ya.mixins.GetSet</a></li>
+            
+                <li><a href="../classes/ya.mixins.Observable.html">ya.mixins.Observable</a></li>
+            
+                <li><a href="../classes/ya.mixins.Selector.html">ya.mixins.Selector</a></li>
+            
+                <li><a href="../classes/ya.Model.html">ya.Model</a></li>
+            
+                <li><a href="../classes/ya.promise.html">ya.promise</a></li>
+            
+                <li><a href="../classes/ya.Router.html">ya.Router</a></li>
+            
+                <li><a href="../classes/ya.View.html">ya.View</a></li>
+            
+            </ul>
+
+            <ul id="api-modules" class="apis modules">
+            
+                <li><a href="../modules/ya.html">ya</a></li>
+            
+            </ul>
+        </div>
+    </div>
+</div>
+
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+        Show:
+        <label for="api-show-inherited">
+            <input type="checkbox" id="api-show-inherited" checked>
+            Inherited
+        </label>
+
+        <label for="api-show-protected">
+            <input type="checkbox" id="api-show-protected">
+            Protected
+        </label>
+
+        <label for="api-show-private">
+            <input type="checkbox" id="api-show-private">
+            Private
+        </label>
+        <label for="api-show-deprecated">
+            <input type="checkbox" id="api-show-deprecated">
+            Deprecated
+        </label>
+
+    </div>
+
+
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+                        <h1 class="file-heading">File: src\event\dispatcher.js</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+/**
+ * @namespace ya.event
+ * @class $dispatcher
+ * @static
+ */
+ya.Core.$extend({
+    module : &#x27;ya&#x27;,
+    singleton : true,
+    alias : &#x27;event.$dispatcher&#x27;,
+        defaults: {
+            delegates: null
+        },
+        /**
+         * @param opts
+         * @returns {Dispatcher}
+         */
+        init: function (opts) {
+            // Standard way of initialization.
+            var me = this, config;
+
+            me.__super(opts);
+
+            opts = opts || {};
+            config = ya.$merge(me._config, opts.config);
+
+            me.set(&#x27;initOpts&#x27;, opts);
+            me.set(&#x27;config&#x27;, config);
+
+            me.initConfig();
+
+            return me;
+        },
+        initConfig: function () {
+            var me = this;
+
+            // After calling parent method
+            me.__super.apply(me, arguments);
+
+            // set defaults.
+            me.setDelegates([]);
+
+            return me;
+        },
+        /**
+         * @param scope
+         * @param e
+         * @returns {Dispatcher}
+         */
+        add: function (scope, e) {
+            var me = this,
+                selector = Object.keys(e).pop();
+
+            me.getDelegates().push({
+                selector: selector,
+                scope: scope,
+                events: e[selector]
+            });
+
+            return me;
+        },
+        /**
+         * @param view
+         */
+        apply: function (view) {
+            // Apply delegated events.
+            var me = this,
+            // Get all delegated events.
+                delegates = me.getDelegates(),
+            // Define array in which matched events from delegation array
+            // will be stored.
+                matchPos = [],
+            // Cache new view in other variable.
+                newView = view,
+            // Define array for elements which match to last part
+            // of query from delegated event object
+                els = [],
+            // Function which will be used to match if there are any
+            // delegated events for particular view.
+                matchIdFn = function (r) {
+                    return r.selector.search(regExp) &gt;= 0;
+
+                },
+                isQueryMatch = ya.mixins.Selector.isQueryMatch,
+                __findAllByFn = ya.mixins.Array.findAllByFn,
+                __each = ya.mixins.Array.each,
+            // Other variables which need to be defined.
+                selector, delegate, regExp, cpSelector, e;
+
+
+            while (view) {
+                // If view is not null define regexp for
+                // searching view id in delegated event
+                // query.
+                regExp = new RegExp(&#x27;^\\$&#x27; + view.getId() + &quot;[\\s]&quot;);
+                // Get position for events which were matched.
+                matchPos = __findAllByFn.call(delegates, matchIdFn);
+                if (matchPos.length) {
+                    /*jshint -W083 */
+                    // If we found any events which need to be delegated,
+                    __each.call(matchPos, function (r) {
+                        // iterate through all of them.
+                        // As first step clear the array of elements
+                        els.length = 0;
+                        delegate = delegates[r];
+                        //
+                        selector = delegate
+                            .selector
+                            .split(&quot; &quot;);
+                        // Remove item id from selectors array.
+                        selector.shift();
+
+                        if (selector.length) {
+                            // If still anything left get last part
+                            // from query and find in new view elements
+                            // which match to the selector.
+                            els = newView.querySelectorAll(selector.pop());
+                            // Copy array with rest of them
+                            cpSelector = selector.slice();
+                            __each.call(els, function (el) {
+                                // and iterate through all founded elements.
+                                if (cpSelector.length) {
+
+                                    var node = el,
+                                        lastSelector = cpSelector.pop();
+                                    while (view.getId() !== node.getAttribute(&#x27;id&#x27;)) {
+
+                                        if (isQueryMatch(lastSelector, node)) {
+
+                                            if (cpSelector.length === 0) {
+
+                                                me.assignEvents(el, delegate, view);
+
+                                                break;
+                                            }
+                                            lastSelector = cpSelector.pop();
+
+                                        }
+                                        node = node.parentNode;
+
+                                    }
+
+                                } else {
+
+                                    me.assignEvents(el, delegate, view);
+
+                                }
+
+                            });
+
+                        }
+
+                    });
+
+                }
+
+                view = view.getParent();
+
+
+            }
+
+
+        },
+        assignEvents: function (el, delegate, view) {
+            var e = delegate.events,
+                eType;
+
+            for (eType in e) {
+
+                if (e.hasOwnProperty(eType)) {
+
+                    el.addEventListener(eType, e[eType].bind(delegate.scope, view), false);
+
+                }
+
+            }
+        },
+        /**
+         * Clear delegates array
+         * @returns {Dispatcher}
+         */
+        clear: function () {
+            this.getDelegates().length = 0;
+            return this;
+        }
+    });
+
+    </pre>
+</div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

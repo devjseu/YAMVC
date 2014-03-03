@@ -1,8 +1,18 @@
+/**
+ * @namespace ya
+ * @class Model
+ */
 ya.Core.$extend({
     module: 'ya',
     alias: 'Model',
     static: {
         id: 0,
+        /**
+         * @for Model
+         * @method $idGenerator
+         * @static
+         * @returns {number}
+         */
         idGenerator: function () {
             return ya.Model.$id++;
         }
@@ -11,11 +21,21 @@ ya.Core.$extend({
      * @defaults
      */
     defaults: {
+        /**
+         * @attribute config.idProperty
+         * @type String key under which id is stored
+         * @default id
+         * @required
+         */
         idProperty: 'id',
+        /**
+         * @attribute config.proxy
+         * @type ya.data.Proxy
+         */
         proxy: null
     },
     /**
-     *
+     * @method init
      * @param opts
      */
     init: function (opts) {
@@ -35,7 +55,7 @@ ya.Core.$extend({
 
     },
     /**
-     *
+     * @method initConfig
      * @returns {Model}
      */
     initConfig: function () {
@@ -55,7 +75,7 @@ ya.Core.$extend({
         return me;
     },
     /**
-     *
+     * @method initData
      */
     initData: function () {
         var me = this;
@@ -65,7 +85,7 @@ ya.Core.$extend({
         return me;
     },
     /**
-     *
+     * @method setDataProperty
      * @param property
      * @param value
      */
@@ -80,7 +100,7 @@ ya.Core.$extend({
         }
     },
     /**
-     *
+     * @method getDataProperty
      * @param property
      * @returns {*}
      */
@@ -91,6 +111,7 @@ ya.Core.$extend({
     // if two arguments are passed data will be set
     // in other case data will be returned
     /**
+     * @method data
      * @param property name of property in data
      * @param data Optional | if passed data will be set
      * @returns {*}
@@ -128,7 +149,7 @@ ya.Core.$extend({
         return me;
     },
     /**
-     *
+     * @method clear
      */
     clear: function () {
         var me = this,
@@ -144,7 +165,7 @@ ya.Core.$extend({
         me.fireEvent('dataChange', me, data);
     },
     /**
-     *
+     * @method load
      * @param params
      */
     load: function (params) {
@@ -193,7 +214,7 @@ ya.Core.$extend({
         return deferred.promise;
     },
     /**
-     *
+     * @method save
      * @returns {boolean}
      */
     save: function () {
@@ -256,7 +277,7 @@ ya.Core.$extend({
         return deferred.promise;
     },
     /**
-     *
+     * @method remove
      */
     remove: function () {
         var me = this,
@@ -302,13 +323,26 @@ ya.Core.$extend({
 
         return deferred.promise;
     },
+    /**
+     * @method hasId
+     * @returns {boolean}
+     */
     hasId: function () {
         return !!this._data[this._config.idProperty];
     },
+    /**
+     * @method setDirty
+     * @param dirty
+     * @returns {*}
+     */
     setDirty: function (dirty) {
         this.set('isDirty', !!dirty);
         return this;
     },
+    /**
+     * @method isDirty
+     * @returns {*}
+     */
     isDirty: function () {
         return this._isDirty;
     }

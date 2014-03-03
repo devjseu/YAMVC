@@ -1,36 +1,37 @@
 {
-    "name": "YAMVC",
-    "version": "0.2.0",
-    "description": "Fast and ease to extend MVC Framework for one page desktop and mobile app",
-    "main": "./distrib/YAMVC-all.js",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/devjseu/YAMVC"
-    },
-    "keywords": [
-        "MVC",
-        "library",
-        "YAMVC"
-    ],
-    "author": {
-        "name": "Sebastian Widelak",
-        "email": "sebakpl@gmail.com",
-        "url": "http://appieweb.com/"
-    },
-    "licenses": [
-        {
-            "type": "MIT",
-            "url": "https://raw.github.com/LICENSE.txt"
-        }
-    ],
-    "devDependencies": {
-        "grunt-contrib-jshint": "~0.2.0",
-        "grunt-contrib-uglify": "~0.1.2",
-        "grunt": "~0.4.1",
-        "grunt-contrib-concat": "~0.3.0",
-        "grunt-contrib-copy": "~0.4.1",
-        "grunt-contrib-qunit": "~0.2.2",
-        "grunt-contrib-watch": "~0.5.3",
-        "watch": "~0.8.0"
+  "name": "yamvc",
+  "version": "0.2.0",
+  "description": "Fast and ease to extend MVC Framework for one page desktop and mobile app",
+  "main": "./distrib/YAMVC-all.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/devjseu/YAMVC"
+  },
+  "keywords": [
+    "MVC",
+    "library",
+    "YAMVC"
+  ],
+  "author": {
+    "name": "Sebastian Widelak",
+    "email": "sebakpl@gmail.com",
+    "url": "http://appieweb.com/"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://raw.github.com/LICENSE.txt"
     }
+  ],
+  "devDependencies": {
+    "grunt-contrib-jshint": "~0.2.0",
+    "grunt-contrib-uglify": "~0.1.2",
+    "grunt": "~0.4.1",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-copy": "~0.4.1",
+    "grunt-contrib-qunit": "~0.2.2",
+    "grunt-contrib-watch": "~0.5.3",
+    "watch": "~0.8.0",
+    "grunt-contrib-yuidoc": "~0.5.1"
+  }
 }

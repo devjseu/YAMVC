@@ -1,3 +1,7 @@
+/**
+ * @namespace ya.mixins
+ * @class Observable
+ */
 ya.$set('ya', 'mixins.Observable', {
     init: function () {
         this.set('listeners', {});

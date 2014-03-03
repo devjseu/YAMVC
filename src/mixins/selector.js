@@ -1,3 +1,7 @@
+/**
+ * @namespace ya.mixins
+ * @class Selector
+ */
 ya.$set('ya', 'mixins.Selector', {
     /**
      * check if passed selector match to main DOM element

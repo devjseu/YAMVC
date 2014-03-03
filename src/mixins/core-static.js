@@ -1,3 +1,7 @@
+/**
+ * @namespace ya.mixins
+ * @class CoreStatic
+ */
 ya.$set('ya', 'mixins.CoreStatic', {
     /**
      *

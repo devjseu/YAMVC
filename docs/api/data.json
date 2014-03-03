@@ -1,0 +1,2599 @@
+{
+    "project": {
+        "name": "yamvc",
+        "description": "Fast and ease to extend MVC Framework for one page desktop and mobile app",
+        "version": "0.2.0",
+        "url": ""
+    },
+    "files": {
+        "src\\data\\proxy\\localstorage.js": {
+            "name": "src\\data\\proxy\\localstorage.js",
+            "modules": {},
+            "classes": {
+                "ya.data.proxy.Localstorage": 1
+            },
+            "fors": {},
+            "namespaces": {
+                "ya.data.proxy": 1
+            }
+        },
+        "src\\data\\action.js": {
+            "name": "src\\data\\action.js",
+            "modules": {},
+            "classes": {
+                "ya.data.Action": 1
+            },
+            "fors": {},
+            "namespaces": {
+                "ya.data": 1
+            }
+        },
+        "src\\data\\proxy.js": {
+            "name": "src\\data\\proxy.js",
+            "modules": {},
+            "classes": {
+                "ya.data.Proxy": 1
+            },
+            "fors": {},
+            "namespaces": {
+                "ya.data": 1
+            }
+        },
+        "src\\event\\dispatcher.js": {
+            "name": "src\\event\\dispatcher.js",
+            "modules": {},
+            "classes": {
+                "ya.event.$dispatcher": 1
+            },
+            "fors": {},
+            "namespaces": {
+                "ya.event": 1
+            }
+        },
+        "src\\exception\\handler.js": {
+            "name": "src\\exception\\handler.js",
+            "modules": {},
+            "classes": {},
+            "fors": {},
+            "namespaces": {}
+        },
+        "src\\mixins\\array.js": {
+            "name": "src\\mixins\\array.js",
+            "modules": {},
+            "classes": {
+                "ya.mixins.Array": 1
+            },
+            "fors": {},
+            "namespaces": {
+                "ya.mixins": 1
+            }
+        },
+        "src\\mixins\\core-static.js": {
+            "name": "src\\mixins\\core-static.js",
+            "modules": {},
+            "classes": {
+                "ya.mixins.CoreStatic": 1
+            },
+            "fors": {},
+            "namespaces": {
+                "ya.mixins": 1
+            }
+        },
+        "src\\mixins\\getset.js": {
+            "name": "src\\mixins\\getset.js",
+            "modules": {},
+            "classes": {
+                "ya.mixins.GetSet": 1
+            },
+            "fors": {},
+            "namespaces": {
+                "ya.mixins": 1
+            }
+        },
+        "src\\mixins\\observable.js": {
+            "name": "src\\mixins\\observable.js",
+            "modules": {},
+            "classes": {
+                "ya.mixins.Observable": 1
+            },
+            "fors": {},
+            "namespaces": {
+                "ya.mixins": 1
+            }
+        },
+        "src\\mixins\\selector.js": {
+            "name": "src\\mixins\\selector.js",
+            "modules": {},
+            "classes": {
+                "ya.mixins.Selector": 1
+            },
+            "fors": {},
+            "namespaces": {
+                "ya.mixins": 1
+            }
+        },
+        "src\\view\\dom.js": {
+            "name": "src\\view\\dom.js",
+            "modules": {},
+            "classes": {},
+            "fors": {},
+            "namespaces": {}
+        },
+        "src\\collection.js": {
+            "name": "src\\collection.js",
+            "modules": {},
+            "classes": {
+                "ya.Collection": 1
+            },
+            "fors": {},
+            "namespaces": {
+                "ya": 1
+            }
+        },
+        "src\\controller.js": {
+            "name": "src\\controller.js",
+            "modules": {},
+            "classes": {},
+            "fors": {},
+            "namespaces": {}
+        },
+        "src\\core.js": {
+            "name": "src\\core.js",
+            "modules": {},
+            "classes": {
+                "ya.Core": 1
+            },
+            "fors": {},
+            "namespaces": {
+                "ya": 1
+            }
+        },
+        "src\\model.js": {
+            "name": "src\\model.js",
+            "modules": {},
+            "classes": {},
+            "fors": {
+                "Model": 1
+            },
+            "namespaces": {
+                "ya": 1
+            }
+        },
+        "src\\promise.js": {
+            "name": "src\\promise.js",
+            "modules": {},
+            "classes": {
+                "ya.promise": 1
+            },
+            "fors": {},
+            "namespaces": {
+                "ya": 1
+            }
+        },
+        "src\\router.js": {
+            "name": "src\\router.js",
+            "modules": {},
+            "classes": {
+                "ya.Router": 1
+            },
+            "fors": {},
+            "namespaces": {
+                "ya": 1
+            }
+        },
+        "src\\view.js": {
+            "name": "src\\view.js",
+            "modules": {},
+            "classes": {
+                "ya.View": 1
+            },
+            "fors": {
+                "$viewManager": 1,
+                "ya.$viewManager": 1
+            },
+            "namespaces": {
+                "ya": 1
+            }
+        },
+        "src\\ya.js": {
+            "name": "src\\ya.js",
+            "modules": {
+                "ya": 1
+            },
+            "classes": {
+                "ya": 1
+            },
+            "fors": {
+                "ya": 1
+            },
+            "namespaces": {}
+        }
+    },
+    "modules": {
+        "ya": {
+            "name": "ya",
+            "submodules": {},
+            "classes": {
+                "ya.data.proxy.Localstorage": 1,
+                "ya.data.Action": 1,
+                "ya.data.Proxy": 1,
+                "ya.event.$dispatcher": 1,
+                "ya.mixins.Array": 1,
+                "ya.mixins.CoreStatic": 1,
+                "ya.mixins.GetSet": 1,
+                "ya.mixins.Observable": 1,
+                "ya.mixins.Selector": 1,
+                "ya.Collection": 1,
+                "ya.Core": 1,
+                "ya.Model": 1,
+                "ya.promise": 1,
+                "ya.Router": 1,
+                "ya.$viewManager": 1,
+                "ya.View": 1,
+                "ya": 1
+            },
+            "fors": {
+                "ya": 1
+            },
+            "namespaces": {},
+            "tag": "main",
+            "file": "src\\ya.js",
+            "line": 22,
+            "description": "Main framework object...",
+            "itemtype": "main"
+        }
+    },
+    "classes": {
+        "ya.data.proxy.Localstorage": {
+            "name": "ya.data.proxy.Localstorage",
+            "shortname": "ya.data.proxy.Localstorage",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "ya",
+            "namespace": "ya.data.proxy",
+            "file": "src\\data\\proxy\\localstorage.js",
+            "line": 1
+        },
+        "ya.data.Action": {
+            "name": "ya.data.Action",
+            "shortname": "ya.data.Action",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "ya",
+            "namespace": "ya.data",
+            "file": "src\\data\\action.js",
+            "line": 1
+        },
+        "ya.data.Proxy": {
+            "name": "ya.data.Proxy",
+            "shortname": "ya.data.Proxy",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "ya",
+            "namespace": "ya.data",
+            "file": "src\\data\\proxy.js",
+            "line": 1
+        },
+        "ya.event.$dispatcher": {
+            "name": "ya.event.$dispatcher",
+            "shortname": "ya.event.$dispatcher",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "ya",
+            "namespace": "ya.event",
+            "file": "src\\event\\dispatcher.js",
+            "line": 1,
+            "static": 1
+        },
+        "ya.mixins.Array": {
+            "name": "ya.mixins.Array",
+            "shortname": "ya.mixins.Array",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "ya",
+            "namespace": "ya.mixins",
+            "file": "src\\mixins\\array.js",
+            "line": 1
+        },
+        "ya.mixins.CoreStatic": {
+            "name": "ya.mixins.CoreStatic",
+            "shortname": "ya.mixins.CoreStatic",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "ya",
+            "namespace": "ya.mixins",
+            "file": "src\\mixins\\core-static.js",
+            "line": 1
+        },
+        "ya.mixins.GetSet": {
+            "name": "ya.mixins.GetSet",
+            "shortname": "ya.mixins.GetSet",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "ya",
+            "namespace": "ya.mixins",
+            "file": "src\\mixins\\getset.js",
+            "line": 1
+        },
+        "ya.mixins.Observable": {
+            "name": "ya.mixins.Observable",
+            "shortname": "ya.mixins.Observable",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "ya",
+            "namespace": "ya.mixins",
+            "file": "src\\mixins\\observable.js",
+            "line": 1
+        },
+        "ya.mixins.Selector": {
+            "name": "ya.mixins.Selector",
+            "shortname": "ya.mixins.Selector",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "ya",
+            "namespace": "ya.mixins",
+            "file": "src\\mixins\\selector.js",
+            "line": 1
+        },
+        "ya.Collection": {
+            "name": "ya.Collection",
+            "shortname": "ya.Collection",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "ya",
+            "namespace": "ya",
+            "file": "src\\collection.js",
+            "line": 1
+        },
+        "ya.Core": {
+            "name": "ya.Core",
+            "shortname": "ya.Core",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "ya",
+            "namespace": "ya",
+            "file": "src\\core.js",
+            "line": 6,
+            "is_constructor": 1
+        },
+        "ya.Model": {
+            "name": "ya.Model",
+            "shortname": "Model",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "ya",
+            "namespace": "ya"
+        },
+        "ya.promise": {
+            "name": "ya.promise",
+            "shortname": "ya.promise",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "ya",
+            "namespace": "ya",
+            "file": "src\\promise.js",
+            "line": 6,
+            "static": 1
+        },
+        "ya.Router": {
+            "name": "ya.Router",
+            "shortname": "ya.Router",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "ya",
+            "namespace": "ya",
+            "file": "src\\router.js",
+            "line": 1,
+            "description": "## Router\nRouter is used internally in controller, so don't instantiated it again.",
+            "is_constructor": 1
+        },
+        "ya.$viewManager": {
+            "name": "ya.$viewManager",
+            "shortname": "$viewManager",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "ya",
+            "namespace": "ya"
+        },
+        "ya.View": {
+            "name": "ya.View",
+            "shortname": "ya.View",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "ya",
+            "namespace": "ya",
+            "file": "src\\view.js",
+            "line": 146,
+            "is_constructor": 1,
+            "params": [
+                {
+                    "name": "opts",
+                    "description": "Object with configuration properties"
+                }
+            ],
+            "type": "{function}"
+        },
+        "ya": {
+            "name": "ya",
+            "shortname": "ya",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "ya",
+            "namespace": "",
+            "file": "src\\ya.js",
+            "line": 22
+        }
+    },
+    "classitems": [
+        {
+            "file": "src\\data\\proxy\\localstorage.js",
+            "line": 9,
+            "params": [
+                {
+                    "name": "tables",
+                    "description": ""
+                }
+            ],
+            "class": "ya.data.proxy.Localstorage",
+            "namespace": "ya.data.proxy"
+        },
+        {
+            "file": "src\\data\\proxy\\localstorage.js",
+            "line": 33,
+            "params": [
+                {
+                    "name": "action",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Localstorage"
+            },
+            "class": "ya.data.proxy.Localstorage",
+            "namespace": "ya.data.proxy"
+        },
+        {
+            "file": "src\\data\\proxy\\localstorage.js",
+            "line": 142,
+            "params": [
+                {
+                    "name": "action",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Localstorage"
+            },
+            "class": "ya.data.proxy.Localstorage",
+            "namespace": "ya.data.proxy"
+        },
+        {
+            "file": "src\\data\\proxy\\localstorage.js",
+            "line": 196,
+            "params": [
+                {
+                    "name": "action",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Localstorage"
+            },
+            "class": "ya.data.proxy.Localstorage",
+            "namespace": "ya.data.proxy"
+        },
+        {
+            "file": "src\\data\\proxy\\localstorage.js",
+            "line": 279,
+            "params": [
+                {
+                    "name": "action",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Localstorage"
+            },
+            "class": "ya.data.proxy.Localstorage",
+            "namespace": "ya.data.proxy"
+        },
+        {
+            "file": "src\\data\\proxy\\localstorage.js",
+            "line": 363,
+            "params": [
+                {
+                    "name": "action",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Localstorage"
+            },
+            "class": "ya.data.proxy.Localstorage",
+            "namespace": "ya.data.proxy"
+        },
+        {
+            "file": "src\\data\\proxy\\localstorage.js",
+            "line": 446,
+            "params": [
+                {
+                    "name": "record",
+                    "description": ""
+                },
+                {
+                    "name": "filter",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "ya.data.proxy.Localstorage",
+            "namespace": "ya.data.proxy"
+        },
+        {
+            "file": "src\\event\\dispatcher.js",
+            "line": 13,
+            "params": [
+                {
+                    "name": "opts",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Dispatcher"
+            },
+            "class": "ya.event.$dispatcher",
+            "namespace": "ya.event"
+        },
+        {
+            "file": "src\\event\\dispatcher.js",
+            "line": 44,
+            "params": [
+                {
+                    "name": "scope",
+                    "description": ""
+                },
+                {
+                    "name": "e",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Dispatcher"
+            },
+            "class": "ya.event.$dispatcher",
+            "namespace": "ya.event"
+        },
+        {
+            "file": "src\\event\\dispatcher.js",
+            "line": 61,
+            "params": [
+                {
+                    "name": "view",
+                    "description": ""
+                }
+            ],
+            "class": "ya.event.$dispatcher",
+            "namespace": "ya.event"
+        },
+        {
+            "file": "src\\event\\dispatcher.js",
+            "line": 177,
+            "description": "Clear delegates array",
+            "return": {
+                "description": "",
+                "type": "Dispatcher"
+            },
+            "class": "ya.event.$dispatcher",
+            "namespace": "ya.event"
+        },
+        {
+            "file": "src\\exception\\handler.js",
+            "line": 1,
+            "description": "Created by sebastian on 01.03.14.",
+            "class": "ya.mixins.Array",
+            "namespace": "ya.event"
+        },
+        {
+            "file": "src\\mixins\\array.js",
+            "line": 6,
+            "params": [
+                {
+                    "name": "key",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Number"
+            },
+            "class": "ya.mixins.Array",
+            "namespace": "ya.mixins"
+        },
+        {
+            "file": "src\\mixins\\array.js",
+            "line": 33,
+            "params": [
+                {
+                    "name": "key",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Array"
+            },
+            "class": "ya.mixins.Array",
+            "namespace": "ya.mixins"
+        },
+        {
+            "file": "src\\mixins\\array.js",
+            "line": 61,
+            "params": [
+                {
+                    "name": "fn",
+                    "description": "",
+                    "type": "Function"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Array"
+            },
+            "class": "ya.mixins.Array",
+            "namespace": "ya.mixins"
+        },
+        {
+            "file": "src\\mixins\\core-static.js",
+            "line": 6,
+            "params": [
+                {
+                    "name": "opts",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Function"
+            },
+            "class": "ya.mixins.CoreStatic",
+            "namespace": "ya.mixins"
+        },
+        {
+            "file": "src\\mixins\\getset.js",
+            "line": 6,
+            "params": [
+                {
+                    "name": "property",
+                    "description": ""
+                },
+                {
+                    "name": "value",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "This"
+            },
+            "class": "ya.mixins.GetSet",
+            "namespace": "ya.mixins"
+        },
+        {
+            "file": "src\\mixins\\getset.js",
+            "line": 22,
+            "params": [
+                {
+                    "name": "property",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ya.mixins.GetSet",
+            "namespace": "ya.mixins"
+        },
+        {
+            "file": "src\\mixins\\observable.js",
+            "line": 10,
+            "description": "fire event",
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "ya.mixins.Observable",
+            "namespace": "ya.mixins"
+        },
+        {
+            "file": "src\\mixins\\observable.js",
+            "line": 33,
+            "description": "fire event",
+            "version": "0.1.12",
+            "params": [
+                {
+                    "name": "evName",
+                    "description": ""
+                },
+                {
+                    "name": "callback",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "This"
+            },
+            "class": "ya.mixins.Observable",
+            "namespace": "ya.mixins"
+        },
+        {
+            "file": "src\\mixins\\observable.js",
+            "line": 48,
+            "description": "fire event",
+            "version": "0.1.12",
+            "params": [
+                {
+                    "name": "evName",
+                    "description": ""
+                },
+                {
+                    "name": "callback",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "This"
+            },
+            "class": "ya.mixins.Observable",
+            "namespace": "ya.mixins"
+        },
+        {
+            "file": "src\\mixins\\observable.js",
+            "line": 78,
+            "description": "suspend all events",
+            "class": "ya.mixins.Observable",
+            "namespace": "ya.mixins"
+        },
+        {
+            "file": "src\\mixins\\observable.js",
+            "line": 85,
+            "description": "resume all events",
+            "class": "ya.mixins.Observable",
+            "namespace": "ya.mixins"
+        },
+        {
+            "file": "src\\mixins\\selector.js",
+            "line": 6,
+            "description": "check if passed selector match to main DOM element",
+            "params": [
+                {
+                    "name": "selector",
+                    "description": "String with selector"
+                }
+            ],
+            "class": "ya.mixins.Selector",
+            "namespace": "ya.mixins"
+        },
+        {
+            "file": "src\\view\\dom.js",
+            "line": 1,
+            "description": "Created by sebastian on 01.03.14.",
+            "class": "ya.Collection",
+            "namespace": "ya.mixins"
+        },
+        {
+            "file": "src\\collection.js",
+            "line": 12,
+            "itemtype": "method",
+            "name": "init\ninitialize collection",
+            "params": [
+                {
+                    "name": "opts",
+                    "description": ""
+                }
+            ],
+            "class": "ya.Collection",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\collection.js",
+            "line": 37,
+            "itemtype": "method",
+            "name": "initData\ninitialize data",
+            "class": "ya.Collection",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\collection.js",
+            "line": 50,
+            "itemtype": "method",
+            "name": "forEach",
+            "params": [
+                {
+                    "name": "fn",
+                    "description": ""
+                }
+            ],
+            "chainable": 1,
+            "class": "ya.Collection",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\collection.js",
+            "line": 72,
+            "itemtype": "method",
+            "name": "push",
+            "params": [
+                {
+                    "name": "records",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "chainable": 1,
+            "class": "ya.Collection",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\collection.js",
+            "line": 111,
+            "itemtype": "method",
+            "name": "count",
+            "chainable": 1,
+            "return": {
+                "description": "",
+                "type": "Number"
+            },
+            "class": "ya.Collection",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\collection.js",
+            "line": 119,
+            "itemtype": "method",
+            "name": "clearFilters",
+            "chainable": 1,
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ya.Collection",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\collection.js",
+            "line": 133,
+            "itemtype": "method",
+            "name": "clearFilters",
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "chainable": 1,
+            "class": "ya.Collection",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\collection.js",
+            "line": 147,
+            "itemtype": "method",
+            "name": "clearFilter",
+            "params": [
+                {
+                    "name": "id",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "chainable": 1,
+            "class": "ya.Collection",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\collection.js",
+            "line": 178,
+            "itemtype": "method",
+            "name": "filter",
+            "params": [
+                {
+                    "name": "fn",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "chainable": 1,
+            "class": "ya.Collection",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\collection.js",
+            "line": 244,
+            "description": "get record at",
+            "itemtype": "method",
+            "name": "getAt",
+            "params": [
+                {
+                    "name": "index",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "ya.Model"
+            },
+            "class": "ya.Collection",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\collection.js",
+            "line": 253,
+            "itemtype": "method",
+            "name": "getBy",
+            "params": [
+                {
+                    "name": "fn",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Array"
+            },
+            "class": "ya.Collection",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\collection.js",
+            "line": 274,
+            "params": [
+                {
+                    "name": "fn",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": ""
+            },
+            "class": "ya.Collection",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\collection.js",
+            "line": 291,
+            "params": [
+                {
+                    "name": "fn",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Array"
+            },
+            "class": "ya.Collection",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\collection.js",
+            "line": 313,
+            "description": "return real number of records",
+            "return": {
+                "description": "",
+                "type": "Number"
+            },
+            "class": "ya.Collection",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\collection.js",
+            "line": 320,
+            "description": "load data\nproxy need to be set",
+            "params": [
+                {
+                    "name": "params",
+                    "description": ""
+                }
+            ],
+            "class": "ya.Collection",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\collection.js",
+            "line": 524,
+            "description": "Prepare data",
+            "access": "private",
+            "tagname": "",
+            "params": [
+                {
+                    "name": "data",
+                    "description": ""
+                },
+                {
+                    "name": "total",
+                    "description": "",
+                    "type": "Number||null"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Collection"
+            },
+            "class": "ya.Collection",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\controller.js",
+            "line": 1,
+            "description": "## Basic controller usage",
+            "example": [
+                "\n    var ctl = new Controller({\n        config: {\n            name: 'Main',\n            views: {\n                layout: view.Manager.get('view-0')\n            },\n            routes: {\n                \"page/{\\\\d+}\": 'changePage'\n            },\n        },\n        bindElements : function (){\n            var me = this;\n            me.set('$arrowRight', document.querySelector('#arrow-right'));\n            me.set('$arrowLeft', document.querySelector('#arrow-left'));\n        },\n        bindEvents: function () {\n            var me = this;\n            me.get('$arrowRight').addEventListener('click', this.nextPage.bind(this));\n            me.get('$arrowLeft').addEventListener('click', this.prevPage.bind(this));\n        },\n        changePage: function (id) {\n            // changing page mechanism\n        },\n        nextPage: function () {\n            // changing page mechanism\n        },\n        prevPage: function () {\n            // changing page mechanism\n        }\n    });\n"
+            ],
+            "class": "ya.Core",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\core.js",
+            "line": 17,
+            "itemtype": "method",
+            "name": "init",
+            "class": "ya.Core",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\core.js",
+            "line": 23,
+            "description": "Initialize getters and setters for each property passed\nin `config` object.\nTo track changes assign an event on for ex. `propertyChange`",
+            "example": [
+                "\nvar obj = ya.Core.$create({\n  config : {\n    value : true\n  }\n});\n\nobj.addEventListener(\n  'valueChange',\n  function () { alert('property changed!') }\n);"
+            ],
+            "itemtype": "method",
+            "name": "initConfig",
+            "chainable": 1,
+            "class": "ya.Core",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\core.js",
+            "line": 71,
+            "description": "Include to newly created object dynamically defined methods",
+            "itemtype": "method",
+            "name": "bindMethods",
+            "params": [
+                {
+                    "name": "initOpts",
+                    "description": ""
+                }
+            ],
+            "chainable": 1,
+            "class": "ya.Core",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\core.js",
+            "line": 91,
+            "itemtype": "method",
+            "name": "onChange",
+            "params": [
+                {
+                    "name": "property",
+                    "description": ""
+                },
+                {
+                    "name": "callback",
+                    "description": ""
+                }
+            ],
+            "chainable": 1,
+            "class": "ya.Core",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\core.js",
+            "line": 106,
+            "itemtype": "method",
+            "name": "unbindOnChange",
+            "params": [
+                {
+                    "name": "property",
+                    "description": ""
+                },
+                {
+                    "name": "callback",
+                    "description": ""
+                }
+            ],
+            "chainable": 1,
+            "class": "ya.Core",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\core.js",
+            "line": 142,
+            "itemtype": "method",
+            "name": "set",
+            "params": [
+                {
+                    "name": "property",
+                    "description": ""
+                },
+                {
+                    "name": "value",
+                    "description": ""
+                }
+            ],
+            "chainable": 1,
+            "class": "ya.Core",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\core.js",
+            "line": 149,
+            "itemtype": "method",
+            "name": "get",
+            "params": [
+                {
+                    "name": "property",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "value stored under passed property",
+                "type": "*"
+            },
+            "class": "ya.Core",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\model.js",
+            "line": 10,
+            "itemtype": "method",
+            "name": "$idGenerator",
+            "static": 1,
+            "return": {
+                "description": "",
+                "type": "Number"
+            },
+            "class": "ya.Model"
+        },
+        {
+            "file": "src\\model.js",
+            "line": 20,
+            "defaults": "",
+            "class": "ya.Model"
+        },
+        {
+            "file": "src\\model.js",
+            "line": 24,
+            "itemtype": "attribute",
+            "name": "config.idProperty",
+            "type": "String key under which id is stored",
+            "default": "id",
+            "required": 1,
+            "class": "ya.Model"
+        },
+        {
+            "file": "src\\model.js",
+            "line": 31,
+            "itemtype": "attribute",
+            "name": "config.proxy",
+            "type": "ya.data.Proxy",
+            "class": "ya.Model"
+        },
+        {
+            "file": "src\\model.js",
+            "line": 37,
+            "itemtype": "method",
+            "name": "init",
+            "params": [
+                {
+                    "name": "opts",
+                    "description": ""
+                }
+            ],
+            "class": "ya.Model"
+        },
+        {
+            "file": "src\\model.js",
+            "line": 57,
+            "itemtype": "method",
+            "name": "initConfig",
+            "return": {
+                "description": "",
+                "type": "Model"
+            },
+            "class": "ya.Model"
+        },
+        {
+            "file": "src\\model.js",
+            "line": 77,
+            "itemtype": "method",
+            "name": "initData",
+            "class": "ya.Model"
+        },
+        {
+            "file": "src\\model.js",
+            "line": 87,
+            "itemtype": "method",
+            "name": "setDataProperty",
+            "params": [
+                {
+                    "name": "property",
+                    "description": ""
+                },
+                {
+                    "name": "value",
+                    "description": ""
+                }
+            ],
+            "class": "ya.Model"
+        },
+        {
+            "file": "src\\model.js",
+            "line": 102,
+            "itemtype": "method",
+            "name": "getDataProperty",
+            "params": [
+                {
+                    "name": "property",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ya.Model"
+        },
+        {
+            "file": "src\\model.js",
+            "line": 113,
+            "itemtype": "method",
+            "name": "data",
+            "params": [
+                {
+                    "name": "property",
+                    "description": "name of property in data"
+                },
+                {
+                    "name": "data",
+                    "description": "Optional | if passed data will be set"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ya.Model"
+        },
+        {
+            "file": "src\\model.js",
+            "line": 151,
+            "itemtype": "method",
+            "name": "clear",
+            "class": "ya.Model"
+        },
+        {
+            "file": "src\\model.js",
+            "line": 167,
+            "itemtype": "method",
+            "name": "load",
+            "params": [
+                {
+                    "name": "params",
+                    "description": ""
+                }
+            ],
+            "class": "ya.Model"
+        },
+        {
+            "file": "src\\model.js",
+            "line": 216,
+            "itemtype": "method",
+            "name": "save",
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "ya.Model"
+        },
+        {
+            "file": "src\\model.js",
+            "line": 279,
+            "itemtype": "method",
+            "name": "remove",
+            "class": "ya.Model"
+        },
+        {
+            "file": "src\\model.js",
+            "line": 326,
+            "itemtype": "method",
+            "name": "hasId",
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "ya.Model"
+        },
+        {
+            "file": "src\\model.js",
+            "line": 333,
+            "itemtype": "method",
+            "name": "setDirty",
+            "params": [
+                {
+                    "name": "dirty",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ya.Model"
+        },
+        {
+            "file": "src\\model.js",
+            "line": 342,
+            "itemtype": "method",
+            "name": "isDirty",
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ya.Model"
+        },
+        {
+            "file": "src\\promise.js",
+            "line": 1,
+            "author": "angularjs",
+            "contributed": "mkalafior",
+            "class": "ya.promise"
+        },
+        {
+            "file": "src\\promise.js",
+            "line": 22,
+            "description": "Constructs a promise manager.",
+            "return": {
+                "description": "Promise manager.",
+                "type": "Object"
+            },
+            "class": "ya.promise",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\promise.js",
+            "line": 28,
+            "itemtype": "method",
+            "name": "$deferred",
+            "static": 1,
+            "description": "Creates a `Deferred` object which represents a task which will finish in the future.",
+            "return": {
+                "description": "Returns a new instance of deferred.",
+                "type": "Deferred"
+            },
+            "class": "ya.promise",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\promise.js",
+            "line": 183,
+            "static": 1,
+            "itemtype": "method",
+            "name": "$reject",
+            "description": "Creates a promise that is resolved as rejected with the specified `reason`. This api should be\nused to forward rejection in a chain of promises. If you are dealing with the last promise in\na promise chain, you don't need to worry about it.\n\nWhen comparing deferreds/promises to the familiar behavior of try/catch/throw, think of\n`reject` as the `throw` keyword in JavaScript. This also means that if you \"catch\" an error via\na promise error callback and you want to forward the error to the promise derived from the\ncurrent promise, you have to \"rethrow\" the error by returning a rejection constructed via\n`reject`.\n\n```js\n  promiseB = promiseA.then(function(result) {\n    // success: do something and resolve promiseB\n    //          with the old or a new result\n    return result;\n  }, function(reason) {\n    // error: handle the error if possible and\n    //        resolve promiseB with newPromiseOrValue,\n    //        otherwise forward the rejection to promiseB\n    if (canHandle(reason)) {\n     // handle the error and recover\n     return newPromiseOrValue;\n    }\n    return promise.reject(reason);\n  });\n```",
+            "params": [
+                {
+                    "name": "reason",
+                    "description": "Constant, message, exception or an object representing the rejection reason.",
+                    "type": "*"
+                }
+            ],
+            "return": {
+                "description": "Returns a promise that was already resolved as rejected with the `reason`.",
+                "type": "Promise"
+            },
+            "class": "ya.promise",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\promise.js",
+            "line": 241,
+            "static": 1,
+            "itemtype": "method",
+            "name": "$when",
+            "description": "Wraps an object that might be a value or a (3rd party) then-able promise into a new promise.\nThis is useful when you are dealing with an object that might or might not be a promise, or if\nthe promise comes from a source that can't be trusted.",
+            "params": [
+                {
+                    "name": "value",
+                    "description": "Value or a promise",
+                    "type": "*"
+                }
+            ],
+            "return": {
+                "description": "Returns a promise of the passed value or promise",
+                "type": "Promise"
+            },
+            "class": "ya.promise",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\promise.js",
+            "line": 311,
+            "static": 1,
+            "itemtype": "method",
+            "name": "$all",
+            "description": "Combines multiple promises into a single promise that is resolved when all of the input\npromises are resolved.",
+            "params": [
+                {
+                    "name": "promises",
+                    "description": "An array or hash of promises.",
+                    "type": "Array.<Promise>|Object.<Promise>"
+                }
+            ],
+            "return": {
+                "description": "Returns a single promise that will be resolved with an array/hash of values,\n  each value corresponding to the promise at the same index/key in the `promises` array/hash.\n  If any of the promises is resolved with a rejection, this resulting promise will be rejected\n  with the same rejection value.",
+                "type": "Promise"
+            },
+            "class": "ya.promise",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\router.js",
+            "line": 12,
+            "itemtype": "method",
+            "name": "init",
+            "class": "ya.Router",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\router.js",
+            "line": 23,
+            "itemtype": "method",
+            "name": "bindEvents",
+            "chainable": 1,
+            "class": "ya.Router",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\router.js",
+            "line": 34,
+            "itemtype": "method",
+            "name": "onHashChange",
+            "chainable": 1,
+            "class": "ya.Router",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\router.js",
+            "line": 58,
+            "itemtype": "method",
+            "name": "restore",
+            "chainable": 1,
+            "class": "ya.Router",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\router.js",
+            "line": 66,
+            "itemtype": "method",
+            "name": "when",
+            "params": [
+                {
+                    "name": "path",
+                    "description": ""
+                },
+                {
+                    "name": "callback",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "chainable": 1,
+            "class": "ya.Router",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 1,
+            "author": "Sebastian Widelak <sebakpl@gmail.com>",
+            "class": "ya.$viewManager",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 88,
+            "itemtype": "method",
+            "name": "add",
+            "params": [
+                {
+                    "name": "id",
+                    "description": ""
+                },
+                {
+                    "name": "view",
+                    "description": ""
+                }
+            ],
+            "class": "ya.$viewManager"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 107,
+            "itemtype": "method",
+            "name": "get",
+            "params": [
+                {
+                    "name": "id",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "View"
+            },
+            "class": "ya.$viewManager",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 174,
+            "params": [
+                {
+                    "name": "opts",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "View"
+            },
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 204,
+            "return": {
+                "description": "",
+                "type": "View"
+            },
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 254,
+            "return": {
+                "description": "",
+                "type": "View"
+            },
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 267,
+            "params": [
+                {
+                    "name": "namespace",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "ya.Model"
+            },
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 287,
+            "version": "0.1.11",
+            "return": {
+                "description": "",
+                "type": "Node"
+            },
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 550,
+            "version": "0.1.12",
+            "params": [
+                {
+                    "name": "model",
+                    "description": ""
+                }
+            ],
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 594,
+            "version": "0.1.12",
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 644,
+            "version": "0.1.11",
+            "params": [
+                {
+                    "name": "binding",
+                    "description": ""
+                }
+            ],
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 692,
+            "version": "0.1.12",
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 723,
+            "version": "0.1.12",
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 736,
+            "params": [
+                {
+                    "name": "selector",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Node"
+            },
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 744,
+            "params": [
+                {
+                    "name": "selector",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Array"
+            },
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 759,
+            "params": [
+                {
+                    "name": "view",
+                    "description": ""
+                },
+                {
+                    "name": "selector",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "View"
+            },
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 771,
+            "params": [
+                {
+                    "name": "id",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "View||Boolean"
+            },
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 783,
+            "params": [
+                {
+                    "name": "id",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*|length|length|Function|length|length"
+            },
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 799,
+            "params": [
+                {
+                    "name": "id",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*|null"
+            },
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 820,
+            "return": {
+                "description": "",
+                "type": "Array"
+            },
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 835,
+            "return": {
+                "description": "",
+                "type": "View"
+            },
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 849,
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 855,
+            "params": [
+                {
+                    "name": "parent",
+                    "description": ""
+                },
+                {
+                    "name": "selector",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "View"
+            },
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 918,
+            "return": {
+                "description": "",
+                "type": "View"
+            },
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 932,
+            "return": {
+                "description": "",
+                "type": "View"
+            },
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 948,
+            "return": {
+                "description": "",
+                "type": "View"
+            },
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 979,
+            "return": {
+                "description": "",
+                "type": "Boolean"
+            },
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\ya.js",
+            "line": 27,
+            "itemtype": "method",
+            "name": "$onReady",
+            "static": 1,
+            "params": [
+                {
+                    "name": "callback",
+                    "description": ""
+                }
+            ],
+            "class": "ya",
+            "module": "ya"
+        },
+        {
+            "file": "src\\ya.js",
+            "line": 46,
+            "itemtype": "method",
+            "name": "$merge",
+            "static": 1,
+            "params": [
+                {
+                    "name": "obj1",
+                    "description": ""
+                },
+                {
+                    "name": "obj2",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ya",
+            "module": "ya"
+        },
+        {
+            "file": "src\\ya.js",
+            "line": 73,
+            "itemtype": "method",
+            "name": "$clone",
+            "static": 1,
+            "params": [
+                {
+                    "name": "obj",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ya",
+            "module": "ya"
+        },
+        {
+            "file": "src\\ya.js",
+            "line": 84,
+            "description": "Set new namespace",
+            "itemtype": "method",
+            "name": "$set",
+            "static": 1,
+            "params": [
+                {
+                    "name": "module",
+                    "description": "",
+                    "type": "Null||String"
+                },
+                {
+                    "name": "namespace",
+                    "description": "",
+                    "type": "String"
+                },
+                {
+                    "name": "value",
+                    "description": "",
+                    "type": "*"
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Namespace"
+            },
+            "class": "ya",
+            "module": "ya"
+        },
+        {
+            "file": "src\\ya.js",
+            "line": 117,
+            "itemtype": "method",
+            "name": "$get",
+            "static": 1,
+            "params": [
+                {
+                    "name": "module",
+                    "description": ""
+                },
+                {
+                    "name": "namespace",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ya",
+            "module": "ya"
+        },
+        {
+            "file": "src\\ya.js",
+            "line": 154,
+            "itemtype": "method",
+            "name": "$module",
+            "static": 1,
+            "return": {
+                "description": "",
+                "type": "String"
+            },
+            "class": "ya",
+            "module": "ya"
+        }
+    ],
+    "warnings": [
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\data\\proxy\\localstorage.js:33"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\data\\proxy\\localstorage.js:142"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\data\\proxy\\localstorage.js:196"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\data\\proxy\\localstorage.js:279"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\data\\proxy\\localstorage.js:363"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\data\\proxy\\localstorage.js:446"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\event\\dispatcher.js:13"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\event\\dispatcher.js:44"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\event\\dispatcher.js:177"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\mixins\\array.js:6"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\mixins\\array.js:33"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\mixins\\array.js:61"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\mixins\\core-static.js:6"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\mixins\\getset.js:6"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\mixins\\getset.js:22"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\mixins\\observable.js:10"
+        },
+        {
+            "message": "unknown tag: version",
+            "line": " src\\mixins\\observable.js:33"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\mixins\\observable.js:33"
+        },
+        {
+            "message": "unknown tag: version",
+            "line": " src\\mixins\\observable.js:48"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\mixins\\observable.js:48"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\collection.js:72"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\collection.js:111"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\collection.js:119"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\collection.js:133"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\collection.js:147"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\collection.js:178"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\collection.js:244"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\collection.js:253"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\collection.js:274"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\collection.js:291"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\collection.js:313"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\collection.js:524"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\core.js:149"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\model.js:10"
+        },
+        {
+            "message": "unknown tag: defaults",
+            "line": " src\\model.js:20"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\model.js:57"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\model.js:102"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\model.js:113"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\model.js:216"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\model.js:326"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\model.js:333"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\model.js:342"
+        },
+        {
+            "message": "unknown tag: contributed",
+            "line": " src\\promise.js:1"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\promise.js:22"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\promise.js:28"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\promise.js:183"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\promise.js:241"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\promise.js:311"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\router.js:66"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:107"
+        },
+        {
+            "message": "replacing incorrect tag: params with param",
+            "line": " src\\view.js:146"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:174"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:204"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:254"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:267"
+        },
+        {
+            "message": "unknown tag: version",
+            "line": " src\\view.js:287"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:287"
+        },
+        {
+            "message": "unknown tag: version",
+            "line": " src\\view.js:550"
+        },
+        {
+            "message": "unknown tag: version",
+            "line": " src\\view.js:594"
+        },
+        {
+            "message": "unknown tag: version",
+            "line": " src\\view.js:644"
+        },
+        {
+            "message": "unknown tag: version",
+            "line": " src\\view.js:692"
+        },
+        {
+            "message": "unknown tag: version",
+            "line": " src\\view.js:723"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:736"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:744"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:759"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:771"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:783"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:799"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:820"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:835"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:849"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:855"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:918"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:932"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:948"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:979"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\ya.js:46"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\ya.js:73"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\ya.js:84"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\ya.js:117"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\ya.js:154"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\data\\proxy\\localstorage.js:9"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\data\\proxy\\localstorage.js:33"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\data\\proxy\\localstorage.js:142"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\data\\proxy\\localstorage.js:196"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\data\\proxy\\localstorage.js:279"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\data\\proxy\\localstorage.js:363"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\data\\proxy\\localstorage.js:446"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\event\\dispatcher.js:13"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\event\\dispatcher.js:44"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\event\\dispatcher.js:61"
+        },
+        {
+            "message": "Missing item type\nClear delegates array",
+            "line": " src\\event\\dispatcher.js:177"
+        },
+        {
+            "message": "Missing item type\nCreated by sebastian on 01.03.14.",
+            "line": " src\\exception\\handler.js:1"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\mixins\\array.js:6"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\mixins\\array.js:33"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\mixins\\array.js:61"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\mixins\\core-static.js:6"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\mixins\\getset.js:6"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\mixins\\getset.js:22"
+        },
+        {
+            "message": "Missing item type\nfire event",
+            "line": " src\\mixins\\observable.js:10"
+        },
+        {
+            "message": "Missing item type\nfire event",
+            "line": " src\\mixins\\observable.js:33"
+        },
+        {
+            "message": "Missing item type\nfire event",
+            "line": " src\\mixins\\observable.js:48"
+        },
+        {
+            "message": "Missing item type\nsuspend all events",
+            "line": " src\\mixins\\observable.js:78"
+        },
+        {
+            "message": "Missing item type\nresume all events",
+            "line": " src\\mixins\\observable.js:85"
+        },
+        {
+            "message": "Missing item type\ncheck if passed selector match to main DOM element",
+            "line": " src\\mixins\\selector.js:6"
+        },
+        {
+            "message": "Missing item type\nCreated by sebastian on 01.03.14.",
+            "line": " src\\view\\dom.js:1"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\collection.js:274"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\collection.js:291"
+        },
+        {
+            "message": "Missing item type\nreturn real number of records",
+            "line": " src\\collection.js:313"
+        },
+        {
+            "message": "Missing item type\nload data\nproxy need to be set",
+            "line": " src\\collection.js:320"
+        },
+        {
+            "message": "Missing item type\nPrepare data",
+            "line": " src\\collection.js:524"
+        },
+        {
+            "message": "Missing item type\n## Basic controller usage",
+            "line": " src\\controller.js:1"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\model.js:20"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\promise.js:1"
+        },
+        {
+            "message": "Missing item type\nConstructs a promise manager.",
+            "line": " src\\promise.js:22"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:1"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:174"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:204"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:254"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:267"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:287"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:550"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:594"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:644"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:692"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:723"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:736"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:744"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:759"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:771"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:783"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:799"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:820"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:835"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:849"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:855"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:918"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:932"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:948"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:979"
+        }
+    ]
+}

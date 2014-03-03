@@ -1,3 +1,7 @@
+/**
+ * @namespace ya.data.proxy
+ * @class Localstorage
+ */
 ya.data.Proxy.$extend({
     module: 'ya',
     alias: 'data.proxy.Localstorage',

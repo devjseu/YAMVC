@@ -1,3 +1,7 @@
+/**
+ * @namespace ya.mixins
+ * @class GetSet
+ */
 ya.$set('ya', 'mixins.GetSet', {
     /**
      *

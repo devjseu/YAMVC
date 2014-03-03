@@ -1,5 +1,11 @@
-/*! YAMVC v0.2.0 - 2014-03-01 
+/*! yamvc v0.2.0 - 2014-03-03 
  *  License:  */
+/**
+ Main framework object...
+
+ @module ya
+ @main ya
+ **/
 (function (undefined) {
     'use strict';
 
@@ -15,8 +21,15 @@
         }
     }
 
+    /**
+     @class ya
+     */
+
     // Provide way to execute all necessary code after DOM is ready.
     /**
+     * @method $onReady
+     * @for ya
+     * @static
      * @param callback
      */
     ya.$onReady = function (callback) {
@@ -33,6 +46,8 @@
 
     // Merge two objects.
     /**
+     * @method $merge
+     * @static
      * @param obj1
      * @param obj2
      * @returns {*}
@@ -57,13 +72,22 @@
     };
 
     // clone data object
+    /**
+     *
+     * @method $clone
+     * @static
+     * @param obj
+     * @returns {*}
+     */
     ya.$clone = function (obj) {
         return JSON.parse(JSON.stringify(obj));
     };
 
     /**
      * Set new namespace
-     * @param {null||} module
+     * @method $set
+     * @static
+     * @param {null||String} module
      * @param {String} namespace
      * @param {*} value
      * @returns {namespace}
@@ -93,7 +117,8 @@
     };
 
     /**
-     *
+     * @method $get
+     * @static
      * @param module
      * @param namespace
      * @returns {*}
@@ -128,6 +153,12 @@
         return pointer;
     };
 
+    /**
+     *
+     * @method $module
+     * @static
+     * @returns {string}
+     */
     ya.$module = function () {
         var module = arguments.length ? arguments [0] : null;
 
@@ -141,6 +172,10 @@
 
     window.ya = ya;
 }());
+/**
+ * @namespace ya.mixins
+ * @class Array
+ */
 ya.$set('ya', 'mixins.Array', {
     /**
      *
@@ -235,6 +270,10 @@ ya.$set('ya', 'mixins.Array', {
         }
     }
 });
+/**
+ * @namespace ya.mixins
+ * @class CoreStatic
+ */
 ya.$set('ya', 'mixins.CoreStatic', {
     /**
      *
@@ -360,6 +399,10 @@ ya.$set('ya', 'mixins.CoreStatic', {
     }
 });
 
+/**
+ * @namespace ya.mixins
+ * @class GetSet
+ */
 ya.$set('ya', 'mixins.GetSet', {
     /**
      *
@@ -388,6 +431,10 @@ ya.$set('ya', 'mixins.GetSet', {
     }
 });
 
+/**
+ * @namespace ya.mixins
+ * @class Observable
+ */
 ya.$set('ya', 'mixins.Observable', {
     init: function () {
         this.set('listeners', {});
@@ -477,6 +524,10 @@ ya.$set('ya', 'mixins.Observable', {
     }
 });
 
+/**
+ * @namespace ya.mixins
+ * @class Selector
+ */
 ya.$set('ya', 'mixins.Selector', {
     /**
      * check if passed selector match to main DOM element
@@ -542,9 +593,9 @@ ya.$set('ya', 'Core', (function () {
     var ya = window.ya;
 
     /**
-     *
+     * @namespace ya
+     * @class Core
      * @constructor
-     *
      */
     function Core() {
         this.set('listeners', {});
@@ -553,13 +604,28 @@ ya.$set('ya', 'Core', (function () {
     }
 
     /**
-     * @abstract
+     @method init
      */
     Core.prototype.init = function () {
     };
 
     /**
+     * Initialize getters and setters for each property passed
+     * in `config` object.
+     * To track changes assign an event on for ex. `propertyChange`
+     * @example
+     * var obj = ya.Core.$create({
+     *   config : {
+     *     value : true
+     *   }
+     * });
      *
+     * obj.addEventListener(
+     *   'valueChange',
+     *   function () { alert('property changed!') }
+     * );
+     * @method initConfig
+     * @chainable
      */
     Core.prototype.initConfig = function () {
         var me = this,
@@ -586,11 +652,16 @@ ya.$set('ya', 'Core', (function () {
                 init(property);
             }
         }
+
+        return me;
     };
 
     // Binds custom methods from config object to class instance.
     /**
+     * Include to newly created object dynamically defined methods
+     * @method bindMethods
      * @param initOpts
+     * @chainable
      */
     Core.prototype.bindMethods = function (initOpts) {
         var me = this;
@@ -607,9 +678,10 @@ ya.$set('ya', 'Core', (function () {
 
     // Add callback to property change event.
     /**
+     * @method onChange
      * @param property
      * @param callback
-     * @returns {this}
+     * @chainable
      */
     Core.prototype.onChange = function (property, callback) {
         var me = this;
@@ -621,9 +693,10 @@ ya.$set('ya', 'Core', (function () {
 
     // Unbind callback.
     /**
+     * @method unbindOnChange
      * @param property
      * @param callback
-     * @returns {this}
+     * @chainable
      */
     Core.prototype.unbindOnChange = function (property, callback) {
         var me = this,
@@ -639,17 +712,9 @@ ya.$set('ya', 'Core', (function () {
     };
 
     // Stores all mixins initializing functions.
-    /**
-     * @type {Array}
-     * @private
-     */
     Core.__mixins__ = [];
 
     // Stores all defaults.
-    /**
-     * @type {Object}
-     * @private
-     */
     Core.__defaults__ = {};
 
     for (var staticCore in ya.mixins.CoreStatic) {
@@ -663,11 +728,28 @@ ya.$set('ya', 'Core', (function () {
     // Add Getters and Setters.
     Core.$mixin(ya.mixins.GetSet);
 
+    /**
+     * @method set
+     * @param property
+     * @param value
+     * @chainable
+     */
+
+    /**
+     * @method get
+     * @param property
+     * @returns {*} value stored under passed property
+     */
+
     // Add observable methods.
     Core.$mixin(ya.mixins.Observable);
 
     return Core;
 }()));
+/**
+ * @namespace ya
+ * @class Collection
+ */
 ya.Core.$extend({
     module: 'ya',
     alias: 'Collection',
@@ -676,6 +758,7 @@ ya.Core.$extend({
         proxy: null
     },
     /**
+     * @method init
      * initialize collection
      * @param opts
      */
@@ -700,6 +783,7 @@ ya.Core.$extend({
         return me;
     },
     /**
+     * @method initData
      * initialize data
      */
     initData: function () {
@@ -711,6 +795,11 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * @method forEach
+     * @param fn
+     * @chainable
+     */
     forEach: function (fn) {
         var me = this,
             records = me._set,
@@ -725,7 +814,15 @@ ya.Core.$extend({
             if (i in t)
                 fn.call(me, t[i], i, t);
         }
+
+        return me;
     },
+    /**
+     * @method push
+     * @param records
+     * @returns {*}
+     * @chainable
+     */
     push: function (records) {
         var me = this,
             record,
@@ -760,11 +857,18 @@ ya.Core.$extend({
     },
     // return number of records in collection
     /**
+     * @method count
+     * @chainable
      * @returns {Number}
      */
     count: function () {
         return this._set.length;
     },
+    /**
+     * @method clearFilters
+     * @chainable
+     * @returns {*}
+     */
     clear: function () {
         var me = this;
 
@@ -774,6 +878,11 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * @method clearFilters
+     * @returns {*}
+     * @chainable
+     */
     clearFilters: function () {
         var me = this;
 
@@ -783,6 +892,13 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     *
+     * @method clearFilter
+     * @param id
+     * @returns {*}
+     * @chainable
+     */
     clearFilter: function (id) {
         var me = this,
             filters = me._filters,
@@ -807,6 +923,13 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     *
+     * @method filter
+     * @param fn
+     * @returns {*}
+     * @chainable
+     */
     filter: function (fn) {
         var me = this,
             filters = me._filters,
@@ -868,6 +991,7 @@ ya.Core.$extend({
     },
     /**
      * get record at
+     * @method getAt
      * @param index
      * @returns {ya.Model}
      */
@@ -875,7 +999,7 @@ ya.Core.$extend({
         return this._set[index];
     },
     /**
-     *
+     * @method getBy
      * @param fn
      * @returns {Array}
      */
@@ -1216,6 +1340,7 @@ ya.Core.$extend({
 });
 
 /**
+ * @description
  * ## Basic controller usage
  *
  *     @example
@@ -1249,12 +1374,6 @@ ya.Core.$extend({
  *             // changing page mechanism
  *         }
  *     });
- *
- * ## Configuration properties
- *
- * @cfg config.name {String} Name of the controller
- * @cfg config.routes {Object} Object with defined routes and callbacks
- * @cfg config.views {Object} List of views connected with controller
  *
  */
 ya.Core.$extend({
@@ -1435,6 +1554,10 @@ ya.Core.$extend({
         return this;
     }
 });
+/**
+ * @namespace ya.data
+ * @class Action
+ */
 ya.Core.$extend({
     module: 'ya',
     alias: 'data.Action',
@@ -1502,6 +1625,10 @@ ya.Core.$extend({
     }
 });
 
+/**
+ * @namespace ya.data
+ * @class Proxy
+ */
 ya.Core.$extend({
     module: 'ya',
     alias: 'data.Proxy',
@@ -1586,6 +1713,10 @@ ya.Core.$extend({
     }
 });
 
+/**
+ * @namespace ya.data.proxy
+ * @class Localstorage
+ */
 ya.data.Proxy.$extend({
     module: 'ya',
     alias: 'data.proxy.Localstorage',
@@ -2083,6 +2214,11 @@ ya.data.Proxy.$extend({
     }
 });
 
+/**
+ * @namespace ya.event
+ * @class $dispatcher
+ * @static
+ */
 ya.Core.$extend({
     module : 'ya',
     singleton : true,
@@ -2268,11 +2404,21 @@ ya.Core.$extend({
  * Created by sebastian on 01.03.14.
  */
 
+/**
+ * @namespace ya
+ * @class Model
+ */
 ya.Core.$extend({
     module: 'ya',
     alias: 'Model',
     static: {
         id: 0,
+        /**
+         * @for Model
+         * @method $idGenerator
+         * @static
+         * @returns {number}
+         */
         idGenerator: function () {
             return ya.Model.$id++;
         }
@@ -2281,11 +2427,21 @@ ya.Core.$extend({
      * @defaults
      */
     defaults: {
+        /**
+         * @attribute config.idProperty
+         * @type String key under which id is stored
+         * @default id
+         * @required
+         */
         idProperty: 'id',
+        /**
+         * @attribute config.proxy
+         * @type ya.data.Proxy
+         */
         proxy: null
     },
     /**
-     *
+     * @method init
      * @param opts
      */
     init: function (opts) {
@@ -2305,7 +2461,7 @@ ya.Core.$extend({
 
     },
     /**
-     *
+     * @method initConfig
      * @returns {Model}
      */
     initConfig: function () {
@@ -2325,7 +2481,7 @@ ya.Core.$extend({
         return me;
     },
     /**
-     *
+     * @method initData
      */
     initData: function () {
         var me = this;
@@ -2335,7 +2491,7 @@ ya.Core.$extend({
         return me;
     },
     /**
-     *
+     * @method setDataProperty
      * @param property
      * @param value
      */
@@ -2350,7 +2506,7 @@ ya.Core.$extend({
         }
     },
     /**
-     *
+     * @method getDataProperty
      * @param property
      * @returns {*}
      */
@@ -2361,6 +2517,7 @@ ya.Core.$extend({
     // if two arguments are passed data will be set
     // in other case data will be returned
     /**
+     * @method data
      * @param property name of property in data
      * @param data Optional | if passed data will be set
      * @returns {*}
@@ -2398,7 +2555,7 @@ ya.Core.$extend({
         return me;
     },
     /**
-     *
+     * @method clear
      */
     clear: function () {
         var me = this,
@@ -2414,7 +2571,7 @@ ya.Core.$extend({
         me.fireEvent('dataChange', me, data);
     },
     /**
-     *
+     * @method load
      * @param params
      */
     load: function (params) {
@@ -2463,7 +2620,7 @@ ya.Core.$extend({
         return deferred.promise;
     },
     /**
-     *
+     * @method save
      * @returns {boolean}
      */
     save: function () {
@@ -2526,7 +2683,7 @@ ya.Core.$extend({
         return deferred.promise;
     },
     /**
-     *
+     * @method remove
      */
     remove: function () {
         var me = this,
@@ -2572,13 +2729,26 @@ ya.Core.$extend({
 
         return deferred.promise;
     },
+    /**
+     * @method hasId
+     * @returns {boolean}
+     */
     hasId: function () {
         return !!this._data[this._config.idProperty];
     },
+    /**
+     * @method setDirty
+     * @param dirty
+     * @returns {*}
+     */
     setDirty: function (dirty) {
         this.set('isDirty', !!dirty);
         return this;
     },
+    /**
+     * @method isDirty
+     * @returns {*}
+     */
     isDirty: function () {
         return this._isDirty;
     }
@@ -2754,7 +2924,13 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
  * @author angularjs
  * @contributed mkalafior
  */
-ya.$set('ya', 'promise', function (undefined) {
+
+/**
+ * @namespace ya
+ * @class promise
+ * @static
+ */
+ya.$set('ya', '$promise', function (undefined) {
     "use strict";
 
     var ya = window.ya || {},
@@ -2772,6 +2948,8 @@ ya.$set('ya', 'promise', function (undefined) {
     function promise(exceptionHandler) {
 
         /**
+         * @method $deferred
+         * @static
          * @description
          * Creates a `Deferred` object which represents a task which will finish in the future.
          *
@@ -2925,6 +3103,8 @@ ya.$set('ya', 'promise', function (undefined) {
 
 
         /**
+         * @static
+         * @method $reject
          * @description
          * Creates a promise that is resolved as rejected with the specified `reason`. This api should be
          * used to forward rejection in a chain of promises. If you are dealing with the last promise in
@@ -2938,19 +3118,19 @@ ya.$set('ya', 'promise', function (undefined) {
          *
          * ```js
          *   promiseB = promiseA.then(function(result) {
-   *     // success: do something and resolve promiseB
-   *     //          with the old or a new result
-   *     return result;
-   *   }, function(reason) {
-   *     // error: handle the error if possible and
-   *     //        resolve promiseB with newPromiseOrValue,
-   *     //        otherwise forward the rejection to promiseB
-   *     if (canHandle(reason)) {
-   *      // handle the error and recover
-   *      return newPromiseOrValue;
-   *     }
-   *     return $q.reject(reason);
-   *   });
+         *     // success: do something and resolve promiseB
+         *     //          with the old or a new result
+         *     return result;
+         *   }, function(reason) {
+         *     // error: handle the error if possible and
+         *     //        resolve promiseB with newPromiseOrValue,
+         *     //        otherwise forward the rejection to promiseB
+         *     if (canHandle(reason)) {
+         *      // handle the error and recover
+         *      return newPromiseOrValue;
+         *     }
+         *     return promise.reject(reason);
+         *   });
          * ```
          *
          * @param {*} reason Constant, message, exception or an object representing the rejection reason.
@@ -2981,10 +3161,10 @@ ya.$set('ya', 'promise', function (undefined) {
 
 
         /**
-         * @function
-         *
+         * @static
+         * @method $when
          * @description
-         * Wraps an object that might be a value or a (3rd party) then-able promise into a $q promise.
+         * Wraps an object that might be a value or a (3rd party) then-able promise into a new promise.
          * This is useful when you are dealing with an object that might or might not be a promise, or if
          * the promise comes from a source that can't be trusted.
          *
@@ -3051,6 +3231,8 @@ ya.$set('ya', 'promise', function (undefined) {
 
 
         /**
+         * @static
+         * @method $all
          * @description
          * Combines multiple promises into a single promise that is resolved when all of the input
          * promises are resolved.
@@ -3086,10 +3268,10 @@ ya.$set('ya', 'promise', function (undefined) {
         }
 
         return {
-            $deferred: defer,
-            $reject: reject,
-            $when: when,
-            $all: all
+            deferred: defer,
+            reject: reject,
+            when: when,
+            all: all
         };
     }
 
@@ -3107,21 +3289,42 @@ ya.$set('ya', 'promise', function (undefined) {
 
 }());
 /**
- *
+ * @description
  * ## Router
  * Router is used internally in controller, so don't instantiated it again.
+ * @namespace ya
+ * @class Router
+ * @constructor
  */
 ya.Core.$extend({
     module: 'ya',
     alias: 'Router',
+    /**
+     * @method init
+     */
     init: function () {
-        this.set('routing', {});
-        this.bindEvents();
+        var me = this;
+
+        me.set('routing', {});
+        me.bindEvents();
+
+        return me;
     },
+    /**
+     * @method bindEvents
+     * @chainable
+     */
     bindEvents: function () {
-        window.onhashchange = this.onHashChange.bind(this);
+        var me = this;
+
+        window.onhashchange = me.onHashChange.bind(me);
+
         return this;
     },
+    /**
+     * @method onHashChange
+     * @chainable
+     */
     onHashChange: function () {
         var routing = this.get('routing'),
             hash = window.location.hash.substr(1),
@@ -3142,10 +3345,21 @@ ya.Core.$extend({
         }
         return this;
     },
+    /**
+     * @method restore
+     * @chainable
+     */
     restore: function () {
         this.onHashChange();
         return this;
     },
+    /**
+     * @method when
+     * @param path
+     * @param callback
+     * @returns {*}
+     * @chainable
+     */
     when: function (path, callback) {
         var routing = this.get('routing'),
             paths = path.split("/"),
@@ -3233,18 +3447,21 @@ ya.Core.$extend({
     document.body.appendChild(style);
     window.addEventListener('resize', onWindowResize);
 
-
-    /**
-     * @type {{views: [], i: number, add: Function, get: Function}}
-     */
         // `ya.view.Manager` stores all created views and allow as to
         // use `get` method (with id as argument) to return requested view.
+    /**
+     * @class $viewManager
+     * @namespace ya
+     * @static
+     */
     VM = {
         views: [],
         toRender: [],
         i: 0,
         // Add view to manager
         /**
+         * @method add
+         * @for $viewManager
          * @param id
          * @param view
          */
@@ -3262,6 +3479,8 @@ ya.Core.$extend({
         },
         // Get view by its id
         /**
+         * @method get
+         * @for $viewManager
          * @param id
          * @returns {View}
          */
@@ -3279,9 +3498,7 @@ ya.Core.$extend({
         }
     };
 
-    /**
-     * @type {{tpl: {}, add: Function, get: Function}}
-     */
+
         // `VTM` is a private object that stores all templates used
         // in application.
     VTM = {
@@ -3301,6 +3518,8 @@ ya.Core.$extend({
     ya.$set('ya', 'view.Manager', VM);
 
     /**
+     * @namespace ya
+     * @class View
      * @constructor
      * @params opts Object with configuration properties
      * @type {function}

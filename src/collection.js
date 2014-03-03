@@ -1,3 +1,7 @@
+/**
+ * @namespace ya
+ * @class Collection
+ */
 ya.Core.$extend({
     module: 'ya',
     alias: 'Collection',
@@ -6,6 +10,7 @@ ya.Core.$extend({
         proxy: null
     },
     /**
+     * @method init
      * initialize collection
      * @param opts
      */
@@ -30,6 +35,7 @@ ya.Core.$extend({
         return me;
     },
     /**
+     * @method initData
      * initialize data
      */
     initData: function () {
@@ -41,6 +47,11 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * @method forEach
+     * @param fn
+     * @chainable
+     */
     forEach: function (fn) {
         var me = this,
             records = me._set,
@@ -55,7 +66,15 @@ ya.Core.$extend({
             if (i in t)
                 fn.call(me, t[i], i, t);
         }
+
+        return me;
     },
+    /**
+     * @method push
+     * @param records
+     * @returns {*}
+     * @chainable
+     */
     push: function (records) {
         var me = this,
             record,
@@ -90,11 +109,18 @@ ya.Core.$extend({
     },
     // return number of records in collection
     /**
+     * @method count
+     * @chainable
      * @returns {Number}
      */
     count: function () {
         return this._set.length;
     },
+    /**
+     * @method clearFilters
+     * @chainable
+     * @returns {*}
+     */
     clear: function () {
         var me = this;
 
@@ -104,6 +130,11 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * @method clearFilters
+     * @returns {*}
+     * @chainable
+     */
     clearFilters: function () {
         var me = this;
 
@@ -113,6 +144,13 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     *
+     * @method clearFilter
+     * @param id
+     * @returns {*}
+     * @chainable
+     */
     clearFilter: function (id) {
         var me = this,
             filters = me._filters,
@@ -137,6 +175,13 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     *
+     * @method filter
+     * @param fn
+     * @returns {*}
+     * @chainable
+     */
     filter: function (fn) {
         var me = this,
             filters = me._filters,
@@ -198,6 +243,7 @@ ya.Core.$extend({
     },
     /**
      * get record at
+     * @method getAt
      * @param index
      * @returns {ya.Model}
      */
@@ -205,7 +251,7 @@ ya.Core.$extend({
         return this._set[index];
     },
     /**
-     *
+     * @method getBy
      * @param fn
      * @returns {Array}
      */

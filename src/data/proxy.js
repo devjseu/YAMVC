@@ -1,3 +1,7 @@
+/**
+ * @namespace ya.data
+ * @class Proxy
+ */
 ya.Core.$extend({
     module: 'ya',
     alias: 'data.Proxy',

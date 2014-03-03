@@ -1,3 +1,7 @@
+/**
+ * @namespace ya.data
+ * @class Action
+ */
 ya.Core.$extend({
     module: 'ya',
     alias: 'data.Action',

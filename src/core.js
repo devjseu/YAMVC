@@ -4,9 +4,9 @@ ya.$set('ya', 'Core', (function () {
     var ya = window.ya;
 
     /**
-     *
+     * @namespace ya
+     * @class Core
      * @constructor
-     *
      */
     function Core() {
         this.set('listeners', {});
@@ -15,13 +15,28 @@ ya.$set('ya', 'Core', (function () {
     }
 
     /**
-     * @abstract
+     @method init
      */
     Core.prototype.init = function () {
     };
 
     /**
+     * Initialize getters and setters for each property passed
+     * in `config` object.
+     * To track changes assign an event on for ex. `propertyChange`
+     * @example
+     * var obj = ya.Core.$create({
+     *   config : {
+     *     value : true
+     *   }
+     * });
      *
+     * obj.addEventListener(
+     *   'valueChange',
+     *   function () { alert('property changed!') }
+     * );
+     * @method initConfig
+     * @chainable
      */
     Core.prototype.initConfig = function () {
         var me = this,
@@ -48,11 +63,16 @@ ya.$set('ya', 'Core', (function () {
                 init(property);
             }
         }
+
+        return me;
     };
 
     // Binds custom methods from config object to class instance.
     /**
+     * Include to newly created object dynamically defined methods
+     * @method bindMethods
      * @param initOpts
+     * @chainable
      */
     Core.prototype.bindMethods = function (initOpts) {
         var me = this;
@@ -69,9 +89,10 @@ ya.$set('ya', 'Core', (function () {
 
     // Add callback to property change event.
     /**
+     * @method onChange
      * @param property
      * @param callback
-     * @returns {this}
+     * @chainable
      */
     Core.prototype.onChange = function (property, callback) {
         var me = this;
@@ -83,9 +104,10 @@ ya.$set('ya', 'Core', (function () {
 
     // Unbind callback.
     /**
+     * @method unbindOnChange
      * @param property
      * @param callback
-     * @returns {this}
+     * @chainable
      */
     Core.prototype.unbindOnChange = function (property, callback) {
         var me = this,
@@ -101,17 +123,9 @@ ya.$set('ya', 'Core', (function () {
     };
 
     // Stores all mixins initializing functions.
-    /**
-     * @type {Array}
-     * @private
-     */
     Core.__mixins__ = [];
 
     // Stores all defaults.
-    /**
-     * @type {Object}
-     * @private
-     */
     Core.__defaults__ = {};
 
     for (var staticCore in ya.mixins.CoreStatic) {
@@ -124,6 +138,19 @@ ya.$set('ya', 'Core', (function () {
 
     // Add Getters and Setters.
     Core.$mixin(ya.mixins.GetSet);
+
+    /**
+     * @method set
+     * @param property
+     * @param value
+     * @chainable
+     */
+
+    /**
+     * @method get
+     * @param property
+     * @returns {*} value stored under passed property
+     */
 
     // Add observable methods.
     Core.$mixin(ya.mixins.Observable);

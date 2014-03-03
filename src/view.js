@@ -73,18 +73,21 @@
     document.body.appendChild(style);
     window.addEventListener('resize', onWindowResize);
 
-
-    /**
-     * @type {{views: [], i: number, add: Function, get: Function}}
-     */
         // `ya.view.Manager` stores all created views and allow as to
         // use `get` method (with id as argument) to return requested view.
+    /**
+     * @class $viewManager
+     * @namespace ya
+     * @static
+     */
     VM = {
         views: [],
         toRender: [],
         i: 0,
         // Add view to manager
         /**
+         * @method add
+         * @for $viewManager
          * @param id
          * @param view
          */
@@ -102,6 +105,8 @@
         },
         // Get view by its id
         /**
+         * @method get
+         * @for $viewManager
          * @param id
          * @returns {View}
          */
@@ -119,9 +124,7 @@
         }
     };
 
-    /**
-     * @type {{tpl: {}, add: Function, get: Function}}
-     */
+
         // `VTM` is a private object that stores all templates used
         // in application.
     VTM = {
@@ -141,6 +144,8 @@
     ya.$set('ya', 'view.Manager', VM);
 
     /**
+     * @namespace ya
+     * @class View
      * @constructor
      * @params opts Object with configuration properties
      * @type {function}

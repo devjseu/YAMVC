@@ -5,7 +5,7 @@ ya.$onReady(function () {
         config: {
             autoCreate: true,
             models: [
-                ya.Model.$create({
+                {
                     config: {
                         namespace: 'likes',
                         data: {
@@ -16,10 +16,10 @@ ya.$onReady(function () {
                         var me = this;
                         me.data('count', me.data('count') + 1);
                     }
-                })
+                }
             ],
             id: 'bar',
-            tpl: ya.view.Template.$create({
+            tpl: {
                 config: {
                     id: 'tpl-bar',
                     tpl: [
@@ -29,7 +29,7 @@ ya.$onReady(function () {
                         '</div>'
                     ]
                 }
-            }),
+            },
             renderTo: '#container'
         }
     });

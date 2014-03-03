@@ -1,3 +1,7 @@
+/**
+ * @namespace ya.mixins
+ * @class Array
+ */
 ya.$set('ya', 'mixins.Array', {
     /**
      *

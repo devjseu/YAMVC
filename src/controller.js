@@ -1,4 +1,5 @@
 /**
+ * @description
  * ## Basic controller usage
  *
  *     @example
@@ -32,12 +33,6 @@
  *             // changing page mechanism
  *         }
  *     });
- *
- * ## Configuration properties
- *
- * @cfg config.name {String} Name of the controller
- * @cfg config.routes {Object} Object with defined routes and callbacks
- * @cfg config.views {Object} List of views connected with controller
  *
  */
 ya.Core.$extend({

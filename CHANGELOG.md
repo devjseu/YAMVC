@@ -51,6 +51,6 @@ filtering function
 * event delegation is supported from now
 
 ##0.2.0
-* base method segregated and moved to new files
-* overridden method can be now executed using `__super` method
+* base methods segregated and moved to new files
+* overridden method can be now executed using `__super`
 * when extending object now you need to pass an alias for newly created one

@@ -1,3 +1,9 @@
+/**
+ Main framework object...
+
+ @module ya
+ @main ya
+ **/
 (function (undefined) {
     'use strict';
 
@@ -13,8 +19,15 @@
         }
     }
 
+    /**
+     @class ya
+     */
+
     // Provide way to execute all necessary code after DOM is ready.
     /**
+     * @method $onReady
+     * @for ya
+     * @static
      * @param callback
      */
     ya.$onReady = function (callback) {
@@ -31,6 +44,8 @@
 
     // Merge two objects.
     /**
+     * @method $merge
+     * @static
      * @param obj1
      * @param obj2
      * @returns {*}
@@ -55,13 +70,22 @@
     };
 
     // clone data object
+    /**
+     *
+     * @method $clone
+     * @static
+     * @param obj
+     * @returns {*}
+     */
     ya.$clone = function (obj) {
         return JSON.parse(JSON.stringify(obj));
     };
 
     /**
      * Set new namespace
-     * @param {null||} module
+     * @method $set
+     * @static
+     * @param {null||String} module
      * @param {String} namespace
      * @param {*} value
      * @returns {namespace}
@@ -91,7 +115,8 @@
     };
 
     /**
-     *
+     * @method $get
+     * @static
      * @param module
      * @param namespace
      * @returns {*}
@@ -126,6 +151,12 @@
         return pointer;
     };
 
+    /**
+     *
+     * @method $module
+     * @static
+     * @returns {string}
+     */
     ya.$module = function () {
         var module = arguments.length ? arguments [0] : null;
 

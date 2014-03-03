@@ -1,3 +1,8 @@
+/**
+ * @namespace ya.event
+ * @class $dispatcher
+ * @static
+ */
 ya.Core.$extend({
     module : 'ya',
     singleton : true,

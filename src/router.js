@@ -1,19 +1,40 @@
 /**
- *
+ * @description
  * ## Router
  * Router is used internally in controller, so don't instantiated it again.
+ * @namespace ya
+ * @class Router
+ * @constructor
  */
 ya.Core.$extend({
     module: 'ya',
     alias: 'Router',
+    /**
+     * @method init
+     */
     init: function () {
-        this.set('routing', {});
-        this.bindEvents();
+        var me = this;
+
+        me.set('routing', {});
+        me.bindEvents();
+
+        return me;
     },
+    /**
+     * @method bindEvents
+     * @chainable
+     */
     bindEvents: function () {
-        window.onhashchange = this.onHashChange.bind(this);
+        var me = this;
+
+        window.onhashchange = me.onHashChange.bind(me);
+
         return this;
     },
+    /**
+     * @method onHashChange
+     * @chainable
+     */
     onHashChange: function () {
         var routing = this.get('routing'),
             hash = window.location.hash.substr(1),
@@ -34,10 +55,21 @@ ya.Core.$extend({
         }
         return this;
     },
+    /**
+     * @method restore
+     * @chainable
+     */
     restore: function () {
         this.onHashChange();
         return this;
     },
+    /**
+     * @method when
+     * @param path
+     * @param callback
+     * @returns {*}
+     * @chainable
+     */
     when: function (path, callback) {
         var routing = this.get('routing'),
             paths = path.split("/"),
