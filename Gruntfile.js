@@ -23,7 +23,7 @@ module.exports = function (grunt) {
             all: {
                 options: {
                     urls: [
-                        'http://localhost:8000/test/test1.html'
+                        'test/test1.html'
                     ]
                 }
             }
@@ -31,7 +31,7 @@ module.exports = function (grunt) {
         blanket_qunit: {
             all: {
                 options: {
-                    urls: ['http://localhost:8000/test/test1.html?coverage=true&gruntReport'],
+                    urls: ['test/test1.html?coverage=true&gruntReport'],
                     threshold: 50
                 }
             }
@@ -39,6 +39,7 @@ module.exports = function (grunt) {
         connect: {
             server: {
                 options: {
+                    hostname: "127.0.0.1",
                     port: 8000,
                     base: '.'
                 }
