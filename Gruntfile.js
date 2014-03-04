@@ -20,8 +20,20 @@ module.exports = function (grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         qunit: {
-            target: {
-                src: ['test/**/*.html']
+            all: {
+                options: {
+                    urls: [
+                        'http://localhost:8000/test/test1.html'
+                    ]
+                }
+            }
+        },
+        connect: {
+            server: {
+                options: {
+                    port: 8000,
+                    base: '.'
+                }
             }
         },
         copy: {
@@ -46,7 +58,7 @@ module.exports = function (grunt) {
                 sourceMappingURL: sourceMapUrl
             },
             target: {
-                src: ['src/ya.js','src/mixins/**/*.js', 'src/core.js', 'src/**/*.js'],
+                src: ['src/ya.js', 'src/mixins/**/*.js', 'src/core.js', 'src/**/*.js'],
                 dest: minRelease
             }
         },
@@ -55,7 +67,7 @@ module.exports = function (grunt) {
                 banner: bannerContent
             },
             target: {
-                src: ['src/ya.js','src/mixins/**/*.js', 'src/core.js', 'src/**/*.js'],
+                src: ['src/ya.js', 'src/mixins/**/*.js', 'src/core.js', 'src/**/*.js'],
                 dest: devRelease
             }
         },
@@ -105,8 +117,9 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-qunit');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-yuidoc');
+    grunt.loadNpmTasks('grunt-contrib-connect');
 
-    grunt.registerTask("tdd", ['jshint', 'qunit']);
+    grunt.registerTask("tdd", ['jshint', 'connect', 'qunit']);
     grunt.registerTask("tdd:browser", ['watch:default']);
     grunt.registerTask('default', ['jshint', 'concat', 'uglify', 'copy', 'yuidoc']);
     grunt.registerTask('travis', ['jshint', 'qunit', 'concat', 'uglify', 'copy', 'yuidoc']);
