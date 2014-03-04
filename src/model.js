@@ -105,9 +105,6 @@ ya.Core.$extend({
     getDataProperty: function (property) {
         return this.get('data')[property];
     },
-    // alias for set and get data property
-    // if two arguments are passed data will be set
-    // in other case data will be returned
     /**
      * @method data
      * @param property name of property in data
@@ -116,6 +113,9 @@ ya.Core.$extend({
      *
      */
     data: function (property, data) {
+        // `data` function is an alias for `setDataProperty` and `getDataProperty` methods.
+        // If two arguments are passed data will be set and
+        // in other case data will be returned.
         var me = this,
             len = arguments.length,
             key;

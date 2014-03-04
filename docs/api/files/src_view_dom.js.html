@@ -43,9 +43,9 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+                <li><a href="../classes/ya.$Manager.html">ya.$Manager</a></li>
             
-                <li><a href="../classes/ya.$viewManager.html">ya.$viewManager</a></li>
+                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
             
@@ -76,6 +76,10 @@
                 <li><a href="../classes/ya.Router.html">ya.Router</a></li>
             
                 <li><a href="../classes/ya.View.html">ya.View</a></li>
+            
+                <li><a href="../classes/ya.view.DOM.html">ya.view.DOM</a></li>
+            
+                <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
             
             </ul>
 
@@ -123,9 +127,17 @@
 <div class="file">
     <pre class="code prettyprint linenums">
 /**
- * Created by sebastian on 01.03.14.
+ * @namespace ya.view
+ * @class DOM
+ * @extends ya.Core
  */
-
+ya.Core.$extend({
+    module : &#x27;ya&#x27;,
+    alias : &#x27;view.DOM&#x27;,
+    defaults: {
+        el: null
+    }
+});
     </pre>
 </div>
 

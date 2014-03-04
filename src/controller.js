@@ -7,7 +7,7 @@
  *         config: {
  *             name: 'Main',
  *             views: {
- *                 layout: view.Manager.get('view-0')
+ *                 layout: view.$Manager.get('view-0')
  *             },
  *             routes: {
  *                 "page/{\\d+}": 'changePage'
@@ -125,7 +125,7 @@ ya.Core.$extend({
             while (l--) {
 
                 view = ya
-                    .view.Manager
+                    .view.$Manager
                     .get(views[l]);
                 if (view) {
 

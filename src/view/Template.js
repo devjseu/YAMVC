@@ -1,3 +1,8 @@
+/**
+ * @namespace ya.view
+ * @class Template
+ * @extends ya.Core
+ */
 ya.Core.$extend({
     module : 'ya',
     alias : 'view.Template',

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>src\core.js - yamvc</title>
+    <title>ya.$Manager - yamvc</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -122,170 +122,66 @@
             <div class="apidocs">
                 <div id="docs-main">
                     <div class="content">
-                        <h1 class="file-heading">File: src\core.js</h1>
+                        <h1>ya.$Manager Class</h1>
+<div class="box meta">
+    
 
-<div class="file">
-    <pre class="code prettyprint linenums">
-ya.$set(&#x27;ya&#x27;, &#x27;Core&#x27;, (function () {
-    &quot;use strict&quot;;
+    
 
-    var ya = window.ya;
+    
+        <div class="foundat">
+            Defined in: <a href="../files/src_view.js.html#l76"><code>src\view.js:76</code></a>
+        </div>
+    
 
-    /**
-     * @namespace ya
-     * @class Core
-     * @constructor
-     */
-    function Core() {
-        this.set(&#x27;listeners&#x27;, {});
-        this.bindMethods.apply(this, arguments);
-        this.init.apply(this, arguments);
-    }
+    
+        
+            Module: <a href="../modules/ya.html">ya</a>
+        
+    
 
-    /**
-     @method init
-     */
-    Core.prototype.init = function () {
-    };
+    
+</div>
 
-    /**
-     * Initialize getters and setters for each property passed
-     * in &#x60;config&#x60; object.
-     * To track changes assign an event on for ex. &#x60;propertyChange&#x60;
-     * @example
-     * var obj = ya.Core.$create({
-     *   config : {
-     *     value : true
-     *   }
-     * });
-     *
-     * obj.addEventListener(
-     *   &#x27;valueChange&#x27;,
-     *   function () { alert(&#x27;property changed!&#x27;) }
-     * );
-     * @method initConfig
-     * @chainable
-     */
-    Core.prototype.initConfig = function () {
-        var me = this,
-            config = me.get(&#x27;config&#x27;),
-            getter,
-            setter,
-            property,
-            init = function (property) {
-                getter = &quot;get&quot; + property.charAt(0).toUpperCase() + property.slice(1);
-                setter = &quot;set&quot; + property.charAt(0).toUpperCase() + property.slice(1);
-                me[getter] = function () {
-                    return me.get(&#x27;config&#x27;)[property];
-                };
-                me[setter] = function (value) {
-                    var oldVal = me.get(&#x27;config&#x27;)[property];
-                    if (value !== oldVal) {
-                        me.get(&#x27;config&#x27;)[property] = value;
-                        me.fireEvent(property + &#x27;Change&#x27;, this, value, oldVal);
-                    }
-                };
-            };
-        for (property in config) {
-            if (config.hasOwnProperty(property)) {
-                init(property);
-            }
-        }
 
-        return me;
-    };
 
-    // Binds custom methods from config object to class instance.
-    /**
-     * Include to newly created object dynamically defined methods
-     * @method bindMethods
-     * @param initOpts
-     * @chainable
-     */
-    Core.prototype.bindMethods = function (initOpts) {
-        var me = this;
+<div class="box intro">
+    
+</div>
 
-        for (var property in initOpts) {
-            if (initOpts.hasOwnProperty(property) &amp;&amp; typeof initOpts[property] === &#x27;function&#x27;) {
-                me[property] = initOpts[property].bind(me);
-                delete initOpts[property];
-            }
-        }
 
-        return me;
-    };
 
-    // Add callback to property change event.
-    /**
-     * @method onChange
-     * @param property
-     * @param callback
-     * @chainable
-     */
-    Core.prototype.onChange = function (property, callback) {
-        var me = this;
+<div id="classdocs" class="tabview">
+    <ul class="api-class-tabs">
+        <li class="api-class-tab index"><a href="#index">Index</a></li>
 
-        me.addEventListener(property + &#x27;Change&#x27;, callback);
+        
+        
+        
+        
+    </ul>
 
-        return me;
-    };
+    <div>
+        <div id="index" class="api-class-tabpanel index">
+            <h2 class="off-left">Item Index</h2>
 
-    // Unbind callback.
-    /**
-     * @method unbindOnChange
-     * @param property
-     * @param callback
-     * @chainable
-     */
-    Core.prototype.unbindOnChange = function (property, callback) {
-        var me = this,
-            listeners = me._listeners[property + &#x27;Change&#x27;] || [];
-        for (var i = 0, len = listeners.length; i &lt; len; i++) {
-            if (listeners[i] === callback) {
-                listeners.splice(i, 1);
-            }
-        }
-        this._listeners[property + &#x27;Change&#x27;] = listeners;
+            
 
-        return me;
-    };
+            
 
-    // Stores all mixins initializing functions.
-    Core.__mixins__ = [];
+            
 
-    // Stores all defaults.
-    Core.__defaults__ = {};
+            
+        </div>
 
-    for (var staticCore in ya.mixins.CoreStatic) {
+        
 
-        if (ya.mixins.CoreStatic.hasOwnProperty(staticCore)) {
-            Core[staticCore] = ya.mixins.CoreStatic[staticCore];
-        }
+        
 
-    }
+        
 
-    // Add Getters and Setters.
-    Core.$mixin(ya.mixins.GetSet);
-
-    /**
-     * @method set
-     * @param property
-     * @param value
-     * @chainable
-     */
-
-    /**
-     * @method get
-     * @param property
-     * @returns {*} value stored under passed property
-     */
-
-    // Add observable methods.
-    Core.$mixin(ya.mixins.Observable);
-
-    return Core;
-}()));
-    </pre>
+        
+    </div>
 </div>
 
                     </div>

@@ -73,25 +73,25 @@
     document.body.appendChild(style);
     window.addEventListener('resize', onWindowResize);
 
-        // `ya.view.Manager` stores all created views and allow as to
-        // use `get` method (with id as argument) to return requested view.
     /**
-     * @class $viewManager
-     * @namespace ya
+     * @class $Manager
+     * @namespace ya.view
      * @static
      */
     VM = {
+        // `ya.view.$Manager` stores all created views and allow as to
+        // use `get` method (with id as argument) to return requested view.
         views: [],
         toRender: [],
         i: 0,
-        // Add view to manager
         /**
          * @method add
-         * @for $viewManager
+         * @for ya.view.$Manager
          * @param id
          * @param view
          */
         add: function (id, view) {
+            // Add view to manager.
             var me = this;
 
             if (view.getAutoCreate()) {
@@ -103,14 +103,14 @@
             me.views.push(view);
             me.i++;
         },
-        // Get view by its id
         /**
          * @method get
-         * @for $viewManager
+         * @for ya.view.$Manager
          * @param id
          * @returns {View}
          */
         get: function (id) {
+            // Get view by its id.
             var me = this,
                 len = me.views.length;
 
@@ -124,10 +124,12 @@
         }
     };
 
+    ya.$set('ya', 'view.$Manager', VM);
 
+
+    VTM = {
         // `VTM` is a private object that stores all templates used
         // in application.
-    VTM = {
         tpl: {},
         add: function (id, view) {
             var me = this;
@@ -140,8 +142,6 @@
             return me.tpl[id];
         }
     };
-
-    ya.$set('ya', 'view.Manager', VM);
 
     /**
      * @namespace ya
@@ -166,18 +166,18 @@
             models: null,
             autoCreate: false
         },
-        mixins : [
+        mixins: [
             ya.mixins.Selector
         ],
-        // Initializing function in which we call parent method, merge previous
-        // configuration with new one, set id of component, initialize config
-        // and save reference to component in View Manager.
         /**
          *
          * @param opts
          * @returns {View}
          */
         init: function (opts) {
+            // Initializing function in which we call parent method, merge previous
+            // configuration with new one, set id of component, initialize config
+            // and save reference to component in View Manager.
             var me = this;
 
             me.__super();
@@ -210,6 +210,8 @@
                 config = me.get('config'),
                 div = document.createElement('div'),
                 _tpl;
+
+            console.log(Object.keys(ya.view));
 
             if (!config.tpl) {
 

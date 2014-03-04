@@ -43,9 +43,9 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+                <li><a href="../classes/ya.$Manager.html">ya.$Manager</a></li>
             
-                <li><a href="../classes/ya.$viewManager.html">ya.$viewManager</a></li>
+                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
             
@@ -76,6 +76,10 @@
                 <li><a href="../classes/ya.Router.html">ya.Router</a></li>
             
                 <li><a href="../classes/ya.View.html">ya.View</a></li>
+            
+                <li><a href="../classes/ya.view.DOM.html">ya.view.DOM</a></li>
+            
+                <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
             
             </ul>
 
@@ -197,25 +201,25 @@
     document.body.appendChild(style);
     window.addEventListener(&#x27;resize&#x27;, onWindowResize);
 
-        // &#x60;ya.view.Manager&#x60; stores all created views and allow as to
-        // use &#x60;get&#x60; method (with id as argument) to return requested view.
     /**
-     * @class $viewManager
-     * @namespace ya
+     * @class $Manager
+     * @namespace ya.view
      * @static
      */
     VM = {
+        // &#x60;ya.view.$Manager&#x60; stores all created views and allow as to
+        // use &#x60;get&#x60; method (with id as argument) to return requested view.
         views: [],
         toRender: [],
         i: 0,
-        // Add view to manager
         /**
          * @method add
-         * @for $viewManager
+         * @for ya.view.$Manager
          * @param id
          * @param view
          */
         add: function (id, view) {
+            // Add view to manager.
             var me = this;
 
             if (view.getAutoCreate()) {
@@ -227,14 +231,14 @@
             me.views.push(view);
             me.i++;
         },
-        // Get view by its id
         /**
          * @method get
-         * @for $viewManager
+         * @for ya.view.$Manager
          * @param id
          * @returns {View}
          */
         get: function (id) {
+            // Get view by its id.
             var me = this,
                 len = me.views.length;
 
@@ -248,10 +252,12 @@
         }
     };
 
+    ya.$set(&#x27;ya&#x27;, &#x27;view.$Manager&#x27;, VM);
 
+
+    VTM = {
         // &#x60;VTM&#x60; is a private object that stores all templates used
         // in application.
-    VTM = {
         tpl: {},
         add: function (id, view) {
             var me = this;
@@ -264,8 +270,6 @@
             return me.tpl[id];
         }
     };
-
-    ya.$set(&#x27;ya&#x27;, &#x27;view.Manager&#x27;, VM);
 
     /**
      * @namespace ya
@@ -290,18 +294,18 @@
             models: null,
             autoCreate: false
         },
-        mixins : [
+        mixins: [
             ya.mixins.Selector
         ],
-        // Initializing function in which we call parent method, merge previous
-        // configuration with new one, set id of component, initialize config
-        // and save reference to component in View Manager.
         /**
          *
          * @param opts
          * @returns {View}
          */
         init: function (opts) {
+            // Initializing function in which we call parent method, merge previous
+            // configuration with new one, set id of component, initialize config
+            // and save reference to component in View Manager.
             var me = this;
 
             me.__super();
@@ -334,6 +338,8 @@
                 config = me.get(&#x27;config&#x27;),
                 div = document.createElement(&#x27;div&#x27;),
                 _tpl;
+
+            console.log(Object.keys(ya.view));
 
             if (!config.tpl) {
 

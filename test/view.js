@@ -239,11 +239,11 @@ test("check if query match", function () {
         }
     }).render();
 
-    ok(ya.view.Manager.get('selector-test').isQueryMatch('div#selector-test.employee.senior'));
+    ok(ya.view.$Manager.get('selector-test').isQueryMatch('div#selector-test.employee.senior'));
 
-    ok(!ya.view.Manager.get('selector-test').isQueryMatch('span'));
+    ok(!ya.view.$Manager.get('selector-test').isQueryMatch('span'));
 
-    ok(ya.view.Manager.get('selector-test').isQueryMatch('#selector-test.senior'));
+    ok(ya.view.$Manager.get('selector-test').isQueryMatch('#selector-test.senior'));
 });
 
 
