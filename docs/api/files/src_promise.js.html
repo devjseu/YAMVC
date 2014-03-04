@@ -43,6 +43,8 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
+                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+            
                 <li><a href="../classes/ya.$viewManager.html">ya.$viewManager</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
@@ -70,8 +72,6 @@
                 <li><a href="../classes/ya.mixins.Selector.html">ya.mixins.Selector</a></li>
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
-            
-                <li><a href="../classes/ya.promise.html">ya.promise</a></li>
             
                 <li><a href="../classes/ya.Router.html">ya.Router</a></li>
             
@@ -125,11 +125,8 @@
 /**
  * @author angularjs
  * @contributed mkalafior
- */
-
-/**
  * @namespace ya
- * @class promise
+ * @class $promise
  * @static
  */
 ya.$set(&#x27;ya&#x27;, &#x27;$promise&#x27;, function (undefined) {
@@ -150,7 +147,7 @@ ya.$set(&#x27;ya&#x27;, &#x27;$promise&#x27;, function (undefined) {
     function promise(exceptionHandler) {
 
         /**
-         * @method $deferred
+         * @method deferred
          * @static
          * @description
          * Creates a &#x60;Deferred&#x60; object which represents a task which will finish in the future.
@@ -162,7 +159,6 @@ ya.$set(&#x27;ya&#x27;, &#x27;$promise&#x27;, function (undefined) {
                 value, deferred;
 
             deferred = {
-
                 resolve: function (val) {
                     if (pending) {
                         var callbacks = pending;
@@ -180,13 +176,9 @@ ya.$set(&#x27;ya&#x27;, &#x27;$promise&#x27;, function (undefined) {
                         }
                     }
                 },
-
-
                 reject: function (reason) {
                     deferred.resolve(createInternalRejectedPromise(reason));
                 },
-
-
                 notify: function (progress) {
                     if (pending) {
                         var callbacks = pending;
@@ -306,7 +298,7 @@ ya.$set(&#x27;ya&#x27;, &#x27;$promise&#x27;, function (undefined) {
 
         /**
          * @static
-         * @method $reject
+         * @method reject
          * @description
          * Creates a promise that is resolved as rejected with the specified &#x60;reason&#x60;. This api should be
          * used to forward rejection in a chain of promises. If you are dealing with the last promise in
@@ -364,7 +356,7 @@ ya.$set(&#x27;ya&#x27;, &#x27;$promise&#x27;, function (undefined) {
 
         /**
          * @static
-         * @method $when
+         * @method when
          * @description
          * Wraps an object that might be a value or a (3rd party) then-able promise into a new promise.
          * This is useful when you are dealing with an object that might or might not be a promise, or if
@@ -434,7 +426,7 @@ ya.$set(&#x27;ya&#x27;, &#x27;$promise&#x27;, function (undefined) {
 
         /**
          * @static
-         * @method $all
+         * @method all
          * @description
          * Combines multiple promises into a single promise that is resolved when all of the input
          * promises are resolved.

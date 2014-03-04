@@ -43,6 +43,8 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
+                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+            
                 <li><a href="../classes/ya.$viewManager.html">ya.$viewManager</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
@@ -70,8 +72,6 @@
                 <li><a href="../classes/ya.mixins.Selector.html">ya.mixins.Selector</a></li>
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
-            
-                <li><a href="../classes/ya.promise.html">ya.promise</a></li>
             
                 <li><a href="../classes/ya.Router.html">ya.Router</a></li>
             
@@ -137,6 +137,10 @@ ya.Core.$extend({
             FAIL: 2
         }
     },
+    /**
+     * @methods init
+     * @param opts
+     */
     init: function (opts) {
         var me = this, config;
 
@@ -152,29 +156,66 @@ ya.Core.$extend({
 
         me.initConfig();
     },
+    /**
+     * @methods init
+     * @param data
+     * @returns {*}
+     */
     setData: function (data) {
         this.set(&#x27;data&#x27;, data);
         return this;
     },
+    /**
+     * @methods getData
+     * @returns {Function}
+     */
     getData: function () {
         return this._data;
     },
+    /**
+     * @methods setOptions
+     * @param opts
+     * @returns {*}
+     */
     setOptions: function (opts) {
         this.set(&#x27;options&#x27;, opts);
         return this;
     },
+    /**
+     * @methods getOptions
+     * @returns {Object}
+     */
     getOptions: function () {
         return this._options;
     },
+    /**
+     * @methods getOption
+     * @param name
+     * @returns {*}
+     */
     getOption: function (name) {
         return this._options[name];
     },
+    /**
+     * @methods setResponse
+     * @param response
+     * @returns {*|StyleSheet|this|set}
+     */
     setResponse: function (response) {
         return this.set(&#x27;response&#x27;, response);
     },
+    /**
+     * @methods getResponse
+     * @returns {Object}
+     */
     getResponse: function () {
         return this.get(&#x27;response&#x27;);
     },
+    /**
+     * @methods setStatus
+     * @param status
+     * @returns {Number}
+     */
     setStatus: function (status) {
         var statuses = ya.data.Action.$status,
             check = false, st;
@@ -189,6 +230,10 @@ ya.Core.$extend({
 
         return this.set(&#x27;status&#x27;, status);
     },
+    /**
+     * @methods getStatus
+     * @returns {Object}
+     */
     getStatus: function () {
         return this.get(&#x27;status&#x27;);
     }

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>ya.Controller - yamvc</title>
+    <title>ya.$promise - yamvc</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -118,19 +118,15 @@
             <div class="apidocs">
                 <div id="docs-main">
                     <div class="content">
-                        <h1>ya.Controller Class</h1>
+                        <h1>ya.$promise Class</h1>
 <div class="box meta">
     
 
     
-        <div class="extends">
-            Extends <a href="..\classes\ya.Core.html" class="crosslink">ya.Core</a>
-        </div>
-    
 
     
         <div class="foundat">
-            Defined in: <a href="../files/src_controller.js.html#l1"><code>src\controller.js:1</code></a>
+            Defined in: <a href="../files/src_promise.js.html#l1"><code>src\promise.js:1</code></a>
         </div>
     
 
@@ -146,8 +142,7 @@
 
 
 <div class="box intro">
-    <h2 id="basic-controller-usage">Basic controller usage</h2>
-
+    
 </div>
 
 
@@ -172,53 +167,40 @@
                 <div class="index-section methods">
                     <h3>Methods</h3>
 
-                    <ul class="index-list methods extends">
+                    <ul class="index-list methods">
                         
-                            <li class="index-item method inherited">
-                                <a href="#method_bindMethods">bindMethods</a>
+                            <li class="index-item method">
+                                <a href="#method_all">all</a>
 
+                                
+                                    <span class="flag static">static</span>
                                 
                                 
                             </li>
                         
-                            <li class="index-item method inherited">
-                                <a href="#method_get">get</a>
+                            <li class="index-item method">
+                                <a href="#method_deferred">deferred</a>
 
+                                
+                                    <span class="flag static">static</span>
                                 
                                 
                             </li>
                         
-                            <li class="index-item method inherited">
-                                <a href="#method_init">init</a>
+                            <li class="index-item method">
+                                <a href="#method_reject">reject</a>
 
+                                
+                                    <span class="flag static">static</span>
                                 
                                 
                             </li>
                         
-                            <li class="index-item method inherited">
-                                <a href="#method_initConfig">initConfig</a>
+                            <li class="index-item method">
+                                <a href="#method_when">when</a>
 
                                 
-                                
-                            </li>
-                        
-                            <li class="index-item method inherited">
-                                <a href="#method_onChange">onChange</a>
-
-                                
-                                
-                            </li>
-                        
-                            <li class="index-item method inherited">
-                                <a href="#method_set">set</a>
-
-                                
-                                
-                            </li>
-                        
-                            <li class="index-item method inherited">
-                                <a href="#method_unbindOnChange">unbindOnChange</a>
-
+                                    <span class="flag static">static</span>
                                 
                                 
                             </li>
@@ -239,8 +221,8 @@
                 <h2 class="off-left">Methods</h2>
 
                 
-                    <div id="method_bindMethods" class="method item inherited">
-    <h3 class="name"><code>bindMethods</code></h3>
+                    <div id="method_all" class="method item">
+    <h3 class="name"><code>all</code></h3>
 
     
         <div class="args">
@@ -248,94 +230,7 @@
             
                 <li class="arg">
                     
-                        <code>initOpts</code>
-                    
-                </li>
-            
-            </ul><span class="paren">)</span>
-        </div>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <span class="flag chainable">chainable</span>
-    
-
-    
-
-    <div class="meta">
-        
-            
-                <p>Inherited from
-                <a href="..\classes\ya.Core.html#method_bindMethods">ya.Core</a>:
-            
-        
-        
-        <a href="../files/src_core.js.html#l71"><code>src\core.js:71</code></a>
-        
-        </p>
-
-
-        
-
-        
-    </div>
-
-    <div class="description">
-        <p>Include to newly created object dynamically defined methods</p>
-
-    </div>
-
-    
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-            
-                <li class="param">
-                    
-                        <code class="param-name">initOpts</code>
-                        <span class="type">Object</span>
-                    
-
-                    
-
-                    <div class="param-description">
-                        
-                    </div>
-
-                    
-                </li>
-            
-            </ul>
-        </div>
-    
-
-    
-
-    
-</div>
-
-                
-                    <div id="method_get" class="method item inherited">
-    <h3 class="name"><code>get</code></h3>
-
-    
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-            
-                <li class="arg">
-                    
-                        <code>property</code>
+                        <code>promises</code>
                     
                 </li>
             
@@ -345,7 +240,7 @@
 
     
         <span class="returns-inline">
-            <span class="type"></span>
+            <span class="type">Promise</span>
         </span>
     
 
@@ -356,6 +251,8 @@
     
 
     
+        <span class="flag static">static</span>
+    
 
     
 
@@ -364,12 +261,15 @@
     <div class="meta">
         
             
-                <p>Inherited from
-                <a href="..\classes\ya.Core.html#method_get">ya.Core</a>:
+                
+                <p>
+                
+                Defined in
+                
             
         
         
-        <a href="../files/src_core.js.html#l149"><code>src\core.js:149</code></a>
+        <a href="../files/src_promise.js.html#l303"><code>src\promise.js:303</code></a>
         
         </p>
 
@@ -380,7 +280,9 @@
     </div>
 
     <div class="description">
-        
+        <p>Combines multiple promises into a single promise that is resolved when all of the input
+promises are resolved.</p>
+
     </div>
 
     
@@ -391,14 +293,15 @@
             
                 <li class="param">
                     
-                        <code class="param-name">property</code>
-                        <span class="type">Object</span>
+                        <code class="param-name">promises</code>
+                        <span class="type">Array.<Promise> | Object.<Promise></span>
                     
 
                     
 
                     <div class="param-description">
-                        
+                        <p>An array or hash of promises.</p>
+
                     </div>
 
                     
@@ -415,9 +318,12 @@
             <div class="returns-description">
                 
                     
-                        <span class="type"></span>:
+                        <span class="type">Promise</span>:
                     
-                    <p>value stored under passed property</p>
+                    <p>Returns a single promise that will be resolved with an array/hash of values,
+  each value corresponding to the promise at the same index/key in the <code>promises</code> array/hash.
+  If any of the promises is resolved with a rejection, this resulting promise will be rejected
+  with the same rejection value.</p>
 
                 
             </div>
@@ -428,21 +334,27 @@
 </div>
 
                 
-                    <div id="method_init" class="method item inherited">
-    <h3 class="name"><code>init</code></h3>
+                    <div id="method_deferred" class="method item">
+    <h3 class="name"><code>deferred</code></h3>
 
     
         <span class="paren">()</span>
     
 
     
-
+        <span class="returns-inline">
+            <span class="type">Deferred</span>
+        </span>
     
 
     
 
     
 
+    
+
+    
+        <span class="flag static">static</span>
     
 
     
@@ -452,12 +364,15 @@
     <div class="meta">
         
             
-                <p>Inherited from
-                <a href="..\classes\ya.Core.html#method_init">ya.Core</a>:
+                
+                <p>
+                
+                Defined in
+                
             
         
         
-        <a href="../files/src_core.js.html#l17"><code>src\core.js:17</code></a>
+        <a href="../files/src_promise.js.html#l25"><code>src\promise.js:25</code></a>
         
         </p>
 
@@ -468,92 +383,34 @@
     </div>
 
     <div class="description">
-        
+        <p>Creates a <code>Deferred</code> object which represents a task which will finish in the future.</p>
+
     </div>
 
     
 
     
+        <div class="returns">
+            <h4>Returns:</h4>
 
-    
-</div>
+            <div class="returns-description">
+                
+                    
+                        <span class="type">Deferred</span>:
+                    
+                    <p>Returns a new instance of deferred.</p>
 
                 
-                    <div id="method_initConfig" class="method item inherited">
-    <h3 class="name"><code>initConfig</code></h3>
-
-    
-        <span class="paren">()</span>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <span class="flag chainable">chainable</span>
-    
-
-    
-
-    <div class="meta">
-        
-            
-                <p>Inherited from
-                <a href="..\classes\ya.Core.html#method_initConfig">ya.Core</a>:
-            
-        
-        
-        <a href="../files/src_core.js.html#l23"><code>src\core.js:23</code></a>
-        
-        </p>
-
-
-        
-
-        
-    </div>
-
-    <div class="description">
-        <p>Initialize getters and setters for each property passed
-in <code>config</code> object.
-To track changes assign an event on for ex. <code>propertyChange</code></p>
-
-    </div>
-
-    
-
-    
-
-    
-        <div class="example">
-            <h4>Example:</h4>
-
-            <div class="example-content">
-                <p>var obj = ya.Core.$create({
-  config : {
-    value : true
-  }
-});</p>
-<p>obj.addEventListener(
-  &#39;valueChange&#39;,
-  function () { alert(&#39;property changed!&#39;) }
-);</p>
-
             </div>
         </div>
     
+
+    
 </div>
 
                 
-                    <div id="method_onChange" class="method item inherited">
-    <h3 class="name"><code>onChange</code></h3>
+                    <div id="method_reject" class="method item">
+    <h3 class="name"><code>reject</code></h3>
 
     
         <div class="args">
@@ -561,13 +418,7 @@ To track changes assign an event on for ex. <code>propertyChange</code></p>
             
                 <li class="arg">
                     
-                        <code>property</code>
-                    
-                </li>
-            
-                <li class="arg">
-                    
-                        <code>callback</code>
+                        <code>reason</code>
                     
                 </li>
             
@@ -576,7 +427,9 @@ To track changes assign an event on for ex. <code>propertyChange</code></p>
     
 
     
-
+        <span class="returns-inline">
+            <span class="type">Promise</span>
+        </span>
     
 
     
@@ -586,7 +439,9 @@ To track changes assign an event on for ex. <code>propertyChange</code></p>
     
 
     
-        <span class="flag chainable">chainable</span>
+        <span class="flag static">static</span>
+    
+
     
 
     
@@ -594,12 +449,15 @@ To track changes assign an event on for ex. <code>propertyChange</code></p>
     <div class="meta">
         
             
-                <p>Inherited from
-                <a href="..\classes\ya.Core.html#method_onChange">ya.Core</a>:
+                
+                <p>
+                
+                Defined in
+                
             
         
         
-        <a href="../files/src_core.js.html#l91"><code>src\core.js:91</code></a>
+        <a href="../files/src_promise.js.html#l175"><code>src\promise.js:175</code></a>
         
         </p>
 
@@ -610,7 +468,29 @@ To track changes assign an event on for ex. <code>propertyChange</code></p>
     </div>
 
     <div class="description">
-        
+        <p>Creates a promise that is resolved as rejected with the specified <code>reason</code>. This api should be
+used to forward rejection in a chain of promises. If you are dealing with the last promise in
+a promise chain, you don&#39;t need to worry about it.</p>
+<p>When comparing deferreds/promises to the familiar behavior of try/catch/throw, think of
+<code>reject</code> as the <code>throw</code> keyword in JavaScript. This also means that if you &quot;catch&quot; an error via
+a promise error callback and you want to forward the error to the promise derived from the
+current promise, you have to &quot;rethrow&quot; the error by returning a rejection constructed via
+<code>reject</code>.</p>
+<pre class="code prettyprint"><code class="lang-js">  promiseB = promiseA.then(function(result) {
+    // success: do something and resolve promiseB
+    //          with the old or a new result
+    return result;
+  }, function(reason) {
+    // error: handle the error if possible and
+    //        resolve promiseB with newPromiseOrValue,
+    //        otherwise forward the rejection to promiseB
+    if (canHandle(reason)) {
+     // handle the error and recover
+     return newPromiseOrValue;
+    }
+    return promise.reject(reason);
+  });</code></pre>
+
     </div>
 
     
@@ -621,29 +501,15 @@ To track changes assign an event on for ex. <code>propertyChange</code></p>
             
                 <li class="param">
                     
-                        <code class="param-name">property</code>
-                        <span class="type">Object</span>
+                        <code class="param-name">reason</code>
+                        <span class="type"></span>
                     
 
                     
 
                     <div class="param-description">
-                        
-                    </div>
+                        <p>Constant, message, exception or an object representing the rejection reason.</p>
 
-                    
-                </li>
-            
-                <li class="param">
-                    
-                        <code class="param-name">callback</code>
-                        <span class="type">Object</span>
-                    
-
-                    
-
-                    <div class="param-description">
-                        
                     </div>
 
                     
@@ -654,23 +520,31 @@ To track changes assign an event on for ex. <code>propertyChange</code></p>
     
 
     
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                
+                    
+                        <span class="type">Promise</span>:
+                    
+                    <p>Returns a promise that was already resolved as rejected with the <code>reason</code>.</p>
+
+                
+            </div>
+        </div>
+    
 
     
 </div>
 
                 
-                    <div id="method_set" class="method item inherited">
-    <h3 class="name"><code>set</code></h3>
+                    <div id="method_when" class="method item">
+    <h3 class="name"><code>when</code></h3>
 
     
         <div class="args">
             <span class="paren">(</span><ul class="args-list inline commas">
-            
-                <li class="arg">
-                    
-                        <code>property</code>
-                    
-                </li>
             
                 <li class="arg">
                     
@@ -683,7 +557,9 @@ To track changes assign an event on for ex. <code>propertyChange</code></p>
     
 
     
-
+        <span class="returns-inline">
+            <span class="type">Promise</span>
+        </span>
     
 
     
@@ -693,7 +569,9 @@ To track changes assign an event on for ex. <code>propertyChange</code></p>
     
 
     
-        <span class="flag chainable">chainable</span>
+        <span class="flag static">static</span>
+    
+
     
 
     
@@ -701,12 +579,15 @@ To track changes assign an event on for ex. <code>propertyChange</code></p>
     <div class="meta">
         
             
-                <p>Inherited from
-                <a href="..\classes\ya.Core.html#method_set">ya.Core</a>:
+                
+                <p>
+                
+                Defined in
+                
             
         
         
-        <a href="../files/src_core.js.html#l142"><code>src\core.js:142</code></a>
+        <a href="../files/src_promise.js.html#l233"><code>src\promise.js:233</code></a>
         
         </p>
 
@@ -717,7 +598,10 @@ To track changes assign an event on for ex. <code>propertyChange</code></p>
     </div>
 
     <div class="description">
-        
+        <p>Wraps an object that might be a value or a (3rd party) then-able promise into a new promise.
+This is useful when you are dealing with an object that might or might not be a promise, or if
+the promise comes from a source that can&#39;t be trusted.</p>
+
     </div>
 
     
@@ -725,32 +609,18 @@ To track changes assign an event on for ex. <code>propertyChange</code></p>
             <h4>Parameters:</h4>
 
             <ul class="params-list">
-            
-                <li class="param">
-                    
-                        <code class="param-name">property</code>
-                        <span class="type">Object</span>
-                    
-
-                    
-
-                    <div class="param-description">
-                        
-                    </div>
-
-                    
-                </li>
             
                 <li class="param">
                     
                         <code class="param-name">value</code>
-                        <span class="type">Object</span>
+                        <span class="type"></span>
                     
 
                     
 
                     <div class="param-description">
-                        
+                        <p>Value or a promise</p>
+
                     </div>
 
                     
@@ -761,112 +631,19 @@ To track changes assign an event on for ex. <code>propertyChange</code></p>
     
 
     
+        <div class="returns">
+            <h4>Returns:</h4>
 
-    
-</div>
+            <div class="returns-description">
+                
+                    
+                        <span class="type">Promise</span>:
+                    
+                    <p>Returns a promise of the passed value or promise</p>
 
                 
-                    <div id="method_unbindOnChange" class="method item inherited">
-    <h3 class="name"><code>unbindOnChange</code></h3>
-
-    
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-            
-                <li class="arg">
-                    
-                        <code>property</code>
-                    
-                </li>
-            
-                <li class="arg">
-                    
-                        <code>callback</code>
-                    
-                </li>
-            
-            </ul><span class="paren">)</span>
+            </div>
         </div>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <span class="flag chainable">chainable</span>
-    
-
-    
-
-    <div class="meta">
-        
-            
-                <p>Inherited from
-                <a href="..\classes\ya.Core.html#method_unbindOnChange">ya.Core</a>:
-            
-        
-        
-        <a href="../files/src_core.js.html#l106"><code>src\core.js:106</code></a>
-        
-        </p>
-
-
-        
-
-        
-    </div>
-
-    <div class="description">
-        
-    </div>
-
-    
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-            
-                <li class="param">
-                    
-                        <code class="param-name">property</code>
-                        <span class="type">Object</span>
-                    
-
-                    
-
-                    <div class="param-description">
-                        
-                    </div>
-
-                    
-                </li>
-            
-                <li class="param">
-                    
-                        <code class="param-name">callback</code>
-                        <span class="type">Object</span>
-                    
-
-                    
-
-                    <div class="param-description">
-                        
-                    </div>
-
-                    
-                </li>
-            
-            </ul>
-        </div>
-    
-
     
 
     

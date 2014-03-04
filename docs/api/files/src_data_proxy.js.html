@@ -43,6 +43,8 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
+                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+            
                 <li><a href="../classes/ya.$viewManager.html">ya.$viewManager</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
@@ -70,8 +72,6 @@
                 <li><a href="../classes/ya.mixins.Selector.html">ya.mixins.Selector</a></li>
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
-            
-                <li><a href="../classes/ya.promise.html">ya.promise</a></li>
             
                 <li><a href="../classes/ya.Router.html">ya.Router</a></li>
             
@@ -130,6 +130,10 @@
 ya.Core.$extend({
     module: &#x27;ya&#x27;,
     alias: &#x27;data.Proxy&#x27;,
+    /**
+     * @methods init
+     * @param opts
+     */
     init: function (opts) {
         var me = this, config;
 
@@ -145,6 +149,11 @@ ya.Core.$extend({
         me.initConfig();
 
     },
+    /**
+     * @methods read
+     * @param action
+     * @returns {*}
+     */
     read: function (action) {
         var me = this,
             opts,
@@ -167,6 +176,11 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * @methods create
+     * @param action
+     * @returns {*}
+     */
     create: function (action) {
         var me = this;
 
@@ -181,6 +195,11 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * @methods update
+     * @param action
+     * @returns {*}
+     */
     update: function (action) {
         var me = this;
 
@@ -195,6 +214,11 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * @methods destroy
+     * @param action
+     * @returns {*}
+     */
     destroy: function (action) {
         var me = this;
 

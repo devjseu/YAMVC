@@ -104,7 +104,7 @@ test("assign listeners for new view", function () {
 
     ya.event.$dispatcher.apply(view);
 
-    view.querySelector('span').click();
+    click(view.querySelector('span'));
 
     equal(view.querySelector('span').innerHTML, '1');
 
@@ -180,8 +180,8 @@ test("assign listeners only for appended view", function () {
 
     ya.event.$dispatcher.apply(view2);
 
-    view.querySelectorAll('span')[0].click();
-    view.querySelectorAll('span')[1].click();
+    click(view.querySelectorAll('span')[0]);
+    click(view.querySelectorAll('span')[1]);
 
     equal(view.querySelectorAll('span')[0].innerHTML, '');
     equal(view.querySelectorAll('span')[1].innerHTML, '1');
@@ -335,8 +335,8 @@ test("assign listeners for multiple views", function () {
     ya.view.Manager.get('test3ba').addChild(li1, 'ul');
     li2.render();
 
-    li1.get('el').click();
-    li2.get('el').click();
+    click(li1.get('el'));
+    click(li2.get('el'));
 
     equal(li1.get('el').innerHTML, '1');
     equal(li1.get('el').getAttribute('passed'), '1');

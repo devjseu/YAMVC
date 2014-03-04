@@ -167,7 +167,7 @@
             "name": "src\\promise.js",
             "modules": {},
             "classes": {
-                "ya.promise": 1
+                "ya.$promise": 1
             },
             "fors": {},
             "namespaces": {
@@ -231,7 +231,7 @@
                 "ya.Controller": 1,
                 "ya.Core": 1,
                 "ya.Model": 1,
-                "ya.promise": 1,
+                "ya.$promise": 1,
                 "ya.Router": 1,
                 "ya.$viewManager": 1,
                 "ya.View": 1,
@@ -261,6 +261,7 @@
             "namespace": "ya.data.proxy",
             "file": "src\\data\\proxy\\localstorage.js",
             "line": 1,
+            "description": "## Localstorage\n  Proxy provides access to localStorage object. Gives possibility to retrieve data\n  by id or trough parameters.",
             "extends": "ya.data.Proxy"
         },
         "ya.data.Action": {
@@ -428,9 +429,9 @@
             "module": "ya",
             "namespace": "ya"
         },
-        "ya.promise": {
-            "name": "ya.promise",
-            "shortname": "ya.promise",
+        "ya.$promise": {
+            "name": "ya.$promise",
+            "shortname": "ya.$promise",
             "classitems": [],
             "plugins": [],
             "extensions": [],
@@ -439,7 +440,9 @@
             "module": "ya",
             "namespace": "ya",
             "file": "src\\promise.js",
-            "line": 6,
+            "line": 1,
+            "author": "angularjs",
+            "contributed": "mkalafior",
             "static": 1
         },
         "ya.Router": {
@@ -508,7 +511,7 @@
     "classitems": [
         {
             "file": "src\\data\\proxy\\localstorage.js",
-            "line": 10,
+            "line": 14,
             "params": [
                 {
                     "name": "tables",
@@ -520,7 +523,9 @@
         },
         {
             "file": "src\\data\\proxy\\localstorage.js",
-            "line": 34,
+            "line": 38,
+            "itemtype": "method",
+            "name": "readBy",
             "params": [
                 {
                     "name": "action",
@@ -536,7 +541,9 @@
         },
         {
             "file": "src\\data\\proxy\\localstorage.js",
-            "line": 143,
+            "line": 148,
+            "itemtype": "method",
+            "name": "readById",
             "params": [
                 {
                     "name": "action",
@@ -552,7 +559,8 @@
         },
         {
             "file": "src\\data\\proxy\\localstorage.js",
-            "line": 197,
+            "line": 203,
+            "methods": "create",
             "params": [
                 {
                     "name": "action",
@@ -568,7 +576,8 @@
         },
         {
             "file": "src\\data\\proxy\\localstorage.js",
-            "line": 280,
+            "line": 287,
+            "methods": "update",
             "params": [
                 {
                     "name": "action",
@@ -584,7 +593,8 @@
         },
         {
             "file": "src\\data\\proxy\\localstorage.js",
-            "line": 364,
+            "line": 372,
+            "methods": "destroy",
             "params": [
                 {
                     "name": "action",
@@ -600,7 +610,8 @@
         },
         {
             "file": "src\\data\\proxy\\localstorage.js",
-            "line": 447,
+            "line": 455,
+            "methods": "executeCondition",
             "params": [
                 {
                     "name": "record",
@@ -619,8 +630,232 @@
             "namespace": "ya.data.proxy"
         },
         {
+            "file": "src\\data\\action.js",
+            "line": 16,
+            "methods": "init",
+            "params": [
+                {
+                    "name": "opts",
+                    "description": ""
+                }
+            ],
+            "class": "ya.data.Action",
+            "namespace": "ya.data"
+        },
+        {
+            "file": "src\\data\\action.js",
+            "line": 35,
+            "methods": "init",
+            "params": [
+                {
+                    "name": "data",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ya.data.Action",
+            "namespace": "ya.data"
+        },
+        {
+            "file": "src\\data\\action.js",
+            "line": 44,
+            "methods": "getData",
+            "return": {
+                "description": "",
+                "type": "Function"
+            },
+            "class": "ya.data.Action",
+            "namespace": "ya.data"
+        },
+        {
+            "file": "src\\data\\action.js",
+            "line": 51,
+            "methods": "setOptions",
+            "params": [
+                {
+                    "name": "opts",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ya.data.Action",
+            "namespace": "ya.data"
+        },
+        {
+            "file": "src\\data\\action.js",
+            "line": 60,
+            "methods": "getOptions",
+            "return": {
+                "description": "",
+                "type": "Object"
+            },
+            "class": "ya.data.Action",
+            "namespace": "ya.data"
+        },
+        {
+            "file": "src\\data\\action.js",
+            "line": 67,
+            "methods": "getOption",
+            "params": [
+                {
+                    "name": "name",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ya.data.Action",
+            "namespace": "ya.data"
+        },
+        {
+            "file": "src\\data\\action.js",
+            "line": 75,
+            "methods": "setResponse",
+            "params": [
+                {
+                    "name": "response",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*|StyleSheet|this|set"
+            },
+            "class": "ya.data.Action",
+            "namespace": "ya.data"
+        },
+        {
+            "file": "src\\data\\action.js",
+            "line": 83,
+            "methods": "getResponse",
+            "return": {
+                "description": "",
+                "type": "Object"
+            },
+            "class": "ya.data.Action",
+            "namespace": "ya.data"
+        },
+        {
+            "file": "src\\data\\action.js",
+            "line": 90,
+            "methods": "setStatus",
+            "params": [
+                {
+                    "name": "status",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "Number"
+            },
+            "class": "ya.data.Action",
+            "namespace": "ya.data"
+        },
+        {
+            "file": "src\\data\\action.js",
+            "line": 109,
+            "methods": "getStatus",
+            "return": {
+                "description": "",
+                "type": "Object"
+            },
+            "class": "ya.data.Action",
+            "namespace": "ya.data"
+        },
+        {
+            "file": "src\\data\\proxy.js",
+            "line": 9,
+            "methods": "init",
+            "params": [
+                {
+                    "name": "opts",
+                    "description": ""
+                }
+            ],
+            "class": "ya.data.Proxy",
+            "namespace": "ya.data"
+        },
+        {
+            "file": "src\\data\\proxy.js",
+            "line": 28,
+            "methods": "read",
+            "params": [
+                {
+                    "name": "action",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ya.data.Proxy",
+            "namespace": "ya.data"
+        },
+        {
+            "file": "src\\data\\proxy.js",
+            "line": 55,
+            "methods": "create",
+            "params": [
+                {
+                    "name": "action",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ya.data.Proxy",
+            "namespace": "ya.data"
+        },
+        {
+            "file": "src\\data\\proxy.js",
+            "line": 74,
+            "methods": "update",
+            "params": [
+                {
+                    "name": "action",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ya.data.Proxy",
+            "namespace": "ya.data"
+        },
+        {
+            "file": "src\\data\\proxy.js",
+            "line": 93,
+            "methods": "destroy",
+            "params": [
+                {
+                    "name": "action",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ya.data.Proxy",
+            "namespace": "ya.data"
+        },
+        {
             "file": "src\\event\\dispatcher.js",
             "line": 14,
+            "methods": "init",
             "params": [
                 {
                     "name": "opts",
@@ -636,7 +871,19 @@
         },
         {
             "file": "src\\event\\dispatcher.js",
-            "line": 45,
+            "line": 35,
+            "methods": "initConfig",
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ya.event.$dispatcher",
+            "namespace": "ya.event"
+        },
+        {
+            "file": "src\\event\\dispatcher.js",
+            "line": 50,
+            "methods": "add",
             "params": [
                 {
                     "name": "scope",
@@ -656,7 +903,8 @@
         },
         {
             "file": "src\\event\\dispatcher.js",
-            "line": 62,
+            "line": 68,
+            "methods": "apply",
             "params": [
                 {
                     "name": "view",
@@ -668,7 +916,7 @@
         },
         {
             "file": "src\\event\\dispatcher.js",
-            "line": 178,
+            "line": 186,
             "description": "Clear delegates array",
             "return": {
                 "description": "",
@@ -1450,42 +1698,35 @@
         },
         {
             "file": "src\\promise.js",
-            "line": 1,
-            "author": "angularjs",
-            "contributed": "mkalafior",
-            "class": "ya.promise"
-        },
-        {
-            "file": "src\\promise.js",
-            "line": 22,
+            "line": 19,
             "description": "Constructs a promise manager.",
             "return": {
                 "description": "Promise manager.",
                 "type": "Object"
             },
-            "class": "ya.promise",
+            "class": "ya.$promise",
             "namespace": "ya"
         },
         {
             "file": "src\\promise.js",
-            "line": 28,
+            "line": 25,
             "itemtype": "method",
-            "name": "$deferred",
+            "name": "deferred",
             "static": 1,
             "description": "Creates a `Deferred` object which represents a task which will finish in the future.",
             "return": {
                 "description": "Returns a new instance of deferred.",
                 "type": "Deferred"
             },
-            "class": "ya.promise",
+            "class": "ya.$promise",
             "namespace": "ya"
         },
         {
             "file": "src\\promise.js",
-            "line": 183,
+            "line": 175,
             "static": 1,
             "itemtype": "method",
-            "name": "$reject",
+            "name": "reject",
             "description": "Creates a promise that is resolved as rejected with the specified `reason`. This api should be\nused to forward rejection in a chain of promises. If you are dealing with the last promise in\na promise chain, you don't need to worry about it.\n\nWhen comparing deferreds/promises to the familiar behavior of try/catch/throw, think of\n`reject` as the `throw` keyword in JavaScript. This also means that if you \"catch\" an error via\na promise error callback and you want to forward the error to the promise derived from the\ncurrent promise, you have to \"rethrow\" the error by returning a rejection constructed via\n`reject`.\n\n```js\n  promiseB = promiseA.then(function(result) {\n    // success: do something and resolve promiseB\n    //          with the old or a new result\n    return result;\n  }, function(reason) {\n    // error: handle the error if possible and\n    //        resolve promiseB with newPromiseOrValue,\n    //        otherwise forward the rejection to promiseB\n    if (canHandle(reason)) {\n     // handle the error and recover\n     return newPromiseOrValue;\n    }\n    return promise.reject(reason);\n  });\n```",
             "params": [
                 {
@@ -1498,15 +1739,15 @@
                 "description": "Returns a promise that was already resolved as rejected with the `reason`.",
                 "type": "Promise"
             },
-            "class": "ya.promise",
+            "class": "ya.$promise",
             "namespace": "ya"
         },
         {
             "file": "src\\promise.js",
-            "line": 241,
+            "line": 233,
             "static": 1,
             "itemtype": "method",
-            "name": "$when",
+            "name": "when",
             "description": "Wraps an object that might be a value or a (3rd party) then-able promise into a new promise.\nThis is useful when you are dealing with an object that might or might not be a promise, or if\nthe promise comes from a source that can't be trusted.",
             "params": [
                 {
@@ -1519,15 +1760,15 @@
                 "description": "Returns a promise of the passed value or promise",
                 "type": "Promise"
             },
-            "class": "ya.promise",
+            "class": "ya.$promise",
             "namespace": "ya"
         },
         {
             "file": "src\\promise.js",
-            "line": 311,
+            "line": 303,
             "static": 1,
             "itemtype": "method",
-            "name": "$all",
+            "name": "all",
             "description": "Combines multiple promises into a single promise that is resolved when all of the input\npromises are resolved.",
             "params": [
                 {
@@ -1540,7 +1781,7 @@
                 "description": "Returns a single promise that will be resolved with an array/hash of values,\n  each value corresponding to the promise at the same index/key in the `promises` array/hash.\n  If any of the promises is resolved with a rejection, this resulting promise will be rejected\n  with the same rejection value.",
                 "type": "Promise"
             },
-            "class": "ya.promise",
+            "class": "ya.$promise",
             "namespace": "ya"
         },
         {
@@ -2071,39 +2312,191 @@
     "warnings": [
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\data\\proxy\\localstorage.js:34"
+            "line": " src\\data\\proxy\\localstorage.js:38"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\data\\proxy\\localstorage.js:143"
+            "line": " src\\data\\proxy\\localstorage.js:148"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\data\\proxy\\localstorage.js:203"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\data\\proxy\\localstorage.js:197"
+            "line": " src\\data\\proxy\\localstorage.js:203"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\data\\proxy\\localstorage.js:287"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\data\\proxy\\localstorage.js:280"
+            "line": " src\\data\\proxy\\localstorage.js:287"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\data\\proxy\\localstorage.js:372"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\data\\proxy\\localstorage.js:364"
+            "line": " src\\data\\proxy\\localstorage.js:372"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\data\\proxy\\localstorage.js:455"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\data\\proxy\\localstorage.js:447"
+            "line": " src\\data\\proxy\\localstorage.js:455"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\data\\action.js:16"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\data\\action.js:35"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\data\\action.js:35"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\data\\action.js:44"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\data\\action.js:44"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\data\\action.js:51"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\data\\action.js:51"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\data\\action.js:60"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\data\\action.js:60"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\data\\action.js:67"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\data\\action.js:67"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\data\\action.js:75"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\data\\action.js:75"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\data\\action.js:83"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\data\\action.js:83"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\data\\action.js:90"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\data\\action.js:90"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\data\\action.js:109"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\data\\action.js:109"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\data\\proxy.js:9"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\data\\proxy.js:28"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\data\\proxy.js:28"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\data\\proxy.js:55"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\data\\proxy.js:55"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\data\\proxy.js:74"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\data\\proxy.js:74"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\data\\proxy.js:93"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\data\\proxy.js:93"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\event\\dispatcher.js:14"
         },
         {
             "message": "replacing incorrect tag: returns with return",
             "line": " src\\event\\dispatcher.js:14"
         },
         {
-            "message": "replacing incorrect tag: returns with return",
-            "line": " src\\event\\dispatcher.js:45"
+            "message": "unknown tag: methods",
+            "line": " src\\event\\dispatcher.js:35"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\event\\dispatcher.js:178"
+            "line": " src\\event\\dispatcher.js:35"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\event\\dispatcher.js:50"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\event\\dispatcher.js:50"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\event\\dispatcher.js:68"
+        },
+        {
+            "message": "unknown tag: methods",
+            "line": " src\\event\\dispatcher.js:68"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\event\\dispatcher.js:186"
         },
         {
             "message": "replacing incorrect tag: returns with return",
@@ -2239,23 +2632,23 @@
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\promise.js:22"
+            "line": " src\\promise.js:19"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\promise.js:28"
+            "line": " src\\promise.js:25"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\promise.js:183"
+            "line": " src\\promise.js:175"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\promise.js:241"
+            "line": " src\\promise.js:233"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\promise.js:311"
+            "line": " src\\promise.js:303"
         },
         {
             "message": "replacing incorrect tag: returns with return",
@@ -2391,31 +2784,83 @@
         },
         {
             "message": "Missing item type",
-            "line": " src\\data\\proxy\\localstorage.js:10"
+            "line": " src\\data\\proxy\\localstorage.js:14"
         },
         {
             "message": "Missing item type",
-            "line": " src\\data\\proxy\\localstorage.js:34"
+            "line": " src\\data\\proxy\\localstorage.js:203"
         },
         {
             "message": "Missing item type",
-            "line": " src\\data\\proxy\\localstorage.js:143"
+            "line": " src\\data\\proxy\\localstorage.js:287"
         },
         {
             "message": "Missing item type",
-            "line": " src\\data\\proxy\\localstorage.js:197"
+            "line": " src\\data\\proxy\\localstorage.js:372"
         },
         {
             "message": "Missing item type",
-            "line": " src\\data\\proxy\\localstorage.js:280"
+            "line": " src\\data\\proxy\\localstorage.js:455"
         },
         {
             "message": "Missing item type",
-            "line": " src\\data\\proxy\\localstorage.js:364"
+            "line": " src\\data\\action.js:16"
         },
         {
             "message": "Missing item type",
-            "line": " src\\data\\proxy\\localstorage.js:447"
+            "line": " src\\data\\action.js:35"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\data\\action.js:44"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\data\\action.js:51"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\data\\action.js:60"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\data\\action.js:67"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\data\\action.js:75"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\data\\action.js:83"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\data\\action.js:90"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\data\\action.js:109"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\data\\proxy.js:9"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\data\\proxy.js:28"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\data\\proxy.js:55"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\data\\proxy.js:74"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\data\\proxy.js:93"
         },
         {
             "message": "Missing item type",
@@ -2423,15 +2868,19 @@
         },
         {
             "message": "Missing item type",
-            "line": " src\\event\\dispatcher.js:45"
+            "line": " src\\event\\dispatcher.js:35"
         },
         {
             "message": "Missing item type",
-            "line": " src\\event\\dispatcher.js:62"
+            "line": " src\\event\\dispatcher.js:50"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\event\\dispatcher.js:68"
         },
         {
             "message": "Missing item type\nClear delegates array",
-            "line": " src\\event\\dispatcher.js:178"
+            "line": " src\\event\\dispatcher.js:186"
         },
         {
             "message": "Missing item type\nCreated by sebastian on 01.03.14.",
@@ -2510,12 +2959,8 @@
             "line": " src\\collection.js:535"
         },
         {
-            "message": "Missing item type",
-            "line": " src\\promise.js:1"
-        },
-        {
             "message": "Missing item type\nConstructs a promise manager.",
-            "line": " src\\promise.js:22"
+            "line": " src\\promise.js:19"
         },
         {
             "message": "Missing item type",

@@ -43,6 +43,8 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
+                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+            
                 <li><a href="../classes/ya.$viewManager.html">ya.$viewManager</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
@@ -70,8 +72,6 @@
                 <li><a href="../classes/ya.mixins.Selector.html">ya.mixins.Selector</a></li>
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
-            
-                <li><a href="../classes/ya.promise.html">ya.promise</a></li>
             
                 <li><a href="../classes/ya.Router.html">ya.Router</a></li>
             
@@ -294,7 +294,7 @@ ya.Core.$extend({
         var me = this,
             data = me.get(&#x27;data&#x27;),
             idProperty = me.getIdProperty(),
-            deferred = ya.promise.$deferred(),
+            deferred = ya.$promise.deferred(),
             action = new ya.data.Action(),
             opts = {},
             response;
@@ -343,7 +343,7 @@ ya.Core.$extend({
         var me = this,
             data = me.get(&#x27;data&#x27;),
             idProperty = me.getIdProperty(),
-            deferred = ya.promise.$deferred(),
+            deferred = ya.$promise.deferred(),
             action = new ya.data.Action(),
             proxy = me.getProxy(),
             opts = {},
@@ -405,7 +405,7 @@ ya.Core.$extend({
         var me = this,
             data = me.get(&#x27;data&#x27;),
             idProperty = me.getIdProperty(),
-            deferred = ya.promise.$deferred(),
+            deferred = ya.$promise.deferred(),
             action = new ya.data.Action(),
             proxy = me.getProxy(),
             opts = {},

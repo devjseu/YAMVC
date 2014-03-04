@@ -2,6 +2,7 @@ YUI.add("yuidoc-meta", function(Y) {
    Y.YUIDoc = { meta: {
     "classes": [
         "ya",
+        "ya.$promise",
         "ya.$viewManager",
         "ya.Collection",
         "ya.Controller",
@@ -17,8 +18,7 @@ YUI.add("yuidoc-meta", function(Y) {
         "ya.mixins.CoreStatic",
         "ya.mixins.GetSet",
         "ya.mixins.Observable",
-        "ya.mixins.Selector",
-        "ya.promise"
+        "ya.mixins.Selector"
     ],
     "modules": [
         "ya"

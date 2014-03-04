@@ -106,7 +106,8 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-yuidoc');
 
-    grunt.registerTask("tdd", ['watch:default', 'yuidoc']);
+    grunt.registerTask("tdd", ['qunit', 'yuidoc']);
+    grunt.registerTask("tdd:browser", ['watch:default', 'yuidoc']);
     grunt.registerTask('default', ['jshint', 'concat', 'uglify', 'copy', 'yuidoc']);
     grunt.registerTask('travis', ['jshint', 'qunit', 'concat', 'uglify', 'copy', 'yuidoc']);
 };

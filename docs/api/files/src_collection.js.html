@@ -43,6 +43,8 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
+                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+            
                 <li><a href="../classes/ya.$viewManager.html">ya.$viewManager</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
@@ -70,8 +72,6 @@
                 <li><a href="../classes/ya.mixins.Selector.html">ya.mixins.Selector</a></li>
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
-            
-                <li><a href="../classes/ya.promise.html">ya.promise</a></li>
             
                 <li><a href="../classes/ya.Router.html">ya.Router</a></li>
             
@@ -461,7 +461,7 @@ ya.Core.$extend({
         var me = this,
             data = me.get(&#x27;data&#x27;),
             idProperty = me.get(&#x27;idProperty&#x27;),
-            deferred = ya.promise.$deferred(),
+            deferred = ya.$promise.deferred(),
             namespace = me.getNamespace(),
             action = new ya.data.Action(),
             callback,
@@ -504,7 +504,7 @@ ya.Core.$extend({
     },
     save: function () {
         var me = this,
-            deferred = ya.promise.$deferred(),
+            deferred = ya.$promise.deferred(),
             action,
             toCreate = [],
             toUpdate = [],

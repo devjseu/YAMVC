@@ -1,4 +1,4 @@
-YAMVC
+YAMVC [![Build Status](https://travis-ci.org/devjseu/YAMVC.png?branch=master)](https://travis-ci.org/devjseu/YAMVC)
 =============
 Yet Another MVC library. Why? Because. Without reason...
 

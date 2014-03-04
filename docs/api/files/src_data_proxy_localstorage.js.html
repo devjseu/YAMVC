@@ -43,6 +43,8 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
+                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+            
                 <li><a href="../classes/ya.$viewManager.html">ya.$viewManager</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
@@ -70,8 +72,6 @@
                 <li><a href="../classes/ya.mixins.Selector.html">ya.mixins.Selector</a></li>
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
-            
-                <li><a href="../classes/ya.promise.html">ya.promise</a></li>
             
                 <li><a href="../classes/ya.Router.html">ya.Router</a></li>
             
@@ -123,6 +123,10 @@
 <div class="file">
     <pre class="code prettyprint linenums">
 /**
+ * @description
+ * ## Localstorage
+ *   Proxy provides access to localStorage object. Gives possibility to retrieve data
+ *   by id or trough parameters.
  * @namespace ya.data.proxy
  * @class Localstorage
  * @extends ya.data.Proxy
@@ -156,6 +160,7 @@ ya.data.Proxy.$extend({
         }
     },
     /**
+     * @method readBy
      * @param action
      * @returns {Localstorage}
      */
@@ -266,6 +271,7 @@ ya.data.Proxy.$extend({
     },
     /**
      *
+     * @method readById
      * @param action
      * @returns {Localstorage}
      */
@@ -319,6 +325,7 @@ ya.data.Proxy.$extend({
         return me;
     },
     /**
+     * @methods create
      * @param action
      * @returns {Localstorage}
      */
@@ -402,6 +409,7 @@ ya.data.Proxy.$extend({
         return me;
     },
     /**
+     * @methods update
      * @param action
      * @returns {Localstorage}
      */
@@ -486,7 +494,7 @@ ya.data.Proxy.$extend({
         return me;
     },
     /**
-     *
+     * @methods destroy
      * @param action
      * @returns {Localstorage}
      */
@@ -569,7 +577,7 @@ ya.data.Proxy.$extend({
         return me;
     },
     /**
-     *
+     * @methods executeCondition
      * @param record
      * @param filter
      * @returns {boolean}
