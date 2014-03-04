@@ -8,7 +8,7 @@
 <body>
 <div id="qunit"></div>
 <div id="qunit-fixture"></div>
-<div ya-app id="container" style="display: none" >
+<div ya-app id="container" style="display: none">
     <div ya-class="menu" ya-models="">
 
     </div>
@@ -45,8 +45,8 @@
 
     </div>
 </script>
-<script src="//localhost:35729/livereload.js"></script>
 <script src="../assets/js/lib/qunit/qunit/qunit.js"></script>
+<script>QUnit.config.autostart = false;</script>
 
 <!-- Use latest versionless copy of current release -->
 <script src="../test/util/events.js"></script>
@@ -83,5 +83,6 @@
 <script src="dataProxyLocalstorage.js"></script>
 <script src="template.js"></script>
 <script src="eventDispatcher.js"></script>
+<script>QUnit.start();</script>
 </body>
 </html>

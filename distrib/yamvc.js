@@ -1,4 +1,4 @@
-/*! yamvc v0.2.0 - 2014-03-03 
+/*! yamvc v0.2.0 - 2014-03-04 
  *  License:  */
 /**
  Main framework object...
@@ -1085,7 +1085,7 @@ ya.Core.$extend({
         var me = this,
             data = me.get('data'),
             idProperty = me.get('idProperty'),
-            deferred = ya.promise.$deferred(),
+            deferred = ya.$promise.deferred(),
             namespace = me.getNamespace(),
             action = new ya.data.Action(),
             callback,
@@ -1128,7 +1128,7 @@ ya.Core.$extend({
     },
     save: function () {
         var me = this,
-            deferred = ya.promise.$deferred(),
+            deferred = ya.$promise.deferred(),
             action,
             toCreate = [],
             toUpdate = [],
@@ -1582,6 +1582,10 @@ ya.Core.$extend({
             FAIL: 2
         }
     },
+    /**
+     * @methods init
+     * @param opts
+     */
     init: function (opts) {
         var me = this, config;
 
@@ -1597,29 +1601,66 @@ ya.Core.$extend({
 
         me.initConfig();
     },
+    /**
+     * @methods init
+     * @param data
+     * @returns {*}
+     */
     setData: function (data) {
         this.set('data', data);
         return this;
     },
+    /**
+     * @methods getData
+     * @returns {Function}
+     */
     getData: function () {
         return this._data;
     },
+    /**
+     * @methods setOptions
+     * @param opts
+     * @returns {*}
+     */
     setOptions: function (opts) {
         this.set('options', opts);
         return this;
     },
+    /**
+     * @methods getOptions
+     * @returns {Object}
+     */
     getOptions: function () {
         return this._options;
     },
+    /**
+     * @methods getOption
+     * @param name
+     * @returns {*}
+     */
     getOption: function (name) {
         return this._options[name];
     },
+    /**
+     * @methods setResponse
+     * @param response
+     * @returns {*|StyleSheet|this|set}
+     */
     setResponse: function (response) {
         return this.set('response', response);
     },
+    /**
+     * @methods getResponse
+     * @returns {Object}
+     */
     getResponse: function () {
         return this.get('response');
     },
+    /**
+     * @methods setStatus
+     * @param status
+     * @returns {Number}
+     */
     setStatus: function (status) {
         var statuses = ya.data.Action.$status,
             check = false, st;
@@ -1634,6 +1675,10 @@ ya.Core.$extend({
 
         return this.set('status', status);
     },
+    /**
+     * @methods getStatus
+     * @returns {Object}
+     */
     getStatus: function () {
         return this.get('status');
     }
@@ -1647,6 +1692,10 @@ ya.Core.$extend({
 ya.Core.$extend({
     module: 'ya',
     alias: 'data.Proxy',
+    /**
+     * @methods init
+     * @param opts
+     */
     init: function (opts) {
         var me = this, config;
 
@@ -1662,6 +1711,11 @@ ya.Core.$extend({
         me.initConfig();
 
     },
+    /**
+     * @methods read
+     * @param action
+     * @returns {*}
+     */
     read: function (action) {
         var me = this,
             opts,
@@ -1684,6 +1738,11 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * @methods create
+     * @param action
+     * @returns {*}
+     */
     create: function (action) {
         var me = this;
 
@@ -1698,6 +1757,11 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * @methods update
+     * @param action
+     * @returns {*}
+     */
     update: function (action) {
         var me = this;
 
@@ -1712,6 +1776,11 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * @methods destroy
+     * @param action
+     * @returns {*}
+     */
     destroy: function (action) {
         var me = this;
 
@@ -1729,6 +1798,10 @@ ya.Core.$extend({
 });
 
 /**
+ * @description
+ * ## Localstorage
+ *   Proxy provides access to localStorage object. Gives possibility to retrieve data
+ *   by id or trough parameters.
  * @namespace ya.data.proxy
  * @class Localstorage
  * @extends ya.data.Proxy
@@ -1762,6 +1835,7 @@ ya.data.Proxy.$extend({
         }
     },
     /**
+     * @method readBy
      * @param action
      * @returns {Localstorage}
      */
@@ -1872,6 +1946,7 @@ ya.data.Proxy.$extend({
     },
     /**
      *
+     * @method readById
      * @param action
      * @returns {Localstorage}
      */
@@ -1925,6 +2000,7 @@ ya.data.Proxy.$extend({
         return me;
     },
     /**
+     * @methods create
      * @param action
      * @returns {Localstorage}
      */
@@ -2008,6 +2084,7 @@ ya.data.Proxy.$extend({
         return me;
     },
     /**
+     * @methods update
      * @param action
      * @returns {Localstorage}
      */
@@ -2092,7 +2169,7 @@ ya.data.Proxy.$extend({
         return me;
     },
     /**
-     *
+     * @methods destroy
      * @param action
      * @returns {Localstorage}
      */
@@ -2175,7 +2252,7 @@ ya.data.Proxy.$extend({
         return me;
     },
     /**
-     *
+     * @methods executeCondition
      * @param record
      * @param filter
      * @returns {boolean}
@@ -2244,6 +2321,7 @@ ya.Core.$extend({
             delegates: null
         },
         /**
+         * @methods init
          * @param opts
          * @returns {Dispatcher}
          */
@@ -2263,6 +2341,10 @@ ya.Core.$extend({
 
             return me;
         },
+    /**
+     * @methods initConfig
+     * @returns {*}
+     */
         initConfig: function () {
             var me = this;
 
@@ -2275,6 +2357,7 @@ ya.Core.$extend({
             return me;
         },
         /**
+         * @methods add
          * @param scope
          * @param e
          * @returns {Dispatcher}
@@ -2292,6 +2375,8 @@ ya.Core.$extend({
             return me;
         },
         /**
+         * @methods apply
+         * @methods apply
          * @param view
          */
         apply: function (view) {
@@ -2593,7 +2678,7 @@ ya.Core.$extend({
         var me = this,
             data = me.get('data'),
             idProperty = me.getIdProperty(),
-            deferred = ya.promise.$deferred(),
+            deferred = ya.$promise.deferred(),
             action = new ya.data.Action(),
             opts = {},
             response;
@@ -2642,7 +2727,7 @@ ya.Core.$extend({
         var me = this,
             data = me.get('data'),
             idProperty = me.getIdProperty(),
-            deferred = ya.promise.$deferred(),
+            deferred = ya.$promise.deferred(),
             action = new ya.data.Action(),
             proxy = me.getProxy(),
             opts = {},
@@ -2704,7 +2789,7 @@ ya.Core.$extend({
         var me = this,
             data = me.get('data'),
             idProperty = me.getIdProperty(),
-            deferred = ya.promise.$deferred(),
+            deferred = ya.$promise.deferred(),
             action = new ya.data.Action(),
             proxy = me.getProxy(),
             opts = {},
@@ -2769,6 +2854,28 @@ ya.Core.$extend({
     }
 });
 
+if (!Function.prototype.bind) {
+    Function.prototype.bind = function (oThis) {
+        if (typeof this !== "function") {
+            // closest thing possible to the ECMAScript 5 internal IsCallable function
+            throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
+        }
+
+        var aArgs = Array.prototype.slice.call(arguments, 1),
+            fToBind = this,
+            fNOP = function () {
+            },
+            fBound = function () {
+                return fToBind.apply(this instanceof fNOP && oThis ? this : oThis,
+                    aArgs.concat(Array.prototype.slice.call(arguments)));
+            };
+
+        fNOP.prototype = this.prototype;
+        fBound.prototype = new fNOP();
+
+        return fBound;
+    };
+}
 /*
  * classList.js: Cross-browser full element.classList implementation.
  * 2014-01-07
@@ -2938,11 +3045,8 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
 /**
  * @author angularjs
  * @contributed mkalafior
- */
-
-/**
  * @namespace ya
- * @class promise
+ * @class $promise
  * @static
  */
 ya.$set('ya', '$promise', function (undefined) {
@@ -2963,7 +3067,7 @@ ya.$set('ya', '$promise', function (undefined) {
     function promise(exceptionHandler) {
 
         /**
-         * @method $deferred
+         * @method deferred
          * @static
          * @description
          * Creates a `Deferred` object which represents a task which will finish in the future.
@@ -2975,7 +3079,6 @@ ya.$set('ya', '$promise', function (undefined) {
                 value, deferred;
 
             deferred = {
-
                 resolve: function (val) {
                     if (pending) {
                         var callbacks = pending;
@@ -2993,13 +3096,9 @@ ya.$set('ya', '$promise', function (undefined) {
                         }
                     }
                 },
-
-
                 reject: function (reason) {
                     deferred.resolve(createInternalRejectedPromise(reason));
                 },
-
-
                 notify: function (progress) {
                     if (pending) {
                         var callbacks = pending;
@@ -3119,7 +3218,7 @@ ya.$set('ya', '$promise', function (undefined) {
 
         /**
          * @static
-         * @method $reject
+         * @method reject
          * @description
          * Creates a promise that is resolved as rejected with the specified `reason`. This api should be
          * used to forward rejection in a chain of promises. If you are dealing with the last promise in
@@ -3177,7 +3276,7 @@ ya.$set('ya', '$promise', function (undefined) {
 
         /**
          * @static
-         * @method $when
+         * @method when
          * @description
          * Wraps an object that might be a value or a (3rd party) then-able promise into a new promise.
          * This is useful when you are dealing with an object that might or might not be a promise, or if
@@ -3247,7 +3346,7 @@ ya.$set('ya', '$promise', function (undefined) {
 
         /**
          * @static
-         * @method $all
+         * @method all
          * @description
          * Combines multiple promises into a single promise that is resolved when all of the input
          * promises are resolved.
