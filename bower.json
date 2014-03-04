@@ -1,30 +1,31 @@
 {
-    "name": "yamvc",
-    "version": "0.2.0",
-    "description": "Fast and ease to extend MVC Framework for one page desktop and mobile app",
-    "main": "./distrib/yamvc.min.js",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/devjseu/YAMVC"
-    },
-    "keywords": [
-        "MVC",
-        "library",
-        "YAMVC"
-    ],
-    "author": {
-        "name": "Sebastian Widelak",
-        "email": "sebakpl@gmail.com",
-        "url": "http://appieweb.com/"
-    },
-    "licenses": [
-        {
-            "type": "MIT",
-            "url": "https://raw.github.com/LICENSE.txt"
-        }
-    ],
-    "dependencies": {
-        "jquery": ">= 1.9.0",
-        "qunit": ">=1.12.0"
+  "name": "yamvc",
+  "version": "0.2.0",
+  "description": "Fast and ease to extend MVC Framework for one page desktop and mobile app",
+  "main": "./distrib/yamvc.min.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/devjseu/YAMVC"
+  },
+  "keywords": [
+    "MVC",
+    "library",
+    "YAMVC"
+  ],
+  "author": {
+    "name": "Sebastian Widelak",
+    "email": "sebakpl@gmail.com",
+    "url": "http://appieweb.com/"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://raw.github.com/LICENSE.txt"
     }
+  ],
+  "dependencies": {
+    "jquery": ">= 1.9.0",
+    "qunit": ">=1.12.0",
+    "blanket": "~1.1.5"
+  }
 }

@@ -47,29 +47,34 @@
 </script>
 <!--<script src="//localhost:35729/livereload.js"></script>-->
 <script src="../assets/js/lib/qunit/qunit/qunit.js"></script>
-<script>QUnit.config.autostart = false;</script>
+<script src="../assets/js/lib/blanket/dist/qunit/blanket.min.js"></script>
+<script>
+    if (location.href.match(/(\?|&)gruntReport($|&|=)/)) {
+        blanket.options("reporter", "reporter/grunt-reporter.js");
+    }
+</script>
 
 <!-- Use latest versionless copy of current release -->
 <script src="../test/util/events.js"></script>
 <script src="../src/polyfill/bind.js"></script>
-<script src="../src/ya.js"></script>
-<script src="../src/mixins/core-static.js"></script>
-<script src="../src/mixins/getset.js"></script>
-<script src="../src/mixins/observable.js"></script>
-<script src="../src/mixins/array.js"></script>
-<script src="../src/mixins/selector.js"></script>
-<script src="../src/promise.js"></script>
-<script src="../src/core.js"></script>
-<script src="../src/controller.js"></script>
-<script src="../src/event/dispatcher.js"></script>
-<script src="../src/collection.js"></script>
-<script src="../src/router.js"></script>
-<script src="../src/view.js"></script>
-<script src="../src/view/template.js"></script>
-<script src="../src/model.js"></script>
-<script src="../src/data/proxy.js"></script>
-<script src="../src/data/action.js"></script>
-<script src="../src/data/proxy/localstorage.js"></script>
+<script src="../src/ya.js" data-cover></script>
+<script src="../src/mixins/core-static.js" data-cover></script>
+<script src="../src/mixins/getset.js" data-cover></script>
+<script src="../src/mixins/observable.js" data-cover></script>
+<script src="../src/mixins/array.js" data-cover></script>
+<script src="../src/mixins/selector.js" data-cover></script>
+<script src="../src/promise.js" data-cover></script>
+<script src="../src/core.js" data-cover></script>
+<script src="../src/controller.js" data-cover></script>
+<script src="../src/event/dispatcher.js" data-cover></script>
+<script src="../src/collection.js" data-cover></script>
+<script src="../src/router.js" data-cover></script>
+<script src="../src/view.js" data-cover></script>
+<script src="../src/view/template.js" data-cover></script>
+<script src="../src/model.js" data-cover></script>
+<script src="../src/data/proxy.js" data-cover></script>
+<script src="../src/data/action.js" data-cover></script>
+<script src="../src/data/proxy/localstorage.js" data-cover></script>
 
 <!-- Unit test suits -->
 <script src="ya.js"></script>
@@ -84,6 +89,5 @@
 <script src="dataProxyLocalstorage.js"></script>
 <script src="template.js"></script>
 <script src="eventDispatcher.js"></script>
-<script>QUnit.start();</script>
 </body>
 </html>
