@@ -146,8 +146,9 @@
     /**
      * @namespace ya
      * @class View
-     * @extends ya.Core
      * @constructor
+     * @extends ya.Core
+     * @uses ya.mixins.Selector
      * @params opts Object with configuration properties
      * @type {function}
      */
@@ -160,19 +161,40 @@
         // of window was changed
         // * `hidden` - if true, component will be hidden after render
         defaults: {
+            /**
+             * @attribute config.parent
+             * @type ya.View
+             */
             parent: null,
+            /**
+             * @attribute config.fit
+             * @type boolean
+             */
             fit: false,
+            /**
+             * @attribute config.hidden
+             * @type boolean
+             */
             hidden: false,
+            /**
+             * @attribute config.models
+             * @type ya.Model
+             */
             models: null,
+            /**
+             * @attribute config.autoCreate
+             * @type boolean
+             */
             autoCreate: false
         },
         mixins: [
             ya.mixins.Selector
         ],
         /**
-         *
+         * @method init
          * @param opts
          * @returns {View}
+         * @chainable
          */
         init: function (opts) {
             // Initializing function in which we call parent method, merge previous
@@ -190,6 +212,12 @@
 
             return me;
         },
+        /**
+         *
+         * @method initDefaults
+         * @param opts
+         * @chainable
+         */
         initDefaults: function (opts) {
             var me = this, config;
 
@@ -201,17 +229,19 @@
             me.set('initOpts', opts);
             me.set('config', config);
 
+            return me;
         },
         /**
+         * @method initTemplate
          * @returns {View}
+         * @chainable
          */
         initTemplate: function () {
             var me = this,
                 config = me.get('config'),
                 div = document.createElement('div'),
+                Instance,
                 _tpl;
-
-            console.log(Object.keys(ya.view));
 
             if (!config.tpl) {
 
@@ -223,20 +253,29 @@
 
                 div.innerHTML = config.tpl.getHtml().innerHTML;
 
-            } else if (VTM.get(config.tpl)) {
+            } else if (typeof config.tpl === 'object') {
 
-                div.innerHTML = VTM.get(config.tpl).innerHTML;
+                Instance = ya.$get(config.tpl.alias);
+                config.tpl = Instance ? Instance.$create({config: config}) : ya.view.Template.$create({config: config});
+                div.innerHTML = config.tpl.getHtml().innerHTML;
 
-            } else {
+            } else if (typeof config.tpl == 'string' || config.tpl instanceof String) {
 
-                _tpl = document.getElementById(config.tpl);
+                if (VTM.get(config.tpl)) {
 
-                if (!_tpl)
-                    throw new Error('no tpl ' + config.tpl + ' found');
+                    div.innerHTML = VTM.get(config.tpl).innerHTML;
 
-                VTM.add(config.tpl, _tpl.parentNode.removeChild(_tpl));
-                div.innerHTML = VTM.get(config.tpl).innerHTML;
+                } else {
 
+                    _tpl = document.getElementById(config.tpl);
+
+                    if (!_tpl)
+                        throw new Error('no tpl ' + config.tpl + ' found');
+
+                    VTM.add(config.tpl, _tpl.parentNode.removeChild(_tpl));
+                    div.innerHTML = VTM.get(config.tpl).innerHTML;
+
+                }
             }
 
             me.set('tpl', div);

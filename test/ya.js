@@ -14,10 +14,12 @@ test("set object under proper namespace", function () {
 
 });
 
-test("set object under proper namespace", function () {
+test("get object under proper namespace", function () {
 
     ya.$set('foo2.bar', 4);
 
     equal(ya.$get('foo2.bar'), 4);
+
+    equal(ya.$get('foo23.bar'), null);
 
 });

@@ -384,7 +384,9 @@
             "plugins": [],
             "extensions": [],
             "plugin_for": [],
-            "extension_for": [],
+            "extension_for": [
+                "ya.View"
+            ],
             "module": "ya",
             "namespace": "ya.mixins",
             "file": "src\\mixins\\selector.js",
@@ -533,8 +535,11 @@
             "namespace": "ya",
             "file": "src\\view.js",
             "line": 146,
-            "extends": "ya.Core",
             "is_constructor": 1,
+            "extends": "ya.Core",
+            "uses": [
+                "ya.mixins.Selector"
+            ],
             "params": [
                 {
                     "name": "opts",
@@ -1929,7 +1934,54 @@
         },
         {
             "file": "src\\view.js",
-            "line": 172,
+            "line": 164,
+            "itemtype": "attribute",
+            "name": "config.parent",
+            "type": "ya.View",
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 169,
+            "itemtype": "attribute",
+            "name": "config.fit",
+            "type": "boolean",
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 174,
+            "itemtype": "attribute",
+            "name": "config.hidden",
+            "type": "boolean",
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 179,
+            "itemtype": "attribute",
+            "name": "config.models",
+            "type": "ya.Model",
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 184,
+            "itemtype": "attribute",
+            "name": "config.autoCreate",
+            "type": "boolean",
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 193,
+            "itemtype": "method",
+            "name": "init",
             "params": [
                 {
                     "name": "opts",
@@ -1940,12 +1992,41 @@
                 "description": "",
                 "type": "View"
             },
+            "chainable": 1,
             "class": "ya.View",
             "namespace": "ya"
         },
         {
             "file": "src\\view.js",
-            "line": 205,
+            "line": 215,
+            "itemtype": "method",
+            "name": "initDefaults",
+            "params": [
+                {
+                    "name": "opts",
+                    "description": ""
+                }
+            ],
+            "chainable": 1,
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 234,
+            "itemtype": "method",
+            "name": "initTemplate",
+            "return": {
+                "description": "",
+                "type": "View"
+            },
+            "chainable": 1,
+            "class": "ya.View",
+            "namespace": "ya"
+        },
+        {
+            "file": "src\\view.js",
+            "line": 296,
             "return": {
                 "description": "",
                 "type": "View"
@@ -1955,17 +2036,7 @@
         },
         {
             "file": "src\\view.js",
-            "line": 257,
-            "return": {
-                "description": "",
-                "type": "View"
-            },
-            "class": "ya.View",
-            "namespace": "ya"
-        },
-        {
-            "file": "src\\view.js",
-            "line": 270,
+            "line": 309,
             "params": [
                 {
                     "name": "namespace",
@@ -1981,7 +2052,7 @@
         },
         {
             "file": "src\\view.js",
-            "line": 290,
+            "line": 329,
             "version": "0.1.11",
             "return": {
                 "description": "",
@@ -1992,7 +2063,7 @@
         },
         {
             "file": "src\\view.js",
-            "line": 553,
+            "line": 592,
             "version": "0.1.12",
             "params": [
                 {
@@ -2005,14 +2076,14 @@
         },
         {
             "file": "src\\view.js",
-            "line": 597,
+            "line": 636,
             "version": "0.1.12",
             "class": "ya.View",
             "namespace": "ya"
         },
         {
             "file": "src\\view.js",
-            "line": 647,
+            "line": 686,
             "version": "0.1.11",
             "params": [
                 {
@@ -2025,21 +2096,21 @@
         },
         {
             "file": "src\\view.js",
-            "line": 695,
+            "line": 734,
             "version": "0.1.12",
             "class": "ya.View",
             "namespace": "ya"
         },
         {
             "file": "src\\view.js",
-            "line": 726,
+            "line": 765,
             "version": "0.1.12",
             "class": "ya.View",
             "namespace": "ya"
         },
         {
             "file": "src\\view.js",
-            "line": 739,
+            "line": 778,
             "params": [
                 {
                     "name": "selector",
@@ -2055,7 +2126,7 @@
         },
         {
             "file": "src\\view.js",
-            "line": 747,
+            "line": 786,
             "params": [
                 {
                     "name": "selector",
@@ -2071,7 +2142,7 @@
         },
         {
             "file": "src\\view.js",
-            "line": 762,
+            "line": 801,
             "params": [
                 {
                     "name": "view",
@@ -2091,7 +2162,7 @@
         },
         {
             "file": "src\\view.js",
-            "line": 774,
+            "line": 813,
             "params": [
                 {
                     "name": "id",
@@ -2107,7 +2178,7 @@
         },
         {
             "file": "src\\view.js",
-            "line": 786,
+            "line": 825,
             "params": [
                 {
                     "name": "id",
@@ -2123,7 +2194,7 @@
         },
         {
             "file": "src\\view.js",
-            "line": 802,
+            "line": 841,
             "params": [
                 {
                     "name": "id",
@@ -2139,7 +2210,7 @@
         },
         {
             "file": "src\\view.js",
-            "line": 823,
+            "line": 862,
             "return": {
                 "description": "",
                 "type": "Array"
@@ -2149,7 +2220,7 @@
         },
         {
             "file": "src\\view.js",
-            "line": 838,
+            "line": 877,
             "return": {
                 "description": "",
                 "type": "View"
@@ -2159,7 +2230,7 @@
         },
         {
             "file": "src\\view.js",
-            "line": 852,
+            "line": 891,
             "return": {
                 "description": "",
                 "type": "Boolean"
@@ -2169,7 +2240,7 @@
         },
         {
             "file": "src\\view.js",
-            "line": 858,
+            "line": 897,
             "params": [
                 {
                     "name": "parent",
@@ -2189,7 +2260,7 @@
         },
         {
             "file": "src\\view.js",
-            "line": 921,
+            "line": 960,
             "return": {
                 "description": "",
                 "type": "View"
@@ -2199,7 +2270,7 @@
         },
         {
             "file": "src\\view.js",
-            "line": 935,
+            "line": 974,
             "return": {
                 "description": "",
                 "type": "View"
@@ -2209,7 +2280,7 @@
         },
         {
             "file": "src\\view.js",
-            "line": 951,
+            "line": 990,
             "return": {
                 "description": "",
                 "type": "View"
@@ -2219,7 +2290,7 @@
         },
         {
             "file": "src\\view.js",
-            "line": 982,
+            "line": 1021,
             "return": {
                 "description": "",
                 "type": "Boolean"
@@ -2340,7 +2411,7 @@
         },
         {
             "file": "src\\ya.js",
-            "line": 154,
+            "line": 160,
             "itemtype": "method",
             "name": "$module",
             "static": 1,
@@ -2707,63 +2778,51 @@
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\view.js:172"
+            "line": " src\\view.js:193"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\view.js:205"
+            "line": " src\\view.js:234"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\view.js:257"
+            "line": " src\\view.js:296"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\view.js:270"
+            "line": " src\\view.js:309"
         },
         {
             "message": "unknown tag: version",
-            "line": " src\\view.js:290"
+            "line": " src\\view.js:329"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\view.js:290"
+            "line": " src\\view.js:329"
         },
         {
             "message": "unknown tag: version",
-            "line": " src\\view.js:553"
+            "line": " src\\view.js:592"
         },
         {
             "message": "unknown tag: version",
-            "line": " src\\view.js:597"
+            "line": " src\\view.js:636"
         },
         {
             "message": "unknown tag: version",
-            "line": " src\\view.js:647"
+            "line": " src\\view.js:686"
         },
         {
             "message": "unknown tag: version",
-            "line": " src\\view.js:695"
+            "line": " src\\view.js:734"
         },
         {
             "message": "unknown tag: version",
-            "line": " src\\view.js:726"
+            "line": " src\\view.js:765"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\view.js:739"
-        },
-        {
-            "message": "replacing incorrect tag: returns with return",
-            "line": " src\\view.js:747"
-        },
-        {
-            "message": "replacing incorrect tag: returns with return",
-            "line": " src\\view.js:762"
-        },
-        {
-            "message": "replacing incorrect tag: returns with return",
-            "line": " src\\view.js:774"
+            "line": " src\\view.js:778"
         },
         {
             "message": "replacing incorrect tag: returns with return",
@@ -2771,39 +2830,51 @@
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\view.js:802"
+            "line": " src\\view.js:801"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\view.js:823"
+            "line": " src\\view.js:813"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\view.js:838"
+            "line": " src\\view.js:825"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\view.js:852"
+            "line": " src\\view.js:841"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\view.js:858"
+            "line": " src\\view.js:862"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\view.js:921"
+            "line": " src\\view.js:877"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\view.js:935"
+            "line": " src\\view.js:891"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\view.js:951"
+            "line": " src\\view.js:897"
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\view.js:982"
+            "line": " src\\view.js:960"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:974"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:990"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\view.js:1021"
         },
         {
             "message": "replacing incorrect tag: returns with return",
@@ -2823,7 +2894,7 @@
         },
         {
             "message": "replacing incorrect tag: returns with return",
-            "line": " src\\ya.js:154"
+            "line": " src\\ya.js:160"
         },
         {
             "message": "Missing item type",
@@ -3007,59 +3078,39 @@
         },
         {
             "message": "Missing item type",
-            "line": " src\\view.js:172"
+            "line": " src\\view.js:296"
         },
         {
             "message": "Missing item type",
-            "line": " src\\view.js:205"
+            "line": " src\\view.js:309"
         },
         {
             "message": "Missing item type",
-            "line": " src\\view.js:257"
+            "line": " src\\view.js:329"
         },
         {
             "message": "Missing item type",
-            "line": " src\\view.js:270"
+            "line": " src\\view.js:592"
         },
         {
             "message": "Missing item type",
-            "line": " src\\view.js:290"
+            "line": " src\\view.js:636"
         },
         {
             "message": "Missing item type",
-            "line": " src\\view.js:553"
+            "line": " src\\view.js:686"
         },
         {
             "message": "Missing item type",
-            "line": " src\\view.js:597"
+            "line": " src\\view.js:734"
         },
         {
             "message": "Missing item type",
-            "line": " src\\view.js:647"
+            "line": " src\\view.js:765"
         },
         {
             "message": "Missing item type",
-            "line": " src\\view.js:695"
-        },
-        {
-            "message": "Missing item type",
-            "line": " src\\view.js:726"
-        },
-        {
-            "message": "Missing item type",
-            "line": " src\\view.js:739"
-        },
-        {
-            "message": "Missing item type",
-            "line": " src\\view.js:747"
-        },
-        {
-            "message": "Missing item type",
-            "line": " src\\view.js:762"
-        },
-        {
-            "message": "Missing item type",
-            "line": " src\\view.js:774"
+            "line": " src\\view.js:778"
         },
         {
             "message": "Missing item type",
@@ -3067,39 +3118,51 @@
         },
         {
             "message": "Missing item type",
-            "line": " src\\view.js:802"
+            "line": " src\\view.js:801"
         },
         {
             "message": "Missing item type",
-            "line": " src\\view.js:823"
+            "line": " src\\view.js:813"
         },
         {
             "message": "Missing item type",
-            "line": " src\\view.js:838"
+            "line": " src\\view.js:825"
         },
         {
             "message": "Missing item type",
-            "line": " src\\view.js:852"
+            "line": " src\\view.js:841"
         },
         {
             "message": "Missing item type",
-            "line": " src\\view.js:858"
+            "line": " src\\view.js:862"
         },
         {
             "message": "Missing item type",
-            "line": " src\\view.js:921"
+            "line": " src\\view.js:877"
         },
         {
             "message": "Missing item type",
-            "line": " src\\view.js:935"
+            "line": " src\\view.js:891"
         },
         {
             "message": "Missing item type",
-            "line": " src\\view.js:951"
+            "line": " src\\view.js:897"
         },
         {
             "message": "Missing item type",
-            "line": " src\\view.js:982"
+            "line": " src\\view.js:960"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:974"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:990"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\view.js:1021"
         }
     ]
 }

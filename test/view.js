@@ -106,7 +106,7 @@ test("remove child", function () {
             renderTo: '#test-3'
         }
     });
-    
+
     view.render();
 
     view.removeChild('child');
@@ -146,7 +146,7 @@ test("bind with model", function () {
             renderTo: '#test-4'
         }
     });
-    
+
     view.render();
 
     equal(view.querySelector('.example').innerText, 'Hi Seba');
@@ -295,3 +295,27 @@ test("check if query match", function () {
 //
 //    equal(view.querySelector('.example').innerText, 'Hi Seba');
 //});
+
+test("initialize template in shorter way", function () {
+    var view;
+
+    view = ya.View.$create({
+        config: {
+            id: 'tpl-short-test',
+            tpl: {
+                id: 'tpl-test-99',
+                tpl: [
+                    '<div class="employee senior" id="selector-test">',
+                    '<p class="target">',
+                    '</p>',
+                    '</div>'
+                ]
+            }
+        }
+    });
+
+    view.render();
+
+    ok(typeof view.querySelector('.target') !== 'undefined');
+
+});

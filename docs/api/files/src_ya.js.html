@@ -252,9 +252,15 @@
     ya.$get = function () {
         var module = arguments.length &lt; 3 ? appNamespace : arguments[0],
             namespace = arguments.length &lt; 2 ? arguments[0] : arguments[1],
-            namespaces = namespace.search(/\./) &gt; 0 ? namespace.split(&#x27;.&#x27;) : [namespace],
-            pointer = window[module],
+            namespaces = namespace ? (namespace.search(/\./) &gt; 0 ? namespace.split(&#x27;.&#x27;) : [namespace]) : [],
+            pointer = null,
             current;
+
+        if (namespaces.length) {
+
+            pointer = window[module];
+
+        }
 
         while (namespaces.length) {
 
