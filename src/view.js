@@ -256,7 +256,7 @@
             } else if (typeof config.tpl === 'object') {
 
                 Instance = ya.$get(config.tpl.alias);
-                config.tpl = Instance ? Instance.$create({config: config}) : ya.view.Template.$create({config: config});
+                config.tpl = Instance ? Instance.$create({config: config.tpl}) : ya.view.Template.$create({config: config.tpl});
                 div.innerHTML = config.tpl.getHtml().innerHTML;
 
             } else if (typeof config.tpl == 'string' || config.tpl instanceof String) {

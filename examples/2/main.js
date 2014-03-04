@@ -20,15 +20,13 @@ ya.$onReady(function () {
             ],
             id: 'bar',
             tpl: {
-                config: {
-                    id: 'tpl-bar',
-                    tpl: [
-                        '<div class="bar">',
-                        'Count : {{likes.count}}',
-                        '<button css="cursor: pointer;">+</button>',
-                        '</div>'
-                    ]
-                }
+                id: 'tpl-bar',
+                tpl: [
+                    '<div class="bar">',
+                    'Count : {{likes.count}}',
+                    '<button css="cursor: pointer;">+</button>',
+                    '</div>'
+                ]
             },
             renderTo: '#container'
         }

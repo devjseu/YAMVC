@@ -1,6 +1,6 @@
 /**
  * @namespace ya.view
- * @class Template
+ * @class Model
  * @extends ya.Core
  */
 ya.Core.$extend({
