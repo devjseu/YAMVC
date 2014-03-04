@@ -2,21 +2,21 @@ module('View');
 test("initialize", function () {
     var view;
 
-    view = new ya.View({
+    view = ya.View.$create({
         config: {
             tpl: 'container'
         }
     });
 
-    ok(view instanceof  ya.View);
+    ok(view instanceof ya.View);
 });
 
 test("render", function () {
     var view, el;
 
-    (view = new ya.View({
+    view = ya.View.$create({
         config: {
-            tpl: new ya.view.Template({
+            tpl: ya.view.Template.$create({
                 config: {
                     id: 'tpl-bar',
                     tpl: [
@@ -26,7 +26,9 @@ test("render", function () {
             }),
             renderTo: '#test-1'
         }
-    })).render();
+    });
+
+    view.render();
 
     el = document.querySelector('#' + view.getId());
 
@@ -36,9 +38,9 @@ test("render", function () {
 test("render with children", function () {
     var view, el;
 
-    (view = new ya.View({
+    view = ya.View.$create({
         config: {
-            tpl: new ya.view.Template({
+            tpl: ya.view.Template.$create({
                 config: {
                     id: 'tpl-test-1',
                     tpl: [
@@ -47,9 +49,9 @@ test("render with children", function () {
                 }
             }),
             children: [
-                new ya.View({
+                ya.View.$create({
                     config: {
-                        tpl: new ya.view.Template({
+                        tpl: ya.view.Template.$create({
                             config: {
                                 id: 'tpl-child',
                                 tpl: [
@@ -63,7 +65,9 @@ test("render with children", function () {
             ],
             renderTo: '#test-2'
         }
-    })).render();
+    });
+
+    view.render();
 
     el = document.querySelector('#' + view.getId());
 
@@ -73,9 +77,9 @@ test("render with children", function () {
 test("remove child", function () {
     var view;
 
-    (view = new ya.View({
+    view = ya.View.$create({
         config: {
-            tpl: new ya.view.Template({
+            tpl: ya.view.Template.$create({
                 config: {
                     id: 'tpl-test-2',
                     tpl: [
@@ -84,10 +88,10 @@ test("remove child", function () {
                 }
             }),
             children: [
-                new ya.View({
+                ya.View.$create({
                     config: {
                         id: 'child',
-                        tpl: new ya.view.Template({
+                        tpl: ya.view.Template.$create({
                             config: {
                                 id: 'tpl-child',
                                 tpl: [
@@ -101,7 +105,9 @@ test("remove child", function () {
             ],
             renderTo: '#test-3'
         }
-    })).render();
+    });
+    
+    view.render();
 
     view.removeChild('child');
 
@@ -112,7 +118,7 @@ test("remove child", function () {
 test("bind with model", function () {
     var view, model;
 
-    model = new ya.Model({
+    model = ya.Model.$create({
         config: {
             namespace: 'example',
             data: {
@@ -122,12 +128,12 @@ test("bind with model", function () {
         }
     });
 
-    view = new ya.View({
+    view = ya.View.$create({
         config: {
             models: [
                 model
             ],
-            tpl: new ya.view.Template({
+            tpl: ya.view.Template.$create({
                 config: {
                     id: 'tpl-example-3',
                     tpl: [
@@ -140,6 +146,7 @@ test("bind with model", function () {
             renderTo: '#test-4'
         }
     });
+    
     view.render();
 
     equal(view.querySelector('.example').innerText, 'Hi Seba');
@@ -155,7 +162,7 @@ test("bind with model", function () {
 test("rendered two times", function () {
     var view, model;
 
-    model = new ya.Model({
+    model = ya.Model.$create({
         config: {
             namespace: 'example',
             data: {
@@ -165,12 +172,12 @@ test("rendered two times", function () {
         }
     });
 
-    view = new ya.View({
+    view = ya.View.$create({
         config: {
             models: [
                 model
             ],
-            tpl: new ya.view.Template({
+            tpl: ya.view.Template.$create({
                 config: {
                     id: 'tpl-example-4',
                     tpl: [
@@ -198,7 +205,6 @@ test("rendered two times", function () {
 });
 
 test("check if query match", function () {
-    var view, el;
 
     ya.View.$create({
         config: {
@@ -264,12 +270,12 @@ test("check if query match", function () {
 //        }
 //    });
 //
-//    view = new ya.View({
+//    view = ya.View.$create({
 //        config: {
 //            collections: [
 //                collection
 //            ],
-//            tpl: new ya.view.Template({
+//            tpl: ya.view.Template.$create({
 //                config: {
 //                    id: 'tpl-example-5',
 //                    tpl: [

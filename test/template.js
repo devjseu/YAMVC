@@ -1,7 +1,7 @@
 module('Template');
 
 test("initialize", function () {
-    var tpl = new ya.view.Template({
+    var tpl = ya.view.Template.$create({
         config : {
             id : 'tpl-test',
             tpl : [

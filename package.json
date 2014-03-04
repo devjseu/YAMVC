@@ -24,7 +24,7 @@
     }
   ],
   "scripts": {
-    "test": "grunt travis --verbose --force"
+    "test": "grunt travis --verbose"
   },
   "devDependencies": {
     "watch": "~0.8.0",

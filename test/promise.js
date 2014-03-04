@@ -10,7 +10,7 @@ test("initialize", function () {
 
 });
 
-asyncTest("fulfill", function () {
+asyncTest("deferred", function () {
     var Calc = function (start) {
         this._start = start;
         this.add = function (number) {
@@ -37,6 +37,13 @@ asyncTest("fulfill", function () {
     });
 
 });
+
+//asyncTest("all", function () {
+//    var all = ya.$promise.all();
+//
+//
+//
+//});
 
 asyncTest("reject", function () {
     var Calc = function (start) {

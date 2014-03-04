@@ -196,15 +196,19 @@ ya.Core.$extend({
      * @chainable
      */
     when: function (path, callback) {
-        var routing = this.get(&#x27;routing&#x27;),
+        var me = this,
+            routing = me.get(&#x27;routing&#x27;),
             paths = path.split(&quot;/&quot;),
             action = paths.shift();
+
         routing[action] = {
             callback: callback,
             params: paths
         };
-        this.set(&#x27;routing&#x27;, routing);
-        return this;
+
+        me.set(&#x27;routing&#x27;, routing);
+
+        return me;
     }
 });
     </pre>

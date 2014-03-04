@@ -1,3 +1,7 @@
-/**
- * Created by sebastian on 01.03.14.
- */
+ya.Core.$extend({
+    module : 'ya',
+    alias : 'view.DOM',
+    defaults: {
+        el: null
+    }
+});

@@ -112,13 +112,6 @@
                 "ya.mixins": 1
             }
         },
-        "src\\view\\dom.js": {
-            "name": "src\\view\\dom.js",
-            "modules": {},
-            "classes": {},
-            "fors": {},
-            "namespaces": {}
-        },
         "src\\collection.js": {
             "name": "src\\collection.js",
             "modules": {},
@@ -1113,13 +1106,6 @@
                 }
             ],
             "class": "ya.mixins.Selector",
-            "namespace": "ya.mixins"
-        },
-        {
-            "file": "src\\view\\dom.js",
-            "line": 1,
-            "description": "Created by sebastian on 01.03.14.",
-            "class": "ya.Collection",
             "namespace": "ya.mixins"
         },
         {
@@ -2933,10 +2919,6 @@
         {
             "message": "Missing item type\ncheck if passed selector match to main DOM element",
             "line": " src\\mixins\\selector.js:6"
-        },
-        {
-            "message": "Missing item type\nCreated by sebastian on 01.03.14.",
-            "line": " src\\view\\dom.js:1"
         },
         {
             "message": "Missing item type",
