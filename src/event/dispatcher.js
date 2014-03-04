@@ -1,6 +1,7 @@
 /**
  * @namespace ya.event
  * @class $dispatcher
+ * @extends ya.Core
  * @static
  */
 ya.Core.$extend({
@@ -11,6 +12,7 @@ ya.Core.$extend({
             delegates: null
         },
         /**
+         * @methods init
          * @param opts
          * @returns {Dispatcher}
          */
@@ -30,6 +32,10 @@ ya.Core.$extend({
 
             return me;
         },
+    /**
+     * @methods initConfig
+     * @returns {*}
+     */
         initConfig: function () {
             var me = this;
 
@@ -42,6 +48,7 @@ ya.Core.$extend({
             return me;
         },
         /**
+         * @methods add
          * @param scope
          * @param e
          * @returns {Dispatcher}
@@ -59,6 +66,8 @@ ya.Core.$extend({
             return me;
         },
         /**
+         * @methods apply
+         * @methods apply
          * @param view
          */
         apply: function (view) {

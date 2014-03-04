@@ -4,6 +4,7 @@ YUI.add("yuidoc-meta", function(Y) {
         "ya",
         "ya.$viewManager",
         "ya.Collection",
+        "ya.Controller",
         "ya.Core",
         "ya.Model",
         "ya.Router",

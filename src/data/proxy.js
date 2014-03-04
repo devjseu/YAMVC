@@ -1,10 +1,15 @@
 /**
  * @namespace ya.data
  * @class Proxy
+ * @extends ya.Core
  */
 ya.Core.$extend({
     module: 'ya',
     alias: 'data.Proxy',
+    /**
+     * @methods init
+     * @param opts
+     */
     init: function (opts) {
         var me = this, config;
 
@@ -20,6 +25,11 @@ ya.Core.$extend({
         me.initConfig();
 
     },
+    /**
+     * @methods read
+     * @param action
+     * @returns {*}
+     */
     read: function (action) {
         var me = this,
             opts,
@@ -42,6 +52,11 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * @methods create
+     * @param action
+     * @returns {*}
+     */
     create: function (action) {
         var me = this;
 
@@ -56,6 +71,11 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * @methods update
+     * @param action
+     * @returns {*}
+     */
     update: function (action) {
         var me = this;
 
@@ -70,6 +90,11 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * @methods destroy
+     * @param action
+     * @returns {*}
+     */
     destroy: function (action) {
         var me = this;
 

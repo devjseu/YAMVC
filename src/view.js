@@ -146,6 +146,7 @@
     /**
      * @namespace ya
      * @class View
+     * @extends ya.Core
      * @constructor
      * @params opts Object with configuration properties
      * @type {function}

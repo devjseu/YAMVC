@@ -4,6 +4,7 @@
  * Router is used internally in controller, so don't instantiated it again.
  * @namespace ya
  * @class Router
+ * @extends ya.Core
  * @constructor
  */
 ya.Core.$extend({

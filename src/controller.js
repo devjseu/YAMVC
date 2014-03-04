@@ -33,7 +33,9 @@
  *             // changing page mechanism
  *         }
  *     });
- *
+ * @namespace ya
+ * @class Controller
+ * @extends ya.Core
  */
 ya.Core.$extend({
     module: 'ya',

@@ -1,6 +1,7 @@
 /**
  * @namespace ya
  * @class Model
+ * @extends ya.Core
  */
 ya.Core.$extend({
     module: 'ya',
@@ -17,9 +18,6 @@ ya.Core.$extend({
             return ya.Model.$id++;
         }
     },
-    /**
-     * @defaults
-     */
     defaults: {
         /**
          * @attribute config.idProperty
@@ -172,7 +170,7 @@ ya.Core.$extend({
         var me = this,
             data = me.get('data'),
             idProperty = me.getIdProperty(),
-            deferred = ya.promise.$deferred(),
+            deferred = ya.$promise.deferred(),
             action = new ya.data.Action(),
             opts = {},
             response;
@@ -221,7 +219,7 @@ ya.Core.$extend({
         var me = this,
             data = me.get('data'),
             idProperty = me.getIdProperty(),
-            deferred = ya.promise.$deferred(),
+            deferred = ya.$promise.deferred(),
             action = new ya.data.Action(),
             proxy = me.getProxy(),
             opts = {},
@@ -283,7 +281,7 @@ ya.Core.$extend({
         var me = this,
             data = me.get('data'),
             idProperty = me.getIdProperty(),
-            deferred = ya.promise.$deferred(),
+            deferred = ya.$promise.deferred(),
             action = new ya.data.Action(),
             proxy = me.getProxy(),
             opts = {},

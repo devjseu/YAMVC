@@ -749,12 +749,23 @@ ya.$set('ya', 'Core', (function () {
 /**
  * @namespace ya
  * @class Collection
+ * @extends ya.Core
  */
 ya.Core.$extend({
     module: 'ya',
     alias: 'Collection',
     defaults: {
+        /**
+         * @attribute config.namespace
+         * @type String Namespace of collection
+         * @required
+         */
         namespace: null,
+        /**
+         * @attribute config.namespace
+         * @type ya.data.Proxy Instance of proxy for transfering data
+         * @required
+         */
         proxy: null
     },
     /**
@@ -1374,7 +1385,9 @@ ya.Core.$extend({
  *             // changing page mechanism
  *         }
  *     });
- *
+ * @namespace ya
+ * @class Controller
+ * @extends ya.Core
  */
 ya.Core.$extend({
     module: 'ya',
@@ -1557,6 +1570,7 @@ ya.Core.$extend({
 /**
  * @namespace ya.data
  * @class Action
+ * @extends ya.Core
  */
 ya.Core.$extend({
     module: 'ya',
@@ -1628,6 +1642,7 @@ ya.Core.$extend({
 /**
  * @namespace ya.data
  * @class Proxy
+ * @extends ya.Core
  */
 ya.Core.$extend({
     module: 'ya',
@@ -1716,6 +1731,7 @@ ya.Core.$extend({
 /**
  * @namespace ya.data.proxy
  * @class Localstorage
+ * @extends ya.data.Proxy
  */
 ya.data.Proxy.$extend({
     module: 'ya',
@@ -2217,6 +2233,7 @@ ya.data.Proxy.$extend({
 /**
  * @namespace ya.event
  * @class $dispatcher
+ * @extends ya.Core
  * @static
  */
 ya.Core.$extend({
@@ -2407,6 +2424,7 @@ ya.Core.$extend({
 /**
  * @namespace ya
  * @class Model
+ * @extends ya.Core
  */
 ya.Core.$extend({
     module: 'ya',
@@ -2423,9 +2441,6 @@ ya.Core.$extend({
             return ya.Model.$id++;
         }
     },
-    /**
-     * @defaults
-     */
     defaults: {
         /**
          * @attribute config.idProperty
@@ -3294,6 +3309,7 @@ ya.$set('ya', '$promise', function (undefined) {
  * Router is used internally in controller, so don't instantiated it again.
  * @namespace ya
  * @class Router
+ * @extends ya.Core
  * @constructor
  */
 ya.Core.$extend({
@@ -3520,6 +3536,7 @@ ya.Core.$extend({
     /**
      * @namespace ya
      * @class View
+     * @extends ya.Core
      * @constructor
      * @params opts Object with configuration properties
      * @type {function}

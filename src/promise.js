@@ -1,11 +1,8 @@
 /**
  * @author angularjs
  * @contributed mkalafior
- */
-
-/**
  * @namespace ya
- * @class promise
+ * @class $promise
  * @static
  */
 ya.$set('ya', '$promise', function (undefined) {
@@ -26,7 +23,7 @@ ya.$set('ya', '$promise', function (undefined) {
     function promise(exceptionHandler) {
 
         /**
-         * @method $deferred
+         * @method deferred
          * @static
          * @description
          * Creates a `Deferred` object which represents a task which will finish in the future.
@@ -38,7 +35,6 @@ ya.$set('ya', '$promise', function (undefined) {
                 value, deferred;
 
             deferred = {
-
                 resolve: function (val) {
                     if (pending) {
                         var callbacks = pending;
@@ -56,13 +52,9 @@ ya.$set('ya', '$promise', function (undefined) {
                         }
                     }
                 },
-
-
                 reject: function (reason) {
                     deferred.resolve(createInternalRejectedPromise(reason));
                 },
-
-
                 notify: function (progress) {
                     if (pending) {
                         var callbacks = pending;
@@ -182,7 +174,7 @@ ya.$set('ya', '$promise', function (undefined) {
 
         /**
          * @static
-         * @method $reject
+         * @method reject
          * @description
          * Creates a promise that is resolved as rejected with the specified `reason`. This api should be
          * used to forward rejection in a chain of promises. If you are dealing with the last promise in
@@ -240,7 +232,7 @@ ya.$set('ya', '$promise', function (undefined) {
 
         /**
          * @static
-         * @method $when
+         * @method when
          * @description
          * Wraps an object that might be a value or a (3rd party) then-able promise into a new promise.
          * This is useful when you are dealing with an object that might or might not be a promise, or if
@@ -310,7 +302,7 @@ ya.$set('ya', '$promise', function (undefined) {
 
         /**
          * @static
-         * @method $all
+         * @method all
          * @description
          * Combines multiple promises into a single promise that is resolved when all of the input
          * promises are resolved.

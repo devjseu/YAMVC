@@ -2,11 +2,11 @@ module('Promises');
 
 test("initialize", function () {
 
-    equal(typeof ya.promise, 'object');
-    equal(typeof ya.promise.$deferred, 'function', 'Promise provide a then function');
-    equal(typeof ya.promise.$when, 'function', 'Promise provide a when function');
-    equal(typeof ya.promise.$reject, 'function', 'Promise provide a reject function');
-    equal(typeof ya.promise.$all, 'function', 'Promise provide a all function');
+    equal(typeof ya.$promise, 'object');
+    equal(typeof ya.$promise.deferred, 'function', 'Promise provide a then function');
+    equal(typeof ya.$promise.when, 'function', 'Promise provide a when function');
+    equal(typeof ya.$promise.reject, 'function', 'Promise provide a reject function');
+    equal(typeof ya.$promise.all, 'function', 'Promise provide a all function');
 
 });
 
@@ -15,7 +15,7 @@ asyncTest("fulfill", function () {
         this._start = start;
         this.add = function (number) {
             var me = this,
-                deferred = ya.promise.$deferred();
+                deferred = ya.$promise.deferred();
 
             setTimeout(function () {
                 me._start += number;
@@ -43,7 +43,7 @@ asyncTest("reject", function () {
         this._start = start;
         this.add = function (number) {
             var me = this,
-                deferred = ya.promise.$deferred();
+                deferred = ya.$promise.deferred();
 
             setTimeout(function () {
                 me._start += number;

@@ -1,6 +1,7 @@
 /**
  * @namespace ya.data
  * @class Action
+ * @extends ya.Core
  */
 ya.Core.$extend({
     module: 'ya',
@@ -12,6 +13,10 @@ ya.Core.$extend({
             FAIL: 2
         }
     },
+    /**
+     * @methods init
+     * @param opts
+     */
     init: function (opts) {
         var me = this, config;
 
@@ -27,29 +32,66 @@ ya.Core.$extend({
 
         me.initConfig();
     },
+    /**
+     * @methods init
+     * @param data
+     * @returns {*}
+     */
     setData: function (data) {
         this.set('data', data);
         return this;
     },
+    /**
+     * @methods getData
+     * @returns {Function}
+     */
     getData: function () {
         return this._data;
     },
+    /**
+     * @methods setOptions
+     * @param opts
+     * @returns {*}
+     */
     setOptions: function (opts) {
         this.set('options', opts);
         return this;
     },
+    /**
+     * @methods getOptions
+     * @returns {Object}
+     */
     getOptions: function () {
         return this._options;
     },
+    /**
+     * @methods getOption
+     * @param name
+     * @returns {*}
+     */
     getOption: function (name) {
         return this._options[name];
     },
+    /**
+     * @methods setResponse
+     * @param response
+     * @returns {*|StyleSheet|this|set}
+     */
     setResponse: function (response) {
         return this.set('response', response);
     },
+    /**
+     * @methods getResponse
+     * @returns {Object}
+     */
     getResponse: function () {
         return this.get('response');
     },
+    /**
+     * @methods setStatus
+     * @param status
+     * @returns {Number}
+     */
     setStatus: function (status) {
         var statuses = ya.data.Action.$status,
             check = false, st;
@@ -64,6 +106,10 @@ ya.Core.$extend({
 
         return this.set('status', status);
     },
+    /**
+     * @methods getStatus
+     * @returns {Object}
+     */
     getStatus: function () {
         return this.get('status');
     }

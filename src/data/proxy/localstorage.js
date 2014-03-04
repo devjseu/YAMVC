@@ -1,6 +1,11 @@
 /**
+ * @description
+ * ## Localstorage
+ *   Proxy provides access to localStorage object. Gives possibility to retrieve data
+ *   by id or trough parameters.
  * @namespace ya.data.proxy
  * @class Localstorage
+ * @extends ya.data.Proxy
  */
 ya.data.Proxy.$extend({
     module: 'ya',
@@ -31,6 +36,7 @@ ya.data.Proxy.$extend({
         }
     },
     /**
+     * @method readBy
      * @param action
      * @returns {Localstorage}
      */
@@ -141,6 +147,7 @@ ya.data.Proxy.$extend({
     },
     /**
      *
+     * @method readById
      * @param action
      * @returns {Localstorage}
      */
@@ -194,6 +201,7 @@ ya.data.Proxy.$extend({
         return me;
     },
     /**
+     * @methods create
      * @param action
      * @returns {Localstorage}
      */
@@ -277,6 +285,7 @@ ya.data.Proxy.$extend({
         return me;
     },
     /**
+     * @methods update
      * @param action
      * @returns {Localstorage}
      */
@@ -361,7 +370,7 @@ ya.data.Proxy.$extend({
         return me;
     },
     /**
-     *
+     * @methods destroy
      * @param action
      * @returns {Localstorage}
      */
@@ -444,7 +453,7 @@ ya.data.Proxy.$extend({
         return me;
     },
     /**
-     *
+     * @methods executeCondition
      * @param record
      * @param filter
      * @returns {boolean}

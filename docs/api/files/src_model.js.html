@@ -47,6 +47,8 @@
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
             
+                <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
+            
                 <li><a href="../classes/ya.Core.html">ya.Core</a></li>
             
                 <li><a href="../classes/ya.data.Action.html">ya.data.Action</a></li>
@@ -123,6 +125,7 @@
 /**
  * @namespace ya
  * @class Model
+ * @extends ya.Core
  */
 ya.Core.$extend({
     module: &#x27;ya&#x27;,
@@ -139,9 +142,6 @@ ya.Core.$extend({
             return ya.Model.$id++;
         }
     },
-    /**
-     * @defaults
-     */
     defaults: {
         /**
          * @attribute config.idProperty

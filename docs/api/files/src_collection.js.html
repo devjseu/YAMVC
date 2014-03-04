@@ -47,6 +47,8 @@
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
             
+                <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
+            
                 <li><a href="../classes/ya.Core.html">ya.Core</a></li>
             
                 <li><a href="../classes/ya.data.Action.html">ya.data.Action</a></li>
@@ -123,12 +125,23 @@
 /**
  * @namespace ya
  * @class Collection
+ * @extends ya.Core
  */
 ya.Core.$extend({
     module: &#x27;ya&#x27;,
     alias: &#x27;Collection&#x27;,
     defaults: {
+        /**
+         * @attribute config.namespace
+         * @type String Namespace of collection
+         * @required
+         */
         namespace: null,
+        /**
+         * @attribute config.namespace
+         * @type ya.data.Proxy Instance of proxy for transfering data
+         * @required
+         */
         proxy: null
     },
     /**

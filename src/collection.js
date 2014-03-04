@@ -1,12 +1,23 @@
 /**
  * @namespace ya
  * @class Collection
+ * @extends ya.Core
  */
 ya.Core.$extend({
     module: 'ya',
     alias: 'Collection',
     defaults: {
+        /**
+         * @attribute config.namespace
+         * @type String Namespace of collection
+         * @required
+         */
         namespace: null,
+        /**
+         * @attribute config.namespace
+         * @type ya.data.Proxy Instance of proxy for transfering data
+         * @required
+         */
         proxy: null
     },
     /**
@@ -326,7 +337,7 @@ ya.Core.$extend({
         var me = this,
             data = me.get('data'),
             idProperty = me.get('idProperty'),
-            deferred = ya.promise.$deferred(),
+            deferred = ya.$promise.deferred(),
             namespace = me.getNamespace(),
             action = new ya.data.Action(),
             callback,
@@ -369,7 +380,7 @@ ya.Core.$extend({
     },
     save: function () {
         var me = this,
-            deferred = ya.promise.$deferred(),
+            deferred = ya.$promise.deferred(),
             action,
             toCreate = [],
             toUpdate = [],
