@@ -1,4 +1,4 @@
-/*! yamvc v0.2.0 - 2014-03-04 
+/*! yamvc v0.2.0 - 2014-03-05 
  *  License:  */
 /**
  Main framework object...
@@ -3572,11 +3572,6 @@ ya.Core.$extend({
     document.body.appendChild(style);
     window.addEventListener('resize', onWindowResize);
 
-    /**
-     * @class $Manager
-     * @namespace ya.view
-     * @static
-     */
     VM = {
         // `ya.view.$Manager` stores all created views and allow as to
         // use `get` method (with id as argument) to return requested view.
@@ -3755,7 +3750,7 @@ ya.Core.$extend({
             } else if (typeof config.tpl === 'object') {
 
                 Instance = ya.$get(config.tpl.alias);
-                config.tpl = Instance ? Instance.$create({config: config}) : ya.view.Template.$create({config: config});
+                config.tpl = Instance ? Instance.$create({config: config.tpl}) : ya.view.Template.$create({config: config.tpl});
                 div.innerHTML = config.tpl.getHtml().innerHTML;
 
             } else if (typeof config.tpl == 'string' || config.tpl instanceof String) {

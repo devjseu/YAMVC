@@ -43,8 +43,6 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$Manager.html">ya.$Manager</a></li>
-            
                 <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
@@ -76,6 +74,8 @@
                 <li><a href="../classes/ya.Router.html">ya.Router</a></li>
             
                 <li><a href="../classes/ya.View.html">ya.View</a></li>
+            
+                <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
             
                 <li><a href="../classes/ya.view.DOM.html">ya.view.DOM</a></li>
             
@@ -201,11 +201,6 @@
     document.body.appendChild(style);
     window.addEventListener(&#x27;resize&#x27;, onWindowResize);
 
-    /**
-     * @class $Manager
-     * @namespace ya.view
-     * @static
-     */
     VM = {
         // &#x60;ya.view.$Manager&#x60; stores all created views and allow as to
         // use &#x60;get&#x60; method (with id as argument) to return requested view.
@@ -384,7 +379,7 @@
             } else if (typeof config.tpl === &#x27;object&#x27;) {
 
                 Instance = ya.$get(config.tpl.alias);
-                config.tpl = Instance ? Instance.$create({config: config}) : ya.view.Template.$create({config: config});
+                config.tpl = Instance ? Instance.$create({config: config.tpl}) : ya.view.Template.$create({config: config.tpl});
                 div.innerHTML = config.tpl.getHtml().innerHTML;
 
             } else if (typeof config.tpl == &#x27;string&#x27; || config.tpl instanceof String) {

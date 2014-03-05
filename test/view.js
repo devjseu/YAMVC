@@ -316,8 +316,6 @@ test("initialize template in shorter way", function () {
 
     view.render();
 
-    console.log(view,view.querySelector('.target'));
-
     ok(view.querySelector('.target') !== null);
 
 });

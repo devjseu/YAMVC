@@ -73,11 +73,6 @@
     document.body.appendChild(style);
     window.addEventListener('resize', onWindowResize);
 
-    /**
-     * @class $Manager
-     * @namespace ya.view
-     * @static
-     */
     VM = {
         // `ya.view.$Manager` stores all created views and allow as to
         // use `get` method (with id as argument) to return requested view.
