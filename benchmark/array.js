@@ -4,7 +4,7 @@ Measure.module('Array');
  * test 1
  */
 
-Measure.suit('iterate and compare', function (start, stop) {
+Measure.suit('iterate through arrays and compare values', function (start, stop) {
     // make some preparation before tests
     var user = [],
         user2 = [],
@@ -40,7 +40,7 @@ Measure.suit('iterate and compare', function (start, stop) {
     stop();
 });
 
-Measure.suit('indexOf', function (start, stop) {
+Measure.suit('iterate through arrays and search for values using indexOf', function (start, stop) {
     // make some preparation before tests
     var user = [],
         user2 = [],
@@ -64,6 +64,100 @@ Measure.suit('indexOf', function (start, stop) {
     while (len--) {
 
         if (user.indexOf(user2[len]) >= 0) break;
+
+    }
+
+    // finish test
+    stop();
+});
+
+
+Measure.suit('iterate array and compare strings', function (start, stop, loop) {
+    // make some preparation before tests
+    var user = [],
+        compare = [
+            'test',
+            'test2'
+        ].join("."),
+        len;
+
+    /* create 10000 rec */
+    for (var i = 0; i < 100000; i++) {
+        user.push([
+            Math.random().toString(36).substr(2, 5),
+            Math.random().toString(36).substr(2, 5)
+        ]);
+    }
+
+    user[17] = ['test', 'test2'];
+
+
+    loop(10);
+
+    // start test
+    start();
+
+
+    len = user.length;
+    while (len--) {
+
+        if (user[len].join(".") === compare) {
+            //match
+        }
+
+    }
+
+    // finish test
+    stop();
+});
+
+Measure.suit('iterate array and compare arrays', function (start, stop, loop) {
+    // make some preparation before tests
+    var user = [],
+        compare = [
+            'test',
+            'test2'
+        ],
+        tmp = [],
+        match = false,
+        len;
+
+    /* create 10000 rec */
+    for (var i = 0; i < 100000; i++) {
+        user.push([
+            Math.random().toString(36).substr(2, 5),
+            Math.random().toString(36).substr(2, 5)
+        ]);
+    }
+
+    user[17] = ['test', 'test2'];
+
+    loop(10);
+
+    // start test
+    start();
+
+
+    len = user.length;
+    while (len--) {
+
+        tmp = compare.slice();
+        match = false;
+        while (tmp.length) {
+
+            if (user[len][tmp.length - 1] === tmp.pop()) {
+
+                if (tmp.length === 0) {
+                    match = true;
+                }
+
+            }
+
+        }
+
+        if (match) {
+            //match
+        }
 
     }
 
@@ -120,7 +214,7 @@ Measure.suit('clone array using for-unshift', function (start, stop, loop) {
     // start test
     start();
 
-    for (var i = a.length; i--; ) {
+    for (var i = a.length; i--;) {
         b.unshift(a[i]);
     }
 
@@ -178,7 +272,7 @@ Measure.suit('clone array using Array.apply', function (start, stop, loop) {
     // start test
     start();
 
-    b = Array.apply(undefined,a);
+    b = Array.apply(undefined, a);
 
     // finish test
     stop();

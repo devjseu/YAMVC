@@ -231,7 +231,7 @@ test("assign listeners for multiple views", function () {
     ya.View.$create({
         config: {
             id: 'test3a',
-            parent: ya.view.$Manager.get('test3'),
+            parent: ya.view.$manager.get('test3'),
             renderTo: 'div',
             tpl: ya.view.Template.$create({
                 config: {
@@ -248,7 +248,7 @@ test("assign listeners for multiple views", function () {
     ya.View.$create({
         config: {
             id: 'test3b',
-            parent: ya.view.$Manager.get('test3'),
+            parent: ya.view.$manager.get('test3'),
             renderTo: 'div',
             tpl: ya.view.Template.$create({
                 config: {
@@ -265,7 +265,7 @@ test("assign listeners for multiple views", function () {
     ya.View.$create({
         config: {
             id: 'test3c',
-            parent: ya.view.$Manager.get('test3'),
+            parent: ya.view.$manager.get('test3'),
             renderTo: 'div',
             tpl: ya.view.Template.$create({
                 config: {
@@ -282,7 +282,7 @@ test("assign listeners for multiple views", function () {
     ya.View.$create({
         config: {
             id: 'test3ba',
-            parent: ya.view.$Manager.get('test3b'),
+            parent: ya.view.$manager.get('test3b'),
             renderTo: '.content',
             tpl: ya.view.Template.$create({
                 config: {
@@ -297,7 +297,7 @@ test("assign listeners for multiple views", function () {
     });
 
 
-    ya.view.$Manager.get('test3').render();
+    ya.view.$manager.get('test3').render();
 
     var li1, li2;
 
@@ -332,7 +332,7 @@ test("assign listeners for multiple views", function () {
         }
     });
 
-    ya.view.$Manager.get('test3ba').addChild(li1, 'ul');
+    ya.view.$manager.get('test3ba').addChild(li1, 'ul');
     li2.render();
 
     click(li1.get('el'));

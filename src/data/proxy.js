@@ -36,13 +36,13 @@ ya.Core.$extend({
             id;
 
         if (!(action instanceof ya.data.Action))
-            throw new Error('ya.data.Proxy: read argument action should be instance of ya.data.Action');
+            throw ya.Error.$create('ya.data.Proxy: read argument action should be instance of ya.data.Action');
 
         opts = action.getOptions();
         id = opts.params && opts.params.id;
 
         if (!action.getOption('namespace'))
-            throw new Error('ya.data.Proxy: namespace should be set');
+            throw ya.Error.$create('ya.data.Proxy: namespace should be set');
 
         if (typeof id === 'undefined') {
             me.readBy(action);
@@ -61,13 +61,13 @@ ya.Core.$extend({
         var me = this;
 
         if (!(action instanceof ya.data.Action))
-            throw new Error('ya.data.Proxy: create argument action should be instance of ya.data.Action');
+            throw ya.Error.$create('ya.data.Proxy: create argument action should be instance of ya.data.Action');
 
         if (!action.getOption('namespace'))
-            throw new Error('ya.data.Proxy: namespace should be set');
+            throw ya.Error.$create('ya.data.Proxy: namespace should be set');
 
         if (!action.getData() || typeof action.getData() !== 'object')
-            throw new Error('ya.data.Proxy: Data should be object');
+            throw ya.Error.$create('ya.data.Proxy: Data should be object');
 
         return me;
     },
@@ -80,13 +80,13 @@ ya.Core.$extend({
         var me = this;
 
         if (!(action instanceof ya.data.Action))
-            throw new Error('ya.data.Proxy: update argument action should be instance of ya.data.Action');
+            throw ya.Error.$create('ya.data.Proxy: update argument action should be instance of ya.data.Action');
 
         if (!action.getOption('namespace'))
-            throw new Error('ya.data.Proxy: namespace should be set');
+            throw ya.Error.$create('ya.data.Proxy: namespace should be set');
 
         if (!action.getData() || typeof action.getData() !== 'object')
-            throw new Error('ya.data.Proxy: Data should be object');
+            throw ya.Error.$create('ya.data.Proxy: Data should be object');
 
         return me;
     },
@@ -99,13 +99,13 @@ ya.Core.$extend({
         var me = this;
 
         if (!(action instanceof ya.data.Action))
-            throw new Error('ya.data.Proxy: destroy argument action should be instance of ya.data.Action');
+            throw ya.Error.$create('ya.data.Proxy: destroy argument action should be instance of ya.data.Action');
 
         if (!action.getOption('namespace'))
-            throw new Error('ya.data.Proxy: namespace should be set');
+            throw ya.Error.$create('ya.data.Proxy: namespace should be set');
 
         if (!action.getData() || typeof action.getData() !== 'object')
-            throw new Error('Data should be pass as object');
+            throw ya.Error.$create('Data should be pass as object');
 
         return me;
     }

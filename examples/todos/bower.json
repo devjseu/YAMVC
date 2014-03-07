@@ -1,0 +1,10 @@
+{
+  "name": "todomvc-yamvc",
+  "ignore": [
+    "css",
+    "js",
+    "index.html"
+  ],
+  "dependencies": {
+  }
+}

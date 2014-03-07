@@ -9,7 +9,7 @@ Yet Another MVC library. Why? Because. Without reason...
 * open for extension
 
 ##Cons
-* no compatibility with IE8 and less
+* unknown compatibility with IE8 and less
 
 ##Docs
 * [Under Construction](http://devjseu.github.io/YAMVC.html "Under Construction")
@@ -20,7 +20,7 @@ Yet Another MVC library. Why? Because. Without reason...
 * node.js
 
 ###Dependency
-Resolve them typing `npm install` and `bower install` in console in root directory.
+Resolve them in console typing `npm install` and `bower install` in the root directory of project.
 
 ###Build
 Type `grunt`.

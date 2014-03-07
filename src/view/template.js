@@ -31,7 +31,7 @@ ya.Core.$extend({
         me.__super();
 
         if (!config.id)
-            throw new Error("ya.view.Template: Template need to have id");
+            throw ya.Error.$create("ya.view.Template: Template need to have id");
 
         return me;
     },

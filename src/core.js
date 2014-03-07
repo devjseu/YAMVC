@@ -16,8 +16,23 @@ ya.$set('ya', 'Core', (function () {
 
     /**
      @method init
+     @abstract
      */
     Core.prototype.init = function () {
+    };
+
+    /**
+     @method initDefaults
+     @abstract
+     */
+    Core.prototype.initDefaults = function () {
+    };
+
+    /**
+     @method initRequired
+     @abstract
+     */
+    Core.prototype.initRequired = function () {
     };
 
     /**
@@ -38,11 +53,11 @@ ya.$set('ya', 'Core', (function () {
      * @method initConfig
      * @chainable
      */
-    Core.prototype.initConfig = function () {
+    Core.prototype.initConfig = function (opts) {
         var me = this,
-            config = me.get('config'),
             getter,
             setter,
+            config,
             property,
             init = function (property) {
                 getter = "get" + property.charAt(0).toUpperCase() + property.slice(1);
@@ -58,6 +73,13 @@ ya.$set('ya', 'Core', (function () {
                     }
                 };
             };
+
+        opts = opts || {};
+        config = ya.$merge(me._config, opts.config);
+
+        me.set('initOpts', opts);
+        me.set('config', config);
+
         for (property in config) {
             if (config.hasOwnProperty(property)) {
                 init(property);
@@ -152,7 +174,7 @@ ya.$set('ya', 'Core', (function () {
      * @returns {*} value stored under passed property
      */
 
-    // Add observable methods.
+        // Add observable methods.
     Core.$mixin(ya.mixins.Observable);
 
     return Core;

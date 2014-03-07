@@ -7,7 +7,7 @@
  *         config: {
  *             name: 'Main',
  *             views: {
- *                 layout: view.$Manager.get('view-0')
+ *                 layout: view.$manager.get('view-0')
  *             },
  *             routes: {
  *                 "page/{\\d+}": 'changePage'
@@ -40,33 +40,29 @@
 ya.Core.$extend({
     module: 'ya',
     alias: 'Controller',
+    defaults: {
+        routes: null,
+        events: null
+    },
     static: {
-        id: 0,
         router: null,
-        idGenerator: function () {
-            return ya.Controller.id++;
-        },
         getRouter: function () {
+
             ya.Controller.$router = ya.Controller.$router || new ya.Router();
 
             return ya.Controller.$router;
         }
     },
     init: function (opts) {
-        var me = this, config;
+        var me = this;
 
-        opts = opts || {};
-        config = ya.$merge(me._config, opts.config);
-        config.id = config.id || 'controller-' + ya.Controller.$idGenerator();
-        me.router = ya.Controller.$getRouter();
+        me.__super(opts);
 
-        me.set('initOpts', opts);
-        me.set('config', config);
-        me.set('routes', config.routes || {});
-        me.set('events', config.events || {});
-        me.set('views', config.views || {});
-
-        me.initConfig();
+        me
+            .initConfig(opts)
+            .initDefaults()
+            .initEvents()
+            .initRoutes();
 
         ya.$onReady(function () {
             me.restoreRouter();
@@ -74,23 +70,29 @@ ya.Core.$extend({
 
         return me;
     },
-    initConfig: function () {
-        ya.Core.prototype.initConfig.apply(this);
+    /**
+     * @method initDefaults
+     * @returns {*}
+     */
+    initDefaults: function () {
+        var me = this;
+
+        me.set('router', ya.Controller.$getRouter());
+        me.set('dispatcher', ya.event.$dispatcher);
+
+        return me;
+    },
+    /**
+     *
+     * @returns {*}
+     */
+    initEvents: function () {
         var me = this,
-            routes = me.get('routes'),
-            events = me.get('events'),
+            events = me.getEvents(),
             views = [],
             rx = new RegExp('\\$([^\\s]+)'),
+            dispatcher = me._dispatcher,
             matches, view, l, obj;
-
-        if (routes) {
-            for (var k in routes) {
-                if (routes.hasOwnProperty(k)) {
-                    var callback = me[routes[k]].bind(me);
-                    router.when(k, callback);
-                }
-            }
-        }
 
         if (events) {
 
@@ -100,7 +102,8 @@ ya.Core.$extend({
 
                     obj = {};
                     obj[e] = events[e];
-                    ya.event.$dispatcher.add(me, obj);
+
+                    dispatcher.add(me, obj);
 
                     matches = e.match(rx);
                     if (matches) {
@@ -113,7 +116,9 @@ ya.Core.$extend({
 
                     } else {
 
-                        throw new Error('Event query should begin from id of the view (current query: ' + e + ')');
+                        throw ya.Error.$create(
+                            'Event query should begin from id of the view (current query: ' + e + ')', 'CONTROLLER1'
+                        );
 
                     }
 
@@ -125,7 +130,7 @@ ya.Core.$extend({
             while (l--) {
 
                 view = ya
-                    .view.$Manager
+                    .view.$manager
                     .get(views[l]);
                 if (view) {
 
@@ -143,7 +148,28 @@ ya.Core.$extend({
             }
 
         }
-        return this;
+
+        return me;
+    },
+    /**
+     *
+     * @returns {*}
+     */
+    initRoutes: function () {
+        var me = this,
+            routes = me.getRoutes(),
+            router = me._router;
+
+        if (routes) {
+            for (var k in routes) {
+                if (routes.hasOwnProperty(k)) {
+                    var callback = me[routes[k]].bind(me);
+                    router.when(k, callback);
+                }
+            }
+        }
+
+        return me;
     },
     resolveEvents: function (view) {
         var events = this.get('events'),

@@ -18,29 +18,22 @@ ya.Core.$extend({
          */
         init: function (opts) {
             // Standard way of initialization.
-            var me = this, config;
+            var me = this;
 
-            me.__super(opts);
+            me.__super();
 
-            opts = opts || {};
-            config = ya.$merge(me._config, opts.config);
-
-            me.set('initOpts', opts);
-            me.set('config', config);
-
-            me.initConfig();
+            me
+                .initConfig(opts)
+                .initDefaults();
 
             return me;
         },
     /**
-     * @methods initConfig
+     * @methods initDefaults
      * @returns {*}
      */
-        initConfig: function () {
+    initDefaults: function () {
             var me = this;
-
-            // After calling parent method
-            me.__super.apply(me, arguments);
 
             // set defaults.
             me.setDelegates([]);
@@ -89,7 +82,7 @@ ya.Core.$extend({
                     return r.selector.search(regExp) >= 0;
 
                 },
-                isQueryMatch = ya.mixins.Selector.isQueryMatch,
+                isQueryMatch = ya.mixins.DOM.isQueryMatch,
                 __findAllByFn = ya.mixins.Array.findAllByFn,
                 __each = ya.mixins.Array.each,
             // Other variables which need to be defined.

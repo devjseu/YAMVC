@@ -1,4 +1,5 @@
 module('View');
+
 test("initialize", function () {
     var view;
 
@@ -239,62 +240,60 @@ test("check if query match", function () {
         }
     }).render();
 
-    ok(ya.view.$Manager.get('selector-test').isQueryMatch('div#selector-test.employee.senior'));
+    ok(ya.view.$manager.get('selector-test').isQueryMatch('div#selector-test.employee.senior'));
 
-    ok(!ya.view.$Manager.get('selector-test').isQueryMatch('span'));
+    ok(!ya.view.$manager.get('selector-test').isQueryMatch('span'));
 
-    ok(ya.view.$Manager.get('selector-test').isQueryMatch('#selector-test.senior'));
+    ok(ya.view.$manager.get('selector-test').isQueryMatch('#selector-test.senior'));
 });
 
 
-//test("bind with collection", function () {
-//    var view, collection;
-//
-//    collection = new ya.Collection({
-//        config: {
-//            namespace: 'example',
-//            data: [
-//                {
-//                    name: "Seba",
-//                    display: "true"
-//                },
-//                {
-//                    name: "Seba 2",
-//                    display: "none"
-//                },
-//                {
-//                    name: "Seba 3",
-//                    display: "true"
-//                }
-//            ]
-//        }
-//    });
-//
-//    view = ya.View.$create({
-//        config: {
-//            collections: [
-//                collection
-//            ],
-//            tpl: ya.view.Template.$create({
-//                config: {
-//                    id: 'tpl-example-5',
-//                    tpl: [
-//                        '<div>',
-//                        '<ul reapeat="">',
-//                        '<li>{{}}</li>',
-//                        '</ul>',
-//                        '</div>'
-//                    ]
-//                }
-//            }),
-//            renderTo: '#test-6'
-//        }
-//    });
-//
-//    view.render();
-//
-//    equal(view.querySelector('.example').innerText, 'Hi Seba');
-//});
+test("bind with collection", function () {
+    var view, collection;
+
+    collection = ya.Collection.$create({
+        config: {
+            id: 'todos',
+            namespace: 'example',
+            data: [
+                {
+                    name: "Seba",
+                    display: "true"
+                },
+                {
+                    name: "Seba 2",
+                    display: "none"
+                },
+                {
+                    name: "Seba 3",
+                    display: "true"
+                }
+            ]
+        }
+    });
+
+    view = ya.View.$create({
+        config: {
+            tpl: ya.view.Template.$create({
+                config: {
+                    id: 'tpl-example-5',
+                    tpl: [
+                        '<div>',
+                        '<ul ya-collection="$todos example[class=ya.Collection]">',
+                        '<li>{{example.}}</li>',
+                        '</ul>',
+                        '</div>'
+                    ]
+                }
+            }),
+            renderTo: '#test-6'
+        }
+    });
+
+    view.render();
+
+    equal(view.querySelectorAll('.example').length, 3, 'Three nodes should be assigned');
+});
 
 test("initialize template in shorter way", function () {
     var view;

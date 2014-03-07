@@ -42,6 +42,7 @@ ya.$set('ya', 'mixins.CoreStatic', {
             for (key in defaults) {
                 if (__hasProp.call(defaults, key)) this._config[key] = defaults[key];
             }
+
             ya.Core.apply(this, arguments);
         };
 
@@ -102,10 +103,12 @@ ya.$set('ya', 'mixins.CoreStatic', {
 
         return __Class;
     },
-    $create: function (opts) {
-        var Obj = this;
-        // for jshint
-        return new Obj(opts);
+    $create: function () {
+        /*jshint -W058 */
+        var Obj = this,
+            args = Array.prototype.concat.apply([Obj], arguments);
+
+        return  new (Function.prototype.bind.apply(Obj, args));
     },
     $mixin: function (obj, mixin) {
         var prototype,

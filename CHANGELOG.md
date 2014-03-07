@@ -54,3 +54,6 @@ filtering function
 * base methods segregated and moved to new files
 * overridden method can be now executed using `__super`
 * when extending object now you need to pass an alias for newly created one
+* documentation generated with yuidoc
+* `ya.view.T2DOM`, new layer for resolving view - model bindings
+* refactored code in nearly every classes to follow the framework guideline

@@ -7,6 +7,7 @@ ya.Core.$extend({
     module: 'ya',
     alias: 'Collection',
     defaults: {
+        id: null,
         /**
          * @attribute config.namespace
          * @type String Namespace of collection
@@ -14,34 +15,47 @@ ya.Core.$extend({
          */
         namespace: null,
         /**
+         * @attribute config.model
+         * @type ya.Model Model instance
+         * @required
+         */
+        model: null,
+        /**
          * @attribute config.namespace
-         * @type ya.data.Proxy Instance of proxy for transfering data
+         * @type ya.data.Proxy Instance of proxy for transferring data
          * @required
          */
         proxy: null
     },
     /**
-     * @method init
      * initialize collection
+     * @method init
      * @param opts
      */
     init: function (opts) {
-        var me = this, config;
+        var me = this;
 
         me.__super(opts);
 
-        opts = opts || {};
-        config = ya.$merge(me._config, opts.config);
+        me.initConfig(opts)
+            .initDefaults()
+            .initData();
 
-        me.set('initOpts', opts);
-        me.set('config', config);
+        return me;
+    },
+    /**
+     * @method init
+     * @returns {*}
+     */
+    initDefaults: function () {
+        var me = this;
+
         me.set('set', []);
         me.set('cache', []);
         me.set('removed', []);
         me.set('filters', []);
-
-        me.initConfig();
-        me.initData();
+        me.set('raw', me.getData() || []);
+        me.setModel(me.getModel()|| ya.$get('ya.Model'));
 
         return me;
     },
@@ -50,11 +64,9 @@ ya.Core.$extend({
      * initialize data
      */
     initData: function () {
-        var me = this,
-            data = me.getData() || [];
+        var me = this;
 
-        me.set('raw', data);
-        me.prepareData(data);
+        me.prepareData(me._raw);
 
         return me;
     },
@@ -71,7 +83,7 @@ ya.Core.$extend({
         t = Object(records);
         len = t.length >>> 0;
         if (typeof fn !== "function")
-            throw new TypeError();
+            throw ya.Error.$create('forEach argument should be a function', 'COLLECTION1');
 
         for (var i = 0; i < len; i++) {
             if (i in t)
@@ -339,7 +351,7 @@ ya.Core.$extend({
             idProperty = me.get('idProperty'),
             deferred = ya.$promise.deferred(),
             namespace = me.getNamespace(),
-            action = new ya.data.Action(),
+            action = ya.data.Action.$create(),
             callback,
             key, i = 0;
 
@@ -348,10 +360,10 @@ ya.Core.$extend({
         if (
             i === 0
             )
-            throw new Error('You need to pass at least one condition to load model collection');
+            throw ya.Error.$create('You need to pass at least one condition to load model collection', 'COLLECTION2');
 
         if (!me.getProxy())
-            throw new Error('To load collection you need to set proxy');
+            throw ya.Error.$create('To load collection you need to set proxy', 'COLLECTION3');
 
 
         callback = function () {
@@ -485,7 +497,7 @@ ya.Core.$extend({
 
             toFinish++;
 
-            action = new ya.data.Action();
+            action = ya.data.Action.$create();
 
             action
                 .setOptions({
@@ -502,7 +514,7 @@ ya.Core.$extend({
 
             toFinish++;
 
-            action = new ya.data.Action();
+            action = ya.data.Action.$create();
 
             action
                 .setOptions({
@@ -518,7 +530,7 @@ ya.Core.$extend({
 
             toFinish++;
 
-            action = new ya.data.Action();
+            action = ya.data.Action.$create();
 
             action
                 .setOptions({
@@ -547,6 +559,7 @@ ya.Core.$extend({
             models = [];
 
         total = total || l;
+
         for (var i = 0; i < l; i++) {
 
             modelConfig.data = data[i];

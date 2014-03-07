@@ -18,19 +18,19 @@ ya.Core.$extend({
      * @param opts
      */
     init: function (opts) {
-        var me = this, config;
+        var me = this;
 
-        opts = opts || {};
+        me
+            .initConfig(opts)
+            .initDefaults();
+    },
+    initDefaults: function () {
+        var me = this;
 
-        me.__super(opts);
-        config = ya.$merge(me._config, opts.config);
-
-        me.set('initOpts', opts);
-        me.set('config', config);
         me.set('response', {});
         me.set('status', ya.data.Action.$status.PENDING);
 
-        me.initConfig();
+        return me;
     },
     /**
      * @methods init
@@ -102,7 +102,7 @@ ya.Core.$extend({
         }
 
         if (!check)
-            throw new Error('ya.data.Action: Wrong status');
+            throw ya.Error.$create('ya.data.Action: Wrong status', 'ACTION1');
 
         return this.set('status', status);
     },

@@ -67,7 +67,7 @@ module.exports = function (grunt) {
                 sourceMappingURL: sourceMapUrl
             },
             target: {
-                src: ['src/ya.js', 'src/mixins/**/*.js', 'src/core.js', 'src/**/*.js'],
+                src: ['src/ya.js', 'src/mixins/**/*.js', 'src/core.js', 'src/error.js', 'src/**/*.js'],
                 dest: minRelease
             }
         },
@@ -76,7 +76,7 @@ module.exports = function (grunt) {
                 banner: bannerContent
             },
             target: {
-                src: ['src/ya.js', 'src/mixins/**/*.js', 'src/core.js', 'src/**/*.js'],
+                src: ['src/ya.js', 'src/mixins/**/*.js', 'src/core.js', 'src/error.js', 'src/**/*.js'],
                 dest: devRelease
             }
         },
@@ -129,7 +129,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-blanket-qunit');
     grunt.loadNpmTasks('grunt-contrib-connect');
 
-    grunt.registerTask("tdd", ['jshint', 'connect', 'blanket_qunit']);
+    grunt.registerTask("tdd", ['jshint', 'connect', 'qunit']);
     grunt.registerTask("tdd:browser", ['watch:default']);
     grunt.registerTask('default', ['jshint', 'concat', 'uglify', 'copy', 'yuidoc']);
     grunt.registerTask('travis', ['jshint', 'connect:server', 'blanket_qunit:all', 'concat', 'uglify', 'copy', 'yuidoc']);

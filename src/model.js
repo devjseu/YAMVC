@@ -30,54 +30,58 @@ ya.Core.$extend({
          * @attribute config.proxy
          * @type ya.data.Proxy
          */
-        proxy: null
+        proxy: null,
+        /**
+         * @attribute config.namespace
+         * @type String tell us what type of data is stored in model, can be the same us ex. table name in database
+         * @default id
+         * @required
+         */
+        namespace: null,
+        /**
+         * @attribute config.data
+         * @type Array stores raw data
+         * @default {}
+         * @required
+         */
+        data: null
     },
     /**
      * @method init
      * @param opts
      */
     init: function (opts) {
-        var me = this, config;
+        var me = this;
 
         me.__super(opts);
 
-        opts = opts || {};
-        config = ya.$merge(me._config, opts.config);
-
-        me.set('initOpts', opts);
-        me.set('config', config);
-        me.set('isDirty', true);
-
-        me.initConfig();
-        me.initData();
+        me
+            .initConfig(opts)
+            .initRequired()
+            .initDefaults();
 
     },
     /**
-     * @method initConfig
-     * @returns {Model}
+     * @method initRequired
+     * @returns {*}
      */
-    initConfig: function () {
-        var me = this,
-            config = me._config;
+    initRequired: function () {
+        var me = this;
 
-        if (!config.namespace)
-            throw new Error("Model need to have namespace");
-
-        if (!config.data)
-            config.data = {};
-
-        me.set('clientId', config.namespace + '-' + ya.Model.$idGenerator());
-
-        me.__super();
+        if (!me.getNamespace())
+            throw ya.Error.$create("Model need to have namespace");
 
         return me;
     },
     /**
-     * @method initData
+     * @method initDefaults
+     * @returns {*}
      */
-    initData: function () {
+    initDefaults: function () {
         var me = this;
 
+        me.set('isDirty', true);
+        me.set('clientId', me.getNamespace() + '-' + ya.Model.$idGenerator());
         me.set('data', me.getData() || {});
 
         return me;
@@ -178,7 +182,7 @@ ya.Core.$extend({
         if (
             typeof params[idProperty] === 'undefined' && typeof data[idProperty] === 'undefined'
             )
-            throw new Error('You need to pass id to load model');
+            throw ya.Error.$create('You need to pass id to load model');
 
         params[idProperty] = data[idProperty];
 
@@ -288,7 +292,7 @@ ya.Core.$extend({
             response;
 
         if (typeof data[idProperty] === 'undefined')
-            throw new Error('Can not remove empty model');
+            throw ya.Error.$create('Can not remove empty model');
 
         opts.namespace = me.getNamespace();
         opts.callback = function (proxy, action) {

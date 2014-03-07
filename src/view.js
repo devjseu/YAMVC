@@ -5,7 +5,7 @@
 (function (undefined) {
     "use strict";
 
-    var ya = window.ya || {},
+    var ya = window.ya,
         style = document.createElement('style'),
         __slice = Array.prototype.slice,
         VM,
@@ -74,14 +74,13 @@
     window.addEventListener('resize', onWindowResize);
 
     VM = {
-        // `ya.view.$Manager` stores all created views and allow as to
+        // `ya.view.$manager` stores all created views and allow as to
         // use `get` method (with id as argument) to return requested view.
         views: [],
-        toRender: [],
         i: 0,
         /**
          * @method add
-         * @for ya.view.$Manager
+         * @for ya.view.$manager
          * @param id
          * @param view
          */
@@ -100,7 +99,7 @@
         },
         /**
          * @method get
-         * @for ya.view.$Manager
+         * @for ya.view.$manager
          * @param id
          * @returns {View}
          */
@@ -119,7 +118,7 @@
         }
     };
 
-    ya.$set('ya', 'view.$Manager', VM);
+    ya.$set('ya', 'view.$manager', VM);
 
 
     VTM = {
@@ -143,7 +142,7 @@
      * @class View
      * @constructor
      * @extends ya.Core
-     * @uses ya.mixins.Selector
+     * @uses ya.mixins.DOM
      * @params opts Object with configuration properties
      * @type {function}
      */
@@ -156,11 +155,17 @@
         // of window was changed
         // * `hidden` - if true, component will be hidden after render
         defaults: {
+            id: null,
             /**
              * @attribute config.parent
              * @type ya.View
              */
             parent: null,
+            /**
+             * @attribute config.children
+             * @type Array
+             */
+            children: null,
             /**
              * @attribute config.fit
              * @type boolean
@@ -180,10 +185,16 @@
              * @attribute config.autoCreate
              * @type boolean
              */
-            autoCreate: false
+            autoCreate: false,
+            /**
+             * @attribute config.autoCreate
+             * @type ya.view.Template|String
+             * @required
+             */
+            tpl: null
         },
         mixins: [
-            ya.mixins.Selector
+            ya.mixins.DOM
         ],
         /**
          * @method init
@@ -199,30 +210,38 @@
 
             me.__super();
 
-            me.initDefaults(opts);
-            me.initConfig();
-            me.initTemplate();
-            me.initParent();
+            me
+                .initConfig(opts)
+                .initRequired()
+                .initDefaults()
+                .initTemplate()
+                .initParent();
+
             VM.add(me.getId(), me);
 
             return me;
         },
+        initRequired: function () {
+            var me = this;
+
+            if (!me.getTpl()) {
+
+                throw new Error(config.id + ': no tpl set');
+
+            }
+
+            return me;
+        },
         /**
-         *
-         * @method initDefaults
-         * @param opts
-         * @chainable
+         * @method init
+         * @returns {*}
          */
-        initDefaults: function (opts) {
-            var me = this, config;
+        initDefaults: function () {
+            var me = this;
 
-            opts = opts || {};
-            config = ya.$merge(me._config, opts.config);
-            config.id = config.id || 'view-' + VM.i;
-            config.children = config.children || [];
-
-            me.set('initOpts', opts);
-            me.set('config', config);
+            me.setId(me.getId() || 'view-' + VM.i);
+            me.setChildren(me.getChildren() || []);
+            me.setModels(me.getModels() || []);
 
             return me;
         },
@@ -233,46 +252,54 @@
          */
         initTemplate: function () {
             var me = this,
-                config = me.get('config'),
+                tpl = me.getTpl(),
                 div = document.createElement('div'),
                 Instance,
                 _tpl;
 
-            if (!config.tpl) {
+            if (typeof tpl === 'object' && !(tpl instanceof ya.view.Template)) {
 
-                throw new Error(config.id + ': no tpl set');
+                Instance = ya.$get(tpl.alias);
+                me.setTpl(
+                    Instance ?
+                        Instance.$create({config: tpl}) :
+                        ya.view.Template.$create({config: tpl})
+                );
 
-            }
+            } else if (typeof tpl == 'string' || tpl instanceof String) {
 
-            if (config.tpl instanceof ya.view.Template) {
+                if (VTM.get(tpl)) {
 
-                div.innerHTML = config.tpl.getHtml().innerHTML;
-
-            } else if (typeof config.tpl === 'object') {
-
-                Instance = ya.$get(config.tpl.alias);
-                config.tpl = Instance ? Instance.$create({config: config.tpl}) : ya.view.Template.$create({config: config.tpl});
-                div.innerHTML = config.tpl.getHtml().innerHTML;
-
-            } else if (typeof config.tpl == 'string' || config.tpl instanceof String) {
-
-                if (VTM.get(config.tpl)) {
-
-                    div.innerHTML = VTM.get(config.tpl).innerHTML;
+                    me.setTpl(VTM.get(tpl));
 
                 } else {
 
-                    _tpl = document.getElementById(config.tpl);
+                    _tpl = document.getElementById(tpl);
 
                     if (!_tpl)
-                        throw new Error('no tpl ' + config.tpl + ' found');
+                        throw new Error('no tpl ' + tpl + ' found');
 
-                    VTM.add(config.tpl, _tpl.parentNode.removeChild(_tpl));
-                    div.innerHTML = VTM.get(config.tpl).innerHTML;
+                    // todo: tmp solution, need to be replaced
+                    var obj = {
+                        config: {
+                            id: +new Date(),
+                            tpl: [_tpl.parentNode.innerHTML]
+                        }
+                    };
+
+                    Instance = ya.$get(tpl.alias);
+                    me.setTpl(
+                        Instance ?
+                            Instance.$create(obj) :
+                            ya.view.Template.$create(obj)
+                    );
+
+                    VTM.add(tpl, me.getTpl());
 
                 }
             }
 
+            div.innerHTML = me.getTpl().getHtml().innerHTML;
             me.set('tpl', div);
 
             return me;
@@ -329,11 +356,11 @@
             var me = this,
                 tpl = me._tpl,
                 config = me._config,
-                id = config.renderTo,
                 parent = config.parent,
-                parentView = config.parent,
+                selector = config.renderTo,
                 bindings = [],
                 headers = [],
+                parentEl,
                 results,
                 result,
                 header,
@@ -350,25 +377,11 @@
                 attrs = [],
                 attr;
 
+            parentEl = me.getParentEl(selector, true);
+
             if (me.isInDOM()) {
 
                 me.removeRendered();
-
-            }
-
-            if (parent) {// If parent is set,
-
-                if (id && parent.querySelector(id)) { // search for element to which we will append component.
-                    parent = parent.querySelector(id);
-                } else {// If not found, append to parent root element.
-                    parent = parent._el;
-                }
-
-            } else {// If parent not set,
-
-                if (id) { // but we have an id of element to which we want render new one,
-                    parent = document.querySelector(id);// we search for it in the whole document.
-                }
 
             }
 
@@ -563,15 +576,15 @@
             if (me.getHidden())
                 me.hide();
 
-            if (parent) {
+            if (parentEl) {
 
-                parent.appendChild(el);
+                parentEl.appendChild(el);
 
-                if (parentView) {
+                if (parent) {
 
-                    if (parentView.findChild(me.getId()) < 0) {
+                    if (parent.findChild(me.getId()) < 0) {
 
-                        parentView.getChildren().push(me);
+                        parent.getChildren().push(me);
 
                     }
 
@@ -890,8 +903,34 @@
             return this._isInDOM;
         },
         /**
-         * @param parent
+         *
          * @param selector
+         * @param globally
+         */
+        getParentEl: function (selector, globally) {
+            var me = this,
+                parent = me._config.parent,
+                parentEl;
+
+            if (me.isElement(selector)) {
+
+                parentEl = selector;
+
+            } else if (parent) {
+
+                parentEl = selector ? parent._el.querySelector(selector) : parent._el;
+
+            } else if (globally) {
+
+                parentEl = document.querySelector(selector);
+
+            }
+
+            return parentEl;
+        },
+        /**
+         * @param parent
+         * @param {String|HTMLElement} selector String or DOM Element
          * @returns {View}
          */
         appendTo: function (parent, selector) {
@@ -900,13 +939,11 @@
                 id = me.getId(),
                 views = parent.getChildren(),
                 oldParent = config.parent,
-                parentEl = selector ? parent._el.querySelector(selector) : parent._el;
+                parentEl;
 
-            if (selector) {
+            parentEl = me.getParentEl(selector, false);
 
-                config.renderTo = selector;
-
-            }
+            config.renderTo = parentEl;
 
             if (!oldParent) {
 

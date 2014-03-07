@@ -14,18 +14,26 @@ ya.$set('ya', 'mixins.Array', {
             val = argsLen > 1 ? arguments[1] : null,
             rec;
 
-        while (len--) {
+        if (argsLen > 1) {
 
-            rec = this[len];
-            if (argsLen > 1) {
+            while (len--) {
 
+                rec = this[len];
                 if (rec[key] === val) {
                     break;
                 }
-
-            } else if (rec === key) {
-                break;
             }
+
+        } else {
+
+            while (len--) {
+
+                rec = this[len];
+                if (rec === key) {
+                    break;
+                }
+            }
+
         }
 
         return len;
@@ -95,4 +103,5 @@ ya.$set('ya', 'mixins.Array', {
                 fun.call(thisArg, t[i], i, t);
         }
     }
-});
+})
+;

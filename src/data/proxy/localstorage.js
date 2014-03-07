@@ -192,7 +192,7 @@ ya.data.Proxy.$extend({
             }
 
             me.setStatus(ya.data.Action.$status.FAIL);
-            response.error = new Error("Not found");
+            response.error = ya.Error.$create("Not found");
             callback(me, action);
         };
 
@@ -357,7 +357,7 @@ ya.data.Proxy.$extend({
             }
 
             response.success = false;
-            response.error = new Error("Not found");
+            response.error = ya.Error.$create("Not found");
 
             action
                 .setStatus(ya.data.Action.$status.FAIL)
@@ -438,7 +438,7 @@ ya.data.Proxy.$extend({
             }
 
             response.success = false;
-            response.error = new Error("Not found");
+            response.error = ya.Error.$create("Not found");
 
             action
                 .setStatus(ya.data.Action.$status.FAIL)

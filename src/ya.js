@@ -130,7 +130,7 @@
 
         if (namespaces.length) {
 
-            pointer = window[module];
+            pointer = window[module] = window[module] || {};
 
         }
 

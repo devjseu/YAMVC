@@ -13,11 +13,25 @@ ya.Core.$extend({
     /**
      * @method init
      */
-    init: function () {
+    init: function (opts) {
+        var me = this;
+
+        me.__super();
+
+        me.initConfig(opts)
+            .initDefaults()
+            .bindEvents();
+
+        return me;
+    },
+    /**
+     * @method initDefaults
+     * @returns {*}
+     */
+    initDefaults: function () {
         var me = this;
 
         me.set('routing', {});
-        me.bindEvents();
 
         return me;
     },
