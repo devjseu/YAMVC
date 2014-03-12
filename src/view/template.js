@@ -4,51 +4,463 @@
  * @extends ya.Core
  */
 ya.Core.$extend({
-    module : 'ya',
-    alias : 'view.Template',
+    module: 'ya',
+    alias: 'view.Template',
+    static: {
+        id: 0,
+        DOM4: (function () {
+            return !document.createAttribute('rel') instanceof Node;
+        }),
+        BindingType: {
+            CSS: 5,
+            VIEW: 4,
+            TEXT: 3,
+            ATTR: 2,
+            COL: 1
+        }
+    },
+    mixins: [
+        ya.mixins.Array
+    ],
     defaults: {
-        tpl: null
+        id: null,
+        /**
+         * @attribute config.tpl
+         * @type HTMLElement
+         * @required
+         */
+        tpl: null,
+        /**
+         * @attribute config.bindings array with dom - model bindings
+         * @type Array
+         */
+        bindings: null,
+        /**
+         * @attribute config.tDOM TDOM object definition
+         * @type {Object}
+         */
+        tDOM: null
     },
     init: function (opts) {
-        var me = this, config;
+        var me = this;
 
-        me.__super(opts);
+        me.
+            __super();
 
-        opts = opts || {};
-        config = ya.$merge(me._config, opts.config);
-
-        me.set('initOpts', opts);
-        me.set('config', config);
-
-        me.initConfig();
-        me.initTpl();
+        me
+            .initConfig(opts)
+            .initRequired()
+            .initDefaults()
+            .initBindings()
+            .initRegister();
 
     },
-    initConfig: function () {
-        var me = this,
-            config = me.get('config');
+    initRequired: function () {
+        var me = this;
 
-        me.__super();
+        if (!me.getTpl()) {
 
-        if (!config.id)
-            throw ya.Error.$create("ya.view.Template: Template need to have id");
+            throw ya.Error.$create('ya.view.Template: Missing tpl property', 'YVT1');
+
+        }
 
         return me;
     },
-    initTpl: function () {
+    initDefaults: function () {
         var me = this,
             html = me.getTpl(),
-            tpl = document.createElement('div');
+            docFragment = document.createDocumentFragment();
+
+        me.setId(me.getId() || 'template-' + ya.view.template.$manager.getCount());
+        me.setTDOM(me.getTDOM() || ya.view.TDOM);
 
         if (Array.isArray(html)) {
             html = html.join("");
         }
 
-        tpl.innerHTML = html;
+        if (typeof html === 'string' || html instanceof String) {
+            var evaluated = document.createElement('div');
 
-        me.set('html', tpl);
+            evaluated.innerHTML = html;
+
+            while (evaluated.hasChildNodes()) {
+
+                docFragment.appendChild(evaluated.firstChild);
+
+            }
+
+        } else if (html instanceof DocumentFragment) {
+
+            docFragment = html;
+
+        } else {
+
+            docFragment.appendChild(html);
+
+        }
+
+        me.set('html', docFragment);
+
+        return me;
     },
-    getHtml: function () {
-        return this._html;
+    initRegister: function () {
+        var me = this;
+
+        ya.view.template
+            .$manager.register(
+                me.getId(),
+                me
+            );
+
+        return me;
+    },
+    /**
+     * @method initBindings
+     * @returns {*}
+     */
+    initBindings: function () {
+        var me = this,
+            texts,
+            attrs;
+
+
+        attrs = me.findAttrsBindings();
+        texts = me.findTextBindings();
+
+        me.setBindings(attrs.concat(texts));
+
+        return me;
+    },
+    /**
+     * @method findAttrsBindings
+     */
+    findAttrsBindings: function () {
+        var me = this,
+            attrs = [],
+            bindings = [],
+            regEx = /^ya-(.*)/i,
+            nodeAttrs = [],
+            __slice = Array.prototype.slice,
+            binding,
+            walker,
+            match,
+            attr,
+            node;
+
+        walker = document.createTreeWalker( // Create walker object and
+            me._html,
+            NodeFilter.SHOW_ELEMENT,
+            null,
+            false
+        );
+
+        while (walker.nextNode()) {
+            // walk through all nodes
+
+            node = walker.currentNode;
+            // HTMLElement node
+            // get all attributes
+            // and push to array
+            nodeAttrs = __slice.call(node.attributes);
+
+            // DOM4 polyfill - attribute no longer inherits from Node
+            // so we need to set owner element manually
+            if (ya.view.Template.$DOM4) {
+                /*jshint -W083 */
+                me.each(nodeAttrs, function (attr) {
+                    attr.ownerElement = node;
+                });
+
+            }
+
+            attrs = attrs.concat(nodeAttrs);
+
+        }
+        // execute attribute processing
+
+        while (attrs.length) {
+
+            attr = attrs.pop();
+
+            match = attr.nodeName.match(regEx);
+
+            switch (match && match[1]) {
+                case 'collection' :
+                    binding = me.prepareColBindings(attr);
+                    break;
+                case 'view' :
+                    binding = me.prepareViewBindings(attr);
+                    break;
+                case 'css' :
+                    binding = me.prepareCSSBindings(attr);
+                    break;
+                case 'id' :
+                    break;
+                default :
+                    binding = me.prepareAttrBindings(attr);
+
+            }
+
+            if (binding) {
+                bindings.push(binding);
+            }
+
+        }
+
+        return bindings;
+    },
+    findTextBindings: function () {
+        var me = this,
+            bindings = [],
+            binding,
+            walker;
+
+        walker = document.createTreeWalker( // Create walker object and
+            me._html,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+
+        while (walker.nextNode()) {
+            // walk through all nodes
+
+            binding = me.prepareTextBindings(walker.currentNode);
+            if (binding) {
+                bindings.push(binding);
+            }
+
+        }
+
+        // we cant mess with DOM when we iterating through it
+        // so we need replace text nodes after we find all
+        // matches
+        me.each(bindings, function (binding) {
+
+            binding.old.parentNode.replaceChild(binding.doc, binding.old);
+
+            delete binding.doc;
+            delete binding.old;
+
+        });
+
+        return bindings;
+    },
+    prepareTextBindings: function (node) {
+        var results = node.data.match(/\{\{(.*?)\}\}/gi),// we searching for mustached text inside it
+            i, len, headers, header, binding = false;
+
+        if (results) { // and if we have positive match
+            var doc = document.createElement('span'),// we create new span element
+            // and id for binding
+                rId = ya.view.Template.$id++;
+
+            doc.setAttribute('ya-id', rId); // and add generated id.
+
+            i = 0;
+            len = results.length;
+            headers = [];
+
+            // In the end we replace all match via data.
+            while (i < len) {
+
+                result = results[i++];
+                header = result.substr(2, (result.length - 4)).split('.');
+                headers.push(header);
+
+            }
+
+            // We also keep founded bindings.
+            binding = {
+                original: node.value || node.data,
+                old: node,
+                doc: doc,
+                headers: headers,
+                type: 3,
+                pointer: rId
+            };
+
+        }
+
+        return binding;
+    },
+    prepareColBindings: function (attr) {
+        var options = attr.value.match(/(?:alias|id|namespace|model|view)[?!:]([\S]+)/gi),
+            node = attr.ownerElement,
+            rId = node.getAttribute('ya-id') || ya.view.Template.$id++,
+            collection = {
+                view: 'ya.View',
+                alias: 'ya.Collection'
+            },
+            binding = {
+                pointer: rId,
+                type: ya.view.Template.$BindingType.COL,
+                collection: collection
+            },
+            DOM = ya.mixins.DOM,
+            option;
+
+        node.setAttribute('ya-id', rId);
+
+        while (options && options.length) {
+
+            option = options.pop().split(':');
+            collection[option[0]] = option[1];
+
+        }
+
+        if (node.hasChildNodes()) {
+
+            var tpl = ya.$factory({
+                module: 'ya',
+                alias: 'view.Template',
+                tpl: DOM.removeChildren(node)
+            });
+
+            collection.tpl = tpl.getId();
+
+        }
+
+        return binding;
+    },
+    prepareViewBindings: function (attr) {
+        var node = attr.ownerElement,
+            view = node.getAttribute('ya-view') || 'ya.View',
+            rId = node.getAttribute('ya-id') || ya.view.Template.$id++,
+            options = attr.value.match(/(?:alias|id)[?!:]([\w\.]+)/gi),
+            binding = {
+                pointer: rId,
+                type: ya.view.Template.$BindingType.VIEW,
+                view: {
+                    alias: 'ya.View'
+                }
+            },
+            option;
+
+        node.setAttribute('ya-id', rId);
+
+        while (options && options.length) {
+            option = options.pop().split(':');
+            binding.view[option[0]] = option[1];
+        }
+
+        return binding;
+    },
+    prepareCSSBindings: function (attr) {
+        var node = attr.ownerElement,
+            results = attr.value && attr.value.match(/\{\{(.*?)\}\}/gi),
+            len = results && results.length,
+            original = attr.value,
+            headers = [], i = 0,
+            binding, header, rId;
+
+        rId = node.getAttribute('ya-id');
+        if (!rId) {
+
+            rId = ya.view.Template.$id++;
+            node.setAttribute('ya-id', rId);
+
+        }
+
+        if (results) {
+
+            while (i < len) {
+
+                result = results[i++];
+                header = result.substr(2, (result.length - 4)).split('.');
+                headers.push(header);
+
+            }
+
+        }
+
+        binding = {
+            original: original,
+            fillAttr: false,
+            headers: headers,
+            name: 'style',
+            type: ya.view.Template.$BindingType.ATTR,
+            pointer: rId
+        };
+
+        return binding;
+    },
+    prepareAttrBindings: function (attr) {
+        var node = attr.ownerElement,
+            results = attr.value && attr.value.match(/\{\{(.*?)\}\}/gi),
+            len = results && results.length,
+            original = attr.value,
+            headers = [], i = 0,
+            binding, rId, header;
+
+        if (results) {
+
+            rId = node.getAttribute('ya-id');
+            if (!rId) {
+
+                rId = ya.view.Template.$id++;
+                node.setAttribute('ya-id', rId);
+
+            }
+
+            while (i < len) {
+
+                result = results[i++];
+                header = result.substr(2, (result.length - 4)).split('.');
+                headers.push(header);
+
+            }
+
+            binding = {
+                fillAttr: ya.mixins.CSSStyle.isFillAttr(attr.name),
+                name: attr.name,
+                original: original,
+                headers: headers,
+                type: ya.view.Template.$BindingType.ATTR,
+                pointer: rId
+            };
+
+        }
+
+        return results ? binding : null;
+    },
+    prepareInstance: function () {
+        var me = this,
+            dom, bindings;
+
+        dom = me.get('html').cloneNode(true);
+
+        bindings = ya.$clone(me.getBindings());
+
+        me.each(bindings, function (binding) {
+
+            if (binding.type === ya.view.Template.$BindingType.ATTR) {
+
+                binding.pointer = dom
+                    .querySelector('[ya-id="' + binding.pointer + '"]')
+                    .attributes
+                    .getNamedItem(binding.name);
+
+                delete binding.name;
+
+            } else {
+
+                binding.pointer = dom.querySelector('[ya-id="' + binding.pointer + '"]');
+
+            }
+
+        });
+
+        return { dom: dom, bindings: bindings};
+    },
+    getTDOMInstance: function (view) {
+        var me = this;
+
+        return me.getTDOM().$create({
+            config: {
+                view: view,
+                tpl: me
+            }
+        });
     }
 });

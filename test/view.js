@@ -43,7 +43,7 @@ test("render with children", function () {
         config: {
             tpl: ya.view.Template.$create({
                 config: {
-                    id: 'tpl-test-1',
+                    id: 'tpl-test-1b',
                     tpl: [
                         '<div class="multilevel"></div>'
                     ]
@@ -54,7 +54,7 @@ test("render with children", function () {
                     config: {
                         tpl: ya.view.Template.$create({
                             config: {
-                                id: 'tpl-child',
+                                id: 'tpl-child-c',
                                 tpl: [
                                     'Hello World!'
                                 ]
@@ -94,7 +94,7 @@ test("remove child", function () {
                         id: 'child',
                         tpl: ya.view.Template.$create({
                             config: {
-                                id: 'tpl-child',
+                                id: 'tpl-child-b',
                                 tpl: [
                                     'Hello World!'
                                 ]
@@ -207,14 +207,14 @@ test("rendered two times", function () {
 
 test("check if query match", function () {
 
-    ya.View.$create({
+    var v = ya.View.$create({
         config: {
             id: 'selector-test',
             tpl: ya.view.Template.$create({
                 config: {
                     id: 'tpl-test-1',
                     tpl: [
-                        '<div class="employee senior" id="selector-test">',
+                        '<div class="employee senior">',
                         '<p>',
                         '</p>',
                         '</div>'
@@ -238,61 +238,15 @@ test("check if query match", function () {
             ],
             renderTo: '#test-2'
         }
-    }).render();
-
-    ok(ya.view.$manager.get('selector-test').isQueryMatch('div#selector-test.employee.senior'));
-
-    ok(!ya.view.$manager.get('selector-test').isQueryMatch('span'));
-
-    ok(ya.view.$manager.get('selector-test').isQueryMatch('#selector-test.senior'));
-});
-
-
-test("bind with collection", function () {
-    var view, collection;
-
-    collection = ya.Collection.$create({
-        config: {
-            id: 'todos',
-            namespace: 'example',
-            data: [
-                {
-                    name: "Seba",
-                    display: "true"
-                },
-                {
-                    name: "Seba 2",
-                    display: "none"
-                },
-                {
-                    name: "Seba 3",
-                    display: "true"
-                }
-            ]
-        }
     });
 
-    view = ya.View.$create({
-        config: {
-            tpl: ya.view.Template.$create({
-                config: {
-                    id: 'tpl-example-5',
-                    tpl: [
-                        '<div>',
-                        '<ul ya-collection="$todos example[class=ya.Collection]">',
-                        '<li>{{example.}}</li>',
-                        '</ul>',
-                        '</div>'
-                    ]
-                }
-            }),
-            renderTo: '#test-6'
-        }
-    });
+    v.render();
 
-    view.render();
+    ok(ya.view.$manager.getItem('selector-test').isQueryMatch('div#selector-test.employee.senior'), 'selector should match');
 
-    equal(view.querySelectorAll('.example').length, 3, 'Three nodes should be assigned');
+    ok(!ya.view.$manager.getItem('selector-test').isQueryMatch('span'), 'selector shouldn\'t match');
+
+    ok(ya.view.$manager.getItem('selector-test').isQueryMatch('#selector-test.senior'), 'selector should match');
 });
 
 test("initialize template in shorter way", function () {
@@ -300,7 +254,7 @@ test("initialize template in shorter way", function () {
 
     view = ya.View.$create({
         config: {
-            id: 'tpl-short-test',
+            id: 'tpl-short-test-b',
             tpl: {
                 id: 'tpl-test-99',
                 tpl: [
@@ -316,5 +270,32 @@ test("initialize template in shorter way", function () {
     view.render();
 
     ok(view.querySelector('.target') !== null);
+
+});
+
+test("fires an event when new model is appended", function () {
+
+    var view, modelChange = 0;
+
+    view = ya.View.$create({
+        config: {
+            id: 'tpl-short-test',
+            tpl: {
+                id: 'tpl-test-999',
+                tpl: [
+                    '<div>',
+                    '</div>'
+                ]
+            }
+        }
+    });
+
+    view.addEventListener('modelChange', function () {
+        modelChange++;
+    });
+
+    view.setModel({ namespace: 'test' });
+
+    ok(true);
 
 });

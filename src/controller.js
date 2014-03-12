@@ -7,7 +7,7 @@
  *         config: {
  *             name: 'Main',
  *             views: {
- *                 layout: view.$manager.get('view-0')
+ *                 layout: ya.view.$manager.getItem('view-0')
  *             },
  *             routes: {
  *                 "page/{\\d+}": 'changePage'
@@ -131,7 +131,8 @@ ya.Core.$extend({
 
                 view = ya
                     .view.$manager
-                    .get(views[l]);
+                    .getItem(views[l]);
+
                 if (view) {
 
                     if (view.isInDOM()) {
@@ -172,7 +173,7 @@ ya.Core.$extend({
         return me;
     },
     resolveEvents: function (view) {
-        var events = this.get('events'),
+        var events = this.getEvents(),
             newScope = function (func, scope, arg) {
                 return func.bind(scope, arg);
             },
@@ -184,10 +185,10 @@ ya.Core.$extend({
             scope;
 
         for (var query in events) {
-
             if (events.hasOwnProperty(query)) {
 
                 matches = query.match(rx);
+
                 if (matches && matches[1] === view.getId()) {
                     viewEvents = events[query];
                     selector = query.split(" ").slice(1);

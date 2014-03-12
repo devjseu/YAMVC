@@ -5,20 +5,21 @@
 ya.$set('ya', 'mixins.Array', {
     /**
      *
+     * @param array
      * @param key
      * @returns {Number}
      */
-    find: function (key /*[, value]*/) {
-        var len = this.length,
+    find: function (array, key /*[, value]*/) {
+        var len = array.length,
             argsLen = arguments.length,
-            val = argsLen > 1 ? arguments[1] : null,
+            val = argsLen > 2 ? arguments[2] : null,
             rec;
 
         if (argsLen > 1) {
 
             while (len--) {
 
-                rec = this[len];
+                rec = array[len];
                 if (rec[key] === val) {
                     break;
                 }
@@ -28,7 +29,7 @@ ya.$set('ya', 'mixins.Array', {
 
             while (len--) {
 
-                rec = this[len];
+                rec = array[len];
                 if (rec === key) {
                     break;
                 }
@@ -40,19 +41,20 @@ ya.$set('ya', 'mixins.Array', {
     },
     /**
      *
+     * @param array
      * @param key
      * @returns {Array}
      */
-    findAll: function (key /*[, value]*/) {
-        var len = this.length,
+    findAll: function (array, key /*[, value]*/) {
+        var len = array.length,
             argsLen = arguments.length,
-            val = argsLen > 1 ? arguments[1] : null,
+            val = argsLen > 2 ? arguments[2] : null,
             result = [],
             rec;
 
         while (len--) {
 
-            rec = this[len];
+            rec = array[len];
             if (argsLen > 1) {
 
                 if (rec[key] === val) {
@@ -67,17 +69,17 @@ ya.$set('ya', 'mixins.Array', {
         return result;
     },
     /**
-     *
+     * @param array
      * @param {Function} fn
      * @returns {Array}
      */
-    findAllByFn: function (fn) {
-        var len = this.length,
+    findAllByFn: function (array, fn) {
+        var len = array.length,
             result = [];
 
         while (len--) {
 
-            if (fn(this[len])) {
+            if (fn(array[len])) {
 
                 result.push(len);
 
@@ -87,20 +89,25 @@ ya.$set('ya', 'mixins.Array', {
 
         return result;
     },
-    each: Array.prototype.forEach || function (fun /*, thisArg */) {
+    /**
+     * @param array
+     * @param fun
+     */
+    each: Array.prototype.forEach ? function (array, fun) {
+        Array.prototype.forEach.call(array, fun);
+    } : function (array, fun) {
 
-        if (this === void 0 || this === null)
+        if (array === void 0 || array === null)
             throw new TypeError();
 
-        var t = Object(this);
+        var t = Object(array);
         var len = t.length >>> 0;
         if (typeof fun !== "function")
             throw new TypeError();
 
-        var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
         for (var i = 0; i < len; i++) {
             if (i in t)
-                fun.call(thisArg, t[i], i, t);
+                fun.call(array, t[i], i, t);
         }
     }
 })

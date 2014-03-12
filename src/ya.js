@@ -122,7 +122,7 @@
      * @returns {*}
      */
     ya.$get = function () {
-        var module = arguments.length < 3 ? appNamespace : arguments[0],
+        var module = arguments.length < 2 ? appNamespace : arguments[0],
             namespace = arguments.length < 2 ? arguments[0] : arguments[1],
             namespaces = namespace ? (namespace.search(/\./) > 0 ? namespace.split('.') : [namespace]) : [],
             pointer = null,
@@ -155,6 +155,35 @@
         }
 
         return pointer;
+    };
+
+    /**
+     * @method $factory
+     * @static
+     * @param config
+     * @returns {*}
+     */
+    ya.$factory = function (config) {
+        var Class, instance, opts;
+
+        if (!config.alias) {
+
+            throw ya.Error.$create('Factory method needs alias property', 'YA1');
+
+        }
+
+        Class = ya.$get(config.module || appNamespace, config.alias);
+        opts = config.methods || {};
+
+        opts.config = config;
+
+        delete config.alias;
+        delete config.module;
+        delete config.methods;
+
+        instance = Class.$create(opts);
+
+        return instance;
     };
 
     /**

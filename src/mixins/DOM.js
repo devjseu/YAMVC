@@ -105,13 +105,40 @@ ya.$set('ya', 'mixins.DOM', { // todo: change name to mixins.DOM
      * @returns {*}
      */
     toString: function (node) {
-        var string;
+        var fn = function (node) {
+                var string;
 
-        if (typeof(XMLSerializer) !== 'undefined') {
-            var serializer = new XMLSerializer();
-            string = serializer.serializeToString(node);
-        } else if (node.xml) {
-            string = node.xml;
+                if (typeof(XMLSerializer) !== 'undefined') {
+                    var serializer = new XMLSerializer();
+                    string = serializer.serializeToString(node);
+                } else if (node.xml) {
+                    string = node.xml;
+                }
+
+                return string;
+            },
+            i = 0, string = '', len;
+
+        if (node instanceof DocumentFragment) {
+
+            node = node.firstChild;
+            while (node) {
+
+                string += fn(node);
+                node = node.nextSibling;
+            }
+
+        } else if (node instanceof NodeList) {
+
+            len = node.length;
+            while (i < len) {
+                string += fn(node);
+            }
+
+        } else if (node instanceof HTMLElement) {
+
+            string = fn(node);
+
         }
 
         return string;

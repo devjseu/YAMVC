@@ -1,10 +1,10 @@
 /**
  * @namespace ya
- * @class collection.$Manager
+ * @class data.$manager
  * @extends ya.Manager
  */
 ya.Manager.$extend({
     module: 'ya',
-    alias: 'collection.$Manager',
+    alias: 'data.$manager',
     singleton: true
 });

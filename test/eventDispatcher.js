@@ -141,7 +141,7 @@ test("assign listeners only for appended view", function () {
             renderTo: '#test-8',
             tpl: ya.view.Template.$create({
                 config: {
-                    id: 'tpl-test',
+                    id: 'tpl-test-b',
                     tpl: [
                         '<div>',
                         '<ul>',
@@ -231,7 +231,7 @@ test("assign listeners for multiple views", function () {
     ya.View.$create({
         config: {
             id: 'test3a',
-            parent: ya.view.$manager.get('test3'),
+            parent: ya.view.$manager.getItem('test3'),
             renderTo: 'div',
             tpl: ya.view.Template.$create({
                 config: {
@@ -248,11 +248,11 @@ test("assign listeners for multiple views", function () {
     ya.View.$create({
         config: {
             id: 'test3b',
-            parent: ya.view.$manager.get('test3'),
+            parent: ya.view.$manager.getItem('test3'),
             renderTo: 'div',
             tpl: ya.view.Template.$create({
                 config: {
-                    id: 'tpl-test3b',
+                    id: 'tpl-test3c',
                     tpl: [
                         '<div class="content">',
                         '</div>'
@@ -265,11 +265,11 @@ test("assign listeners for multiple views", function () {
     ya.View.$create({
         config: {
             id: 'test3c',
-            parent: ya.view.$manager.get('test3'),
+            parent: ya.view.$manager.getItem('test3'),
             renderTo: 'div',
             tpl: ya.view.Template.$create({
                 config: {
-                    id: 'tpl-test3c',
+                    id: 'tpl-test3cd',
                     tpl: [
                         '<div class="bottom">',
                         '</div>'
@@ -282,7 +282,7 @@ test("assign listeners for multiple views", function () {
     ya.View.$create({
         config: {
             id: 'test3ba',
-            parent: ya.view.$manager.get('test3b'),
+            parent: ya.view.$manager.getItem('test3b'),
             renderTo: '.content',
             tpl: ya.view.Template.$create({
                 config: {
@@ -297,7 +297,7 @@ test("assign listeners for multiple views", function () {
     });
 
 
-    ya.view.$manager.get('test3').render();
+    ya.view.$manager.getItem('test3').render();
 
     var li1, li2;
 
@@ -307,7 +307,7 @@ test("assign listeners for multiple views", function () {
             renderTo: '.content',
             tpl: ya.view.Template.$create({
                 config: {
-                    id: 'tpl-test3ba',
+                    id: 'tpl-test3ba-2',
                     tpl: [
                         '<li>',
                         '</li>'
@@ -322,7 +322,7 @@ test("assign listeners for multiple views", function () {
             id: 'test3bab',
             tpl: ya.view.Template.$create({
                 config: {
-                    id: 'tpl-test3ba',
+                    id: 'tpl-test3ba-3',
                     tpl: [
                         '<li>',
                         '</li>'
@@ -332,7 +332,7 @@ test("assign listeners for multiple views", function () {
         }
     });
 
-    ya.view.$manager.get('test3ba').addChild(li1, 'ul');
+    ya.view.$manager.getItem('test3ba').addChild(li1, 'ul');
     li2.render();
 
     click(li1.get('el'));

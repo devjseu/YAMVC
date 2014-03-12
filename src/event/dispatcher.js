@@ -95,11 +95,11 @@ ya.Core.$extend({
                 // query.
                 regExp = new RegExp('^\\$' + view.getId() + "[\\s]");
                 // Get position for events which were matched.
-                matchPos = __findAllByFn.call(delegates, matchIdFn);
+                matchPos = __findAllByFn(delegates, matchIdFn);
                 if (matchPos.length) {
                     /*jshint -W083 */
                     // If we found any events which need to be delegated,
-                    __each.call(matchPos, function (r) {
+                    __each(matchPos, function (r) {
                         // iterate through all of them.
                         // As first step clear the array of elements
                         els.length = 0;
@@ -118,7 +118,7 @@ ya.Core.$extend({
                             els = newView.querySelectorAll(selector.pop());
                             // Copy array with rest of them
                             cpSelector = selector.slice();
-                            __each.call(els, function (el) {
+                            __each(els, function (el) {
                                 // and iterate through all founded elements.
                                 if (cpSelector.length) {
 

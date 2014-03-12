@@ -53,7 +53,7 @@ ya.Core.$extend({
     init: function (opts) {
         var me = this;
 
-        me.__super(opts);
+        me.__super();
 
         me
             .initConfig(opts)
@@ -68,8 +68,11 @@ ya.Core.$extend({
     initRequired: function () {
         var me = this;
 
-        if (!me.getNamespace())
+        if (!me.getNamespace()){
+
             throw ya.Error.$create("Model need to have namespace");
+
+        }
 
         return me;
     },
@@ -95,10 +98,14 @@ ya.Core.$extend({
         var me = this,
             data = me._data,
             oldVal = data[property];
+
         if (value !== oldVal) {
+
             data[property] = value;
+
             me.set('isDirty', true);
             me.fireEvent('data' + property.charAt(0).toUpperCase() + property.slice(1) + 'Change', me, value, oldVal);
+
         }
     },
     /**

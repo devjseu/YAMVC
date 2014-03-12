@@ -9,20 +9,9 @@
         style = document.createElement('style'),
         __slice = Array.prototype.slice,
         VM,
-        VTM,
         View,
-        renderId = 0,
-        fillAttrs,
         resize = 0,
         iv = 0;
-
-    function makeMap(str) {
-        // Make object map from string.
-        var obj = {}, items = str.split(",");
-        for (var i = 0; i < items.length; i++)
-            obj[ items[i] ] = true;
-        return obj;
-    }
 
     function onWindowResize(e) {
         // When resize event occur wait 32 miliseconds
@@ -48,14 +37,14 @@
             clearInterval(iv);
 
             resize = 0;
-            views = VM.views;
+            views = ya.view.$manager.getItems();
             l = views.length;
             i = 0;
 
             while (i < l) {
 
-                if (views[i].getFit()) {
-                    views[i].fireEvent('resize', views[i]);
+                if (views[i].item.getFit()) {
+                    views[i].item.fireEvent('resize', views[i]);
                 }
 
                 i++;
@@ -63,79 +52,12 @@
         }
     }
 
-    // Make object with attributes that not need any value.
-    fillAttrs = makeMap("checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected");
-
     // Append some basic css to document.
     style.innerHTML = ".ya.inline {display:inline;} .ya.hidden {display: none !important;}";
     style.setAttribute('type', 'text/css');
 
     document.body.appendChild(style);
     window.addEventListener('resize', onWindowResize);
-
-    VM = {
-        // `ya.view.$manager` stores all created views and allow as to
-        // use `get` method (with id as argument) to return requested view.
-        views: [],
-        i: 0,
-        /**
-         * @method add
-         * @for ya.view.$manager
-         * @param id
-         * @param view
-         */
-        add: function (id, view) {
-            // Add view to manager.
-            var me = this;
-
-            if (view.getAutoCreate()) {
-
-                view.render();
-
-            }
-
-            me.views.push(view);
-            me.i++;
-        },
-        /**
-         * @method get
-         * @for ya.view.$manager
-         * @param id
-         * @returns {View}
-         */
-        get: function (id) {
-            // Get view by its id.
-            var me = this,
-                len = me.views.length;
-
-            while (len--) {
-
-                if (me.views[len].getId() === id) break;
-
-            }
-
-            return me.views[len];
-        }
-    };
-
-    ya.$set('ya', 'view.$manager', VM);
-
-
-    VTM = {
-        // `VTM` is a private object that stores all templates used
-        // in application.
-        tpl: {},
-        add: function (id, view) {
-            var me = this;
-
-            me.tpl[id] = view;
-        },
-        get: function (id) {
-            var me = this;
-
-            return me.tpl[id];
-        }
-    };
 
     /**
      * @namespace ya
@@ -212,12 +134,12 @@
 
             me
                 .initConfig(opts)
-                .initRequired()
                 .initDefaults()
+                .initRequired()
                 .initTemplate()
                 .initParent();
 
-            VM.add(me.getId(), me);
+            ya.view.$manager.register(me.getId(), me);
 
             return me;
         },
@@ -226,20 +148,20 @@
 
             if (!me.getTpl()) {
 
-                throw new Error(config.id + ': no tpl set');
+                throw ya.Error.$create('ya.View: no tpl set for ' + config.getId());
 
             }
 
             return me;
         },
         /**
-         * @method init
+         * @method initDefaults
          * @returns {*}
          */
         initDefaults: function () {
             var me = this;
 
-            me.setId(me.getId() || 'view-' + VM.i);
+            me.setId(me.getId() || 'view-' + ya.view.$manager.getCount());
             me.setChildren(me.getChildren() || []);
             me.setModels(me.getModels() || []);
 
@@ -253,54 +175,40 @@
         initTemplate: function () {
             var me = this,
                 tpl = me.getTpl(),
-                div = document.createElement('div'),
-                Instance,
-                _tpl;
+                div = document.createElement('div');
 
-            if (typeof tpl === 'object' && !(tpl instanceof ya.view.Template)) {
+            if (!(tpl instanceof ya.view.Template)) {
+                // If tpl is not a ya.view.Template object
 
-                Instance = ya.$get(tpl.alias);
-                me.setTpl(
-                    Instance ?
-                        Instance.$create({config: tpl}) :
-                        ya.view.Template.$create({config: tpl})
-                );
+                if (
+                    tpl instanceof Array || typeof tpl === 'array' ||
+                        typeof tpl == 'string' || tpl instanceof String
+                    ) {
+                    // if its an array with html def
+                    // prepare configuration object and
+                    // instantiate it via factory method.
+                    tpl = ya.$factory({
+                        module: 'ya',
+                        alias: 'view.Template',
+                        tpl: tpl
+                    });
 
-            } else if (typeof tpl == 'string' || tpl instanceof String) {
+                } else if (tpl instanceof Object || typeof tpl === 'object') {
+                    // Or if its a configuration object
+                    // do the same.
+                    if (!tpl.alias) {
+                        tpl.module = 'ya';
+                        tpl.alias = 'view.Template';
+                    }
 
-                if (VTM.get(tpl)) {
-
-                    me.setTpl(VTM.get(tpl));
-
-                } else {
-
-                    _tpl = document.getElementById(tpl);
-
-                    if (!_tpl)
-                        throw new Error('no tpl ' + tpl + ' found');
-
-                    // todo: tmp solution, need to be replaced
-                    var obj = {
-                        config: {
-                            id: +new Date(),
-                            tpl: [_tpl.parentNode.innerHTML]
-                        }
-                    };
-
-                    Instance = ya.$get(tpl.alias);
-                    me.setTpl(
-                        Instance ?
-                            Instance.$create(obj) :
-                            ya.view.Template.$create(obj)
-                    );
-
-                    VTM.add(tpl, me.getTpl());
-
+                    tpl = ya.$factory(tpl);
                 }
+
+
             }
 
-            div.innerHTML = me.getTpl().getHtml().innerHTML;
-            me.set('tpl', div);
+            me.setTpl(tpl);
+            me.set('tdom', tpl.getTDOMInstance(me));
 
             return me;
         },
@@ -318,15 +226,44 @@
         /**
          * @returns {View}
          */
-        setModel: function (namespace, model) {
+        setModel: function (model) {
             var me = this,
                 models = me.getModels();
 
-            models.push(model);
-            me.setModels(models);
-            me.resolveModelBindings(model);
+            if (!(model instanceof ya.Model)) {
+
+                if (!model.alias) {
+
+                    model.module = 'ya';
+                    model.alias = 'Model';
+
+                }
+
+                model = ya.$factory(model);
+            }
+
+            if (!me.hasModel(model.getNamespace())) {
+
+                models.push(model);
+                me.setModels(models);
+                me.observeModel(model);
+
+            }
 
             return me;
+        },
+        hasModel: function (namespace) {
+            var models = this.getModels(),
+                l;
+
+            l = models.length;
+            while (l--) {
+                if (models[l].getNamespace() === namespace) {
+                    return true;
+                }
+            }
+
+            return false;
         },
         /**
          * @param namespace
@@ -348,34 +285,19 @@
 
             return model;
         },
+        observeModel: function () {
+
+        },
         /**
          * @version 0.1.11
          * @returns {Node}
          */
         render: function () {
             var me = this,
-                tpl = me._tpl,
                 config = me._config,
                 parent = config.parent,
                 selector = config.renderTo,
-                bindings = [],
-                headers = [],
-                parentEl,
-                results,
-                result,
-                header,
-                ret,
-                value,
-                parsedTpl,
-                walker,
-                node,
-                el,
-                i = 0,
-                l = 0,
-                j = 0,
-                len = 0,
-                attrs = [],
-                attr;
+                parentEl, el;
 
             parentEl = me.getParentEl(selector, true);
 
@@ -385,193 +307,9 @@
 
             }
 
-            parsedTpl = tpl.cloneNode(true); // Next, clone template.
-
-            walker = document.createTreeWalker( // Create walker object and
-                parsedTpl,
-                NodeFilter.SHOW_ALL,
-                null,
-                false
-            );
-
-            node = walker.nextNode();
-            while (node) { // walk through all nodes.
-
-                if (node.nodeType === 3) { // If our element is text node
-                    results = node.data.match(/\{\{(.*?)\}\}/gi);// we searching for mustached text inside it
-                    if (results) { // and if we have positive match
-                        var text = node.value || node.data,
-                            doc = document.createElement('span'),// we create new span element
-                            rId = "v-r-b-" + renderId++;
-
-                        i = 0;
-                        len = results.length;
-                        headers = [];
-
-                        doc.setAttribute('id', rId); // and add generated id.
-
-                        // In the end we replace all match via data.
-                        while (i < len) {
-
-                            result = results[i++];
-                            header = result.substr(2, (result.length - 4)).split('.');
-
-                            if (me.getModel(header[0])) {
-                                ret = me.getModel(header[0]).data(header[1]);
-                                if (ret === undefined) {
-                                    ret = "";
-                                }
-                            } else {
-                                ret = "";
-                            }
-
-                            text = text.replace(result, ret);
-                            headers.push(header);
-
-                        }
-
-                        doc.appendChild(
-                            document.createTextNode(text)
-                        );
-
-                        // We also keep founded bindings.
-                        bindings.push({
-                            original: node.value || node.data,
-                            headers: headers,
-                            type: 3,
-                            pointer: doc,
-                            oldDOM: node
-                        });
-
-                    }
-                    /*node.value = node.value.replace(bindRegEx, function (match) {
-                     return replaceFn(match, 1, node);
-                     });*/
-                }
-                else {
-
-                    attrs = node.attributes;
-                    l = attrs.length;
-
-                    while (l--) {
-
-                        attr = attrs.item(l);
-                        results = attr.value && attr.value.match(/\{\{(.*?)\}\}/gi);
-
-                        if (results) {
-                            var original = attr.value,
-                                fillAttr = fillAttrs[attr.nodeName];
-
-                            i = 0;
-                            len = results.length;
-                            headers = [];
-
-                            ret = fillAttr ? true : "";
-
-                            while (i < len) {
-
-                                result = results[i++];
-                                header = result.substr(2, (result.length - 4)).split('.');
-
-                                if (!fillAttr) {
-
-                                    if (me.getModel(header[0])) {
-                                        ret = me.getModel(header[0]).data(header[1]) || "";
-                                    }
-
-                                    attr.value = attr.value.replace(result, ret);
-
-                                } else {
-
-                                    ret = ret && me.getModel(header[0]).data(header[1]);
-
-                                }
-
-                                headers.push(header);
-
-                            }
-
-                            if (fillAttr) {
-
-                                if (!ret) {
-
-                                    node.removeAttribute(attr.nodeName);
-
-                                } else {
-
-                                    node.setAttribute(attr.nodeName, ret);
-
-                                }
-
-                            } else {
-
-                                if (attr.nodeName === 'css') {
-
-                                    value = attr.value;
-
-                                    attr = document.createAttribute("style");
-
-                                    attr.value = value;
-
-                                    node.removeAttribute('css');
-
-                                    attrs.setNamedItem(attr);
-
-                                }
-
-                            }
-
-                            bindings.push({
-                                original: original,
-                                headers: headers,
-                                fillAttr: fillAttr || false,
-                                type: 2,
-                                attrName: attr.nodeName,
-                                pointer: node
-                            });
-
-                        } else {
-
-                            if (attr.nodeName === 'css') {
-
-                                value = attr.value;
-
-                                attr = document.createAttribute("style");
-
-                                attr.value = value;
-
-                                node.removeAttribute('css');
-
-                                attrs.setNamedItem(attr);
-
-                            }
-
-                        }
-
-                        /*attrs.item(l).value = attrs[l].value.replace(bindRegEx, function (match) {
-                         return replaceFn(match, 0, attrs[l]);
-                         });*/
-                    }
-                }
-
-                node = walker.nextNode();
-
-            }
-
-            if (parsedTpl.childNodes.length === 1 && parsedTpl.childNodes.item(0).nodeType === 1) {
-                el = parsedTpl.childNodes.item(0);
-            } else {
-                el = parsedTpl;
-                el.classList.add('inline');
-            }
-
-            el.setAttribute('id', config.id);
-            el.classList.add('ya');
+            el = me._tdom.getDOM();
 
             me.set('el', el);
-            me.set('bindings', bindings);
-
-            me.resolveBindings();
 
             if (me.getHidden())
                 me.hide();
@@ -777,7 +515,6 @@
             var me = this;
 
             me._el.parentNode.removeChild(me._el);
-            me.removeBindings();
             me.set('el', null);
             me.set('isInDOM', false);
 

@@ -41,8 +41,6 @@ test("shouldnt accept", function () {
 
     }
 
-    console.log(err);
-
     ok(err instanceof ya.Error, "wrong status");
 
 
