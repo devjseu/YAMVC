@@ -1,22 +1,23 @@
 ya.$onReady(function () {
     "use strict";
 
-    app.view.Bar.$create({
+    var view = app.view.Bar.$create({
         config: {
-            autoCreate: true,
             models: [
-                {
-                    config: {
-                        namespace: 'likes',
-                        data: {
-                            count: 0
-                        }
+                ya.$factory({
+                    module: 'ya',
+                    alias: 'Model',
+                    namespace: 'likes',
+                    data: {
+                        count: 0
                     },
-                    incrementCount: function () {
-                        var me = this;
-                        me.data('count', me.data('count') + 1);
+                    methods: {
+                        incrementCount: function () {
+                            var me = this;
+                            me.data('count', me.data('count') + 1);
+                        }
                     }
-                }
+                })
             ],
             id: 'bar',
             tpl: {
@@ -45,5 +46,7 @@ ya.$onReady(function () {
             }
         }
     });
+
+    view.render();
 
 });

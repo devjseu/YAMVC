@@ -186,10 +186,17 @@ ya.Core.$extend({
     },
     updateTxt: function (binding) {
         var me = this,
-            txt = binding.original;
+            txt = binding.original,
+            value;
 
         me.each(binding.headers, function (header) {
-            txt = txt.replace('{{' + header.join('.') + '}}', binding.models[header[0]].data(header[1]) || "");
+
+            value = binding.models[header[0]].data(header[1]);
+            if(typeof value === 'undefined') {
+                value = "";
+            }
+
+            txt = txt.replace('{{' + header.join('.') + '}}', value);
         });
 
         binding.pointer.innerHTML = txt;
@@ -197,10 +204,19 @@ ya.Core.$extend({
     },
     updateAttr: function (binding) {
         var me = this,
-            txt = binding.original;
+            txt = binding.original,
+            value;
+
 
         me.each(binding.headers, function (header) {
-            txt = txt.replace('{{' + header.join('.') + '}}', binding.models[header[0]].data(header[1]) || "");
+
+            value = binding.models[header[0]].data(header[1]);
+            if(typeof value === 'undefined') {
+                value = "";
+            }
+
+            txt = txt.replace('{{' + header.join('.') + '}}', value);
+
         });
 
         binding.pointer.value = txt;

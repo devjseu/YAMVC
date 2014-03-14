@@ -1,11 +1,19 @@
 ya.$onReady(function () {
     "use strict";
 
-    var Liker = ya.$get('Liker');
+    var Liker = ya.$get('Liker'), v, v2, tpl;
 
-    Liker.$create({
+    tpl = [
+        '<div>',
+        '<span>{{likes.text}}</span>',
+        '<div style="display: inline" class="container-liker">',
+        '<button disabled="{{likes.disabled}}" class="liker">{{likes.count}}</button>',
+        '</div>',
+        '</div>'
+    ];
+
+    v = Liker.$create({
         config: {
-            autoCreate: true,
             models: [
                 ya.Model.$create({
                     config: {
@@ -25,14 +33,13 @@ ya.$onReady(function () {
                 })
             ],
             id: 'test-liker',
-            tpl: 'tpl-liker',
+            tpl: tpl,
             renderTo: '#container'
         }
     });
 
-    Liker.$create({
+    v2 = Liker.$create({
         config: {
-            autoCreate: true,
             models: [
                 ya.Model.$create({
                     config: {
@@ -52,19 +59,16 @@ ya.$onReady(function () {
                 })
             ],
             id: 'test-liker-2',
-            tpl: 'tpl-liker',
+            tpl: tpl,
             renderTo: '#container'
         }
     });
 
     ya.Controller.$create({
-        config: {
-            name: 'Main'
-        },
-        init: function (opts) {
-            var me = this;
+        init: function () {
+            var me = this, events;
 
-            opts.config.events = {
+            events = {
                 '$test-liker .liker': {
                     click: me.onClick
                 },
@@ -85,9 +89,11 @@ ya.$onReady(function () {
                 }
             };
 
-            ya.Controller.prototype.init.call(this, opts);
+            ya.Controller.prototype.init.call(me, {config: {events: events}});
+
+            return me;
         },
-        onClick : function (view, e) {
+        onClick: function (view, e) {
             view.getModel('likes').incrementLikes();
         },
         onContainerClick: function (view, e) {
@@ -98,4 +104,6 @@ ya.$onReady(function () {
         }
     });
 
+    v.render();
+    v2.render();
 });

@@ -1019,6 +1019,98 @@ ya.Core.$extend({
 });
 /**
  * @namespace ya
+ * @class Manager
+ */
+ya.Core.$extend({
+    module: 'ya',
+    alias: 'Manager',
+    defaults: {
+        items: null
+    },
+    mixins: [
+        ya.mixins.Array
+    ],
+    /**
+     * @method
+     * @param opts
+     */
+    init: function (opts) {
+        var me = this;
+
+        me
+            .initConfig(opts)
+            .initDefaults();
+    },
+    /**
+     *
+     * @method
+     * @returns {*}
+     */
+    initDefaults: function () {
+        var me = this;
+
+        me.setItems([]);
+
+        return me;
+    },
+    getItem: function (id) {
+        var me = this,
+            items = me.getItems(),
+            find;
+
+        find = me
+            .find(items, 'id', id);
+
+        return find > -1 ? items[find].item : null;
+    },
+    getCount : function () {
+        return this.getItems().length;
+    },
+    register: function (id, item) {
+        var me = this;
+
+        if (
+            !me.isRegistered(id)
+            ) {
+
+            me.getItems().push({id: id, item: item});
+            me.fireEvent('registered', item);
+
+        } else {
+
+            throw ya.Error.$create(this.__class__ + ': ID ' + id + ' already registered.', 'YVTM1');
+
+        }
+
+        return me;
+
+    },
+    deregister: function (id) {
+        var me = this,
+            items = me.getItems(),
+            find;
+
+        find = me.find(items, 'id', id);
+
+        if (find > -1) {
+
+            me.fireEvent('unregistered', items.slice(find, 1));
+
+        }
+
+        return me;
+    },
+    /**
+     *
+     * @param id
+     * @returns {boolean}
+     */
+    isRegistered: function (id) {
+        return this.find(this.getItems(), 'id', id) > -1 ? true : false;
+    }
+});
+/**
+ * @namespace ya
  * @class Collection
  * @extends ya.Core
  */
@@ -2983,98 +3075,6 @@ ya.Core.$extend({
 });
 /**
  * @namespace ya
- * @class Manager
- */
-ya.Core.$extend({
-    module: 'ya',
-    alias: 'Manager',
-    defaults: {
-        items: null
-    },
-    mixins: [
-        ya.mixins.Array
-    ],
-    /**
-     * @method
-     * @param opts
-     */
-    init: function (opts) {
-        var me = this;
-
-        me
-            .initConfig(opts)
-            .initDefaults();
-    },
-    /**
-     *
-     * @method
-     * @returns {*}
-     */
-    initDefaults: function () {
-        var me = this;
-
-        me.setItems([]);
-
-        return me;
-    },
-    getItem: function (id) {
-        var me = this,
-            items = me.getItems(),
-            find;
-
-        find = me
-            .find(items, 'id', id);
-
-        return find > -1 ? items[find].item : null;
-    },
-    getCount : function () {
-        return this.getItems().length;
-    },
-    register: function (id, item) {
-        var me = this;
-
-        if (
-            !me.isRegistered(id)
-            ) {
-
-            me.getItems().push({id: id, item: item});
-            me.fireEvent('registered', item);
-
-        } else {
-
-            throw ya.Error.$create(this.__class__ + ': ID ' + id + ' already registered.', 'YVTM1');
-
-        }
-
-        return me;
-
-    },
-    deregister: function (id) {
-        var me = this,
-            items = me.getItems(),
-            find;
-
-        find = me.find(items, 'id', id);
-
-        if (find > -1) {
-
-            me.fireEvent('unregistered', items.slice(find, 1));
-
-        }
-
-        return me;
-    },
-    /**
-     *
-     * @param id
-     * @returns {boolean}
-     */
-    isRegistered: function (id) {
-        return this.find(this.getItems(), 'id', id) > -1 ? true : false;
-    }
-});
-/**
- * @namespace ya
  * @class Model
  * @extends ya.Core
  */
@@ -5018,10 +5018,17 @@ ya.Core.$extend({
     },
     updateTxt: function (binding) {
         var me = this,
-            txt = binding.original;
+            txt = binding.original,
+            value;
 
         me.each(binding.headers, function (header) {
-            txt = txt.replace('{{' + header.join('.') + '}}', binding.models[header[0]].data(header[1]) || "");
+
+            value = binding.models[header[0]].data(header[1]);
+            if(typeof value === 'undefined') {
+                value = "";
+            }
+
+            txt = txt.replace('{{' + header.join('.') + '}}', value);
         });
 
         binding.pointer.innerHTML = txt;
@@ -5029,10 +5036,19 @@ ya.Core.$extend({
     },
     updateAttr: function (binding) {
         var me = this,
-            txt = binding.original;
+            txt = binding.original,
+            value;
+
 
         me.each(binding.headers, function (header) {
-            txt = txt.replace('{{' + header.join('.') + '}}', binding.models[header[0]].data(header[1]) || "");
+
+            value = binding.models[header[0]].data(header[1]);
+            if(typeof value === 'undefined') {
+                value = "";
+            }
+
+            txt = txt.replace('{{' + header.join('.') + '}}', value);
+
         });
 
         binding.pointer.value = txt;
