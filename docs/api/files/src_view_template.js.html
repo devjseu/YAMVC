@@ -43,9 +43,11 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
+            
+                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
@@ -57,17 +59,25 @@
             
                 <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
             
+                <li><a href="../classes/ya.Error.html">ya.Error</a></li>
+            
                 <li><a href="../classes/ya.event.$dispatcher.html">ya.event.$dispatcher</a></li>
+            
+                <li><a href="../classes/ya.Job.html">ya.Job</a></li>
+            
+                <li><a href="../classes/ya.Manager.html">ya.Manager</a></li>
             
                 <li><a href="../classes/ya.mixins.Array.html">ya.mixins.Array</a></li>
             
                 <li><a href="../classes/ya.mixins.CoreStatic.html">ya.mixins.CoreStatic</a></li>
             
+                <li><a href="../classes/ya.mixins.CSSStyle.html">ya.mixins.CSSStyle</a></li>
+            
+                <li><a href="../classes/ya.mixins.DOM.html">ya.mixins.DOM</a></li>
+            
                 <li><a href="../classes/ya.mixins.GetSet.html">ya.mixins.GetSet</a></li>
             
                 <li><a href="../classes/ya.mixins.Observable.html">ya.mixins.Observable</a></li>
-            
-                <li><a href="../classes/ya.mixins.Selector.html">ya.mixins.Selector</a></li>
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
@@ -77,9 +87,11 @@
             
                 <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
             
-                <li><a href="../classes/ya.view.DOM.html">ya.view.DOM</a></li>
+                <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
+            
+                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
             
             </ul>
 
@@ -132,52 +144,434 @@
  * @extends ya.Core
  */
 ya.Core.$extend({
-    module : &#x27;ya&#x27;,
-    alias : &#x27;view.Template&#x27;,
+    module: &#x27;ya&#x27;,
+    alias: &#x27;view.Template&#x27;,
+    static: {
+        id: 0,
+        DOM4: (function () {
+            return !document.createAttribute(&#x27;rel&#x27;) instanceof Node;
+        }),
+        BindingType: {
+            CSS: 5,
+            VIEW: 4,
+            TEXT: 3,
+            ATTR: 2,
+            COL: 1
+        }
+    },
+    mixins: [
+        ya.mixins.Array
+    ],
     defaults: {
-        tpl: null
+        id: null,
+        /**
+         * @attribute config.tpl
+         * @type HTMLElement
+         * @required
+         */
+        tpl: null,
+        /**
+         * @attribute config.tDOM TDOM object definition
+         * @type {Object}
+         */
+        tDOM: null
     },
     init: function (opts) {
-        var me = this, config;
+        var me = this;
 
-        me.__super(opts);
+        me.
+            __super();
 
-        opts = opts || {};
-        config = ya.$merge(me._config, opts.config);
-
-        me.set(&#x27;initOpts&#x27;, opts);
-        me.set(&#x27;config&#x27;, config);
-
-        me.initConfig();
-        me.initTpl();
+        me
+            .initConfig(opts)
+            .initRequired()
+            .initDefaults()
+            .initBindings()
+            .initRegister();
 
     },
-    initConfig: function () {
-        var me = this,
-            config = me.get(&#x27;config&#x27;);
+    initRequired: function () {
+        var me = this;
 
-        me.__super();
+        if (!me.getTpl()) {
 
-        if (!config.id)
-            throw new Error(&quot;ya.view.Template: Template need to have id&quot;);
+            throw ya.Error.$create(&#x27;ya.view.Template: Missing tpl property&#x27;, &#x27;YVT1&#x27;);
+
+        }
 
         return me;
     },
-    initTpl: function () {
+    initDefaults: function () {
         var me = this,
             html = me.getTpl(),
-            tpl = document.createElement(&#x27;div&#x27;);
+            docFragment = document.createDocumentFragment();
+
+        me.setId(me.getId() || &#x27;template-&#x27; + ya.view.template.$Manager.getCount());
+        me.setTDOM(me.getTDOM() || ya.view.TDOM);
 
         if (Array.isArray(html)) {
             html = html.join(&quot;&quot;);
         }
 
-        tpl.innerHTML = html;
+        if (typeof html === &#x27;string&#x27; || html instanceof String) {
+            var evaluated = document.createElement(&#x27;div&#x27;);
 
-        me.set(&#x27;html&#x27;, tpl);
+            evaluated.innerHTML = html;
+
+            while (evaluated.hasChildNodes()) {
+
+                docFragment.appendChild(evaluated.firstChild);
+
+            }
+
+        } else if (html instanceof DocumentFragment) {
+
+            docFragment = html;
+
+        } else {
+
+            docFragment.appendChild(html);
+
+        }
+
+        me.set(&#x27;html&#x27;, docFragment);
+
+        return me;
     },
-    getHtml: function () {
-        return this._html;
+    initRegister: function () {
+        var me = this;
+
+        ya.view.template
+            .$Manager.register(
+                me.getId(),
+                me
+            );
+
+        return me;
+    },
+    /**
+     * @method initBindings
+     * @returns {*}
+     */
+    initBindings: function () {
+        var me = this,
+            texts,
+            attrs;
+
+
+        attrs = me.findAttrsBindings();
+        texts = me.findTextBindings();
+
+        me.set(&#x27;bindings&#x27;, attrs.concat(texts));
+
+        return me;
+    },
+    /**
+     * @method findAttrsBindings
+     */
+    findAttrsBindings: function () {
+        var me = this,
+            attrs = [],
+            bindings = [],
+            regEx = /^ya-(.*)/i,
+            nodeAttrs = [],
+            __slice = Array.prototype.slice,
+            binding,
+            walker,
+            match,
+            attr,
+            node;
+
+        walker = document.createTreeWalker( // Create walker object and
+            me._html,
+            NodeFilter.SHOW_ELEMENT,
+            null,
+            false
+        );
+
+        while (walker.nextNode()) {
+            // walk through all nodes
+
+            node = walker.currentNode;
+            // HTMLElement node
+            // get all attributes
+            // and push to array
+            nodeAttrs = __slice.call(node.attributes);
+
+            // DOM4 polyfill - attribute no longer inherits from Node
+            // so we need to set owner element manually
+            if (ya.view.Template.$DOM4) {
+                /*jshint -W083 */
+                me.each(nodeAttrs, function (attr) {
+                    attr.ownerElement = node;
+                });
+
+            }
+
+            attrs = attrs.concat(nodeAttrs);
+
+        }
+        // execute attribute processing
+
+        while (attrs.length) {
+
+            attr = attrs.pop();
+
+            match = attr.nodeName.match(regEx);
+
+            switch (match &amp;&amp; match[1]) {
+                case &#x27;collection&#x27; :
+                    binding = me.prepareColBindings(attr);
+                    break;
+                case &#x27;view&#x27; :
+                    binding = me.prepareViewBindings(attr);
+                    break;
+                case &#x27;css&#x27; :
+                    binding = me.prepareCSSBindings(attr);
+                    break;
+                default :
+                    binding = me.prepareAttrBindings(attr);
+
+            }
+
+            if (binding) {
+                bindings.push(binding);
+            }
+
+        }
+
+        return bindings;
+    },
+    findTextBindings: function () {
+        var me = this,
+            bindings = [],
+            binding,
+            walker;
+
+        walker = document.createTreeWalker( // Create walker object and
+            me._html,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+
+        while (walker.nextNode()) {
+            // walk through all nodes
+
+            binding = me.prepareTextBindings(walker.currentNode);
+            if (binding) {
+                bindings.push(binding);
+            }
+
+        }
+
+        // we cant mess with DOM when we walking through it
+        // so we need to replace text nodes after we found all
+        // matches
+        me.each(bindings, function (binding) {
+
+            binding.old.parentNode.replaceChild(binding.doc, binding.old);
+
+            delete binding.doc;
+            delete binding.old;
+
+        });
+
+        return bindings;
+    },
+    prepareTextBindings: function (node) {
+        var results = node.data.match(/\{\{(.*?)\}\}/gi),// we searching for mustached text inside it
+            i, len, headers, header, binding = false;
+
+        if (results) { // and if we have positive match
+            var doc = document.createElement(&#x27;span&#x27;),// we create new span element
+            // and id for binding
+                rId = ya.view.Template.$id++;
+
+            doc.setAttribute(&#x27;ya-id&#x27;, rId); // and add generated id.
+
+            i = 0;
+            len = results.length;
+            headers = [];
+
+            // In the end we replace all match via data.
+            while (i &lt; len) {
+
+                result = results[i++];
+                header = result.substr(2, (result.length - 4)).split(&#x27;.&#x27;);
+                headers.push(header);
+
+            }
+
+            // We also keep founded bindings.
+            binding = {
+                original: node.value || node.data,
+                old: node,
+                doc: doc,
+                models: {},
+                headers: headers,
+                type: 3,
+                pointer: rId
+            };
+
+        }
+
+        return binding;
+    },
+    prepareColBindings: function (attr) {
+        var options = attr.value.match(/(?:class|id|namespace|model|view)[?!:]([\S]+)/gi),
+            node = attr.ownerElement,
+            rId = node.getAttribute(&#x27;ya-id&#x27;) || ya.view.Template.$id++,
+            collection = {
+                view: &#x27;ya.View&#x27;,
+                class: &#x27;ya.Collection&#x27;
+            },
+            binding = {
+                pointer: rId,
+                type: ya.view.Template.$BindingType.COL,
+                collection: collection
+            },
+            DOM = ya.mixins.DOM,
+            option;
+
+        node.setAttribute(&#x27;ya-id&#x27;, rId);
+
+        while (options &amp;&amp; options.length) {
+
+            option = options.pop().split(&#x27;:&#x27;);
+            collection[option[0]] = option[1];
+
+        }
+
+        if (node.hasChildNodes()) {
+
+            var tpl = ya.$factory({
+                module: &#x27;ya&#x27;,
+                alias: &#x27;view.Template&#x27;,
+                tpl: DOM.removeChildren(node)
+            });
+
+            collection.tpl = tpl.getId();
+
+        }
+
+        return binding;
+    },
+    prepareViewBindings: function (attr) {
+        var node = attr.ownerElement,
+            view = node.getAttribute(&#x27;ya-view&#x27;) || &#x27;ya.View&#x27;,
+            rId = node.getAttribute(&#x27;ya-id&#x27;) || ya.view.Template.$id++,
+            options = attr.value.match(/(?:class|id)[?!:]([\w\.]+)/gi),
+            binding = {
+                pointer: rId,
+                type: ya.view.Template.$BindingType.VIEW,
+                view: {
+                    class: &#x27;ya.View&#x27;
+                }
+            },
+            option;
+
+        node.setAttribute(&#x27;ya-id&#x27;, rId);
+
+        while (options &amp;&amp; options.length) {
+            option = options.pop().split(&#x27;:&#x27;);
+            binding.view[option[0]] = option[1];
+        }
+
+        return binding;
+    },
+    prepareCSSBindings: function (attr) {
+        var node = attr.ownerElement,
+            results = attr.value &amp;&amp; attr.value.match(/\{\{(.*?)\}\}/gi),
+            len = results &amp;&amp; results.length,
+            headers = [], i = 0,
+            original, binding, header, rId, style;
+
+        rId = node.getAttribute(&#x27;ya-id&#x27;);
+        if (!rId) {
+
+            rId = ya.view.Template.$id++;
+            node.setAttribute(&#x27;ya-id&#x27;, rId);
+
+        }
+
+        if (results) {
+
+            while (i &lt; len) {
+
+                result = results[i++];
+                header = result.substr(2, (result.length - 4)).split(&#x27;.&#x27;);
+                headers.push(header);
+
+            }
+
+        }
+
+        original = (node.getAttribute(&#x27;style&#x27;) || &quot;&quot;) + attr.value;
+
+        node.setAttribute(&#x27;style&#x27;, original);
+
+        binding = {
+            original: original,
+            fillAttr: false,
+            headers: headers,
+            models: {},
+            name: &#x27;style&#x27;,
+            type: ya.view.Template.$BindingType.ATTR,
+            pointer: rId
+        };
+
+        return binding;
+    },
+    prepareAttrBindings: function (attr) {
+        var node = attr.ownerElement,
+            results = attr.value &amp;&amp; attr.value.match(/\{\{(.*?)\}\}/gi),
+            len = results &amp;&amp; results.length,
+            original = attr.value,
+            headers = [], i = 0,
+            binding, rId, header;
+
+        if (results) {
+
+            rId = node.getAttribute(&#x27;ya-id&#x27;);
+            if (!rId) {
+
+                rId = ya.view.Template.$id++;
+                node.setAttribute(&#x27;ya-id&#x27;, rId);
+
+            }
+
+            while (i &lt; len) {
+
+                result = results[i++];
+                header = result.substr(2, (result.length - 4)).split(&#x27;.&#x27;);
+                headers.push(header);
+
+            }
+
+            binding = {
+                fillAttr: ya.mixins.CSSStyle.isFillAttr(attr.name),
+                name: attr.name,
+                original: original,
+                headers: headers,
+                type: ya.view.Template.$BindingType.ATTR,
+                pointer: rId
+            };
+
+        }
+
+        return results ? binding : null;
+    },
+    getTDOMInstance: function (view) {
+        var me = this;
+
+        return me.getTDOM().$create({
+            config: {
+                view: view,
+                bindings: ya.$clone(me.get(&#x27;bindings&#x27;)),
+                DOM: me.get(&#x27;html&#x27;).cloneNode(true)
+            }
+        });
     }
 });
 

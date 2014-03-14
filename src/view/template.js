@@ -31,11 +31,6 @@ ya.Core.$extend({
          */
         tpl: null,
         /**
-         * @attribute config.bindings array with dom - model bindings
-         * @type Array
-         */
-        bindings: null,
-        /**
          * @attribute config.tDOM TDOM object definition
          * @type {Object}
          */
@@ -71,7 +66,7 @@ ya.Core.$extend({
             html = me.getTpl(),
             docFragment = document.createDocumentFragment();
 
-        me.setId(me.getId() || 'template-' + ya.view.template.$manager.getCount());
+        me.setId(me.getId() || 'template-' + ya.view.template.$Manager.getCount());
         me.setTDOM(me.getTDOM() || ya.view.TDOM);
 
         if (Array.isArray(html)) {
@@ -107,7 +102,7 @@ ya.Core.$extend({
         var me = this;
 
         ya.view.template
-            .$manager.register(
+            .$Manager.register(
                 me.getId(),
                 me
             );
@@ -127,7 +122,7 @@ ya.Core.$extend({
         attrs = me.findAttrsBindings();
         texts = me.findTextBindings();
 
-        me.setBindings(attrs.concat(texts));
+        me.set('bindings', attrs.concat(texts));
 
         return me;
     },
@@ -194,8 +189,6 @@ ya.Core.$extend({
                 case 'css' :
                     binding = me.prepareCSSBindings(attr);
                     break;
-                case 'id' :
-                    break;
                 default :
                     binding = me.prepareAttrBindings(attr);
 
@@ -232,8 +225,8 @@ ya.Core.$extend({
 
         }
 
-        // we cant mess with DOM when we iterating through it
-        // so we need replace text nodes after we find all
+        // we cant mess with DOM when we walking through it
+        // so we need to replace text nodes after we found all
         // matches
         me.each(bindings, function (binding) {
 
@@ -275,6 +268,7 @@ ya.Core.$extend({
                 original: node.value || node.data,
                 old: node,
                 doc: doc,
+                models: {},
                 headers: headers,
                 type: 3,
                 pointer: rId
@@ -285,12 +279,12 @@ ya.Core.$extend({
         return binding;
     },
     prepareColBindings: function (attr) {
-        var options = attr.value.match(/(?:alias|id|namespace|model|view)[?!:]([\S]+)/gi),
+        var options = attr.value.match(/(?:class|id|namespace|model|view)[?!:]([\S]+)/gi),
             node = attr.ownerElement,
             rId = node.getAttribute('ya-id') || ya.view.Template.$id++,
             collection = {
                 view: 'ya.View',
-                alias: 'ya.Collection'
+                class: 'ya.Collection'
             },
             binding = {
                 pointer: rId,
@@ -327,12 +321,12 @@ ya.Core.$extend({
         var node = attr.ownerElement,
             view = node.getAttribute('ya-view') || 'ya.View',
             rId = node.getAttribute('ya-id') || ya.view.Template.$id++,
-            options = attr.value.match(/(?:alias|id)[?!:]([\w\.]+)/gi),
+            options = attr.value.match(/(?:class|id)[?!:]([\w\.]+)/gi),
             binding = {
                 pointer: rId,
                 type: ya.view.Template.$BindingType.VIEW,
                 view: {
-                    alias: 'ya.View'
+                    class: 'ya.View'
                 }
             },
             option;
@@ -350,9 +344,8 @@ ya.Core.$extend({
         var node = attr.ownerElement,
             results = attr.value && attr.value.match(/\{\{(.*?)\}\}/gi),
             len = results && results.length,
-            original = attr.value,
             headers = [], i = 0,
-            binding, header, rId;
+            original, binding, header, rId, style;
 
         rId = node.getAttribute('ya-id');
         if (!rId) {
@@ -374,10 +367,15 @@ ya.Core.$extend({
 
         }
 
+        original = (node.getAttribute('style') || "") + attr.value;
+
+        node.setAttribute('style', original);
+
         binding = {
             original: original,
             fillAttr: false,
             headers: headers,
+            models: {},
             name: 'style',
             type: ya.view.Template.$BindingType.ATTR,
             pointer: rId
@@ -424,42 +422,14 @@ ya.Core.$extend({
 
         return results ? binding : null;
     },
-    prepareInstance: function () {
-        var me = this,
-            dom, bindings;
-
-        dom = me.get('html').cloneNode(true);
-
-        bindings = ya.$clone(me.getBindings());
-
-        me.each(bindings, function (binding) {
-
-            if (binding.type === ya.view.Template.$BindingType.ATTR) {
-
-                binding.pointer = dom
-                    .querySelector('[ya-id="' + binding.pointer + '"]')
-                    .attributes
-                    .getNamedItem(binding.name);
-
-                delete binding.name;
-
-            } else {
-
-                binding.pointer = dom.querySelector('[ya-id="' + binding.pointer + '"]');
-
-            }
-
-        });
-
-        return { dom: dom, bindings: bindings};
-    },
     getTDOMInstance: function (view) {
         var me = this;
 
         return me.getTDOM().$create({
             config: {
                 view: view,
-                tpl: me
+                bindings: ya.$clone(me.get('bindings')),
+                DOM: me.get('html').cloneNode(true)
             }
         });
     }

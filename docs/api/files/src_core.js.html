@@ -43,9 +43,11 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
+            
+                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
@@ -57,17 +59,25 @@
             
                 <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
             
+                <li><a href="../classes/ya.Error.html">ya.Error</a></li>
+            
                 <li><a href="../classes/ya.event.$dispatcher.html">ya.event.$dispatcher</a></li>
+            
+                <li><a href="../classes/ya.Job.html">ya.Job</a></li>
+            
+                <li><a href="../classes/ya.Manager.html">ya.Manager</a></li>
             
                 <li><a href="../classes/ya.mixins.Array.html">ya.mixins.Array</a></li>
             
                 <li><a href="../classes/ya.mixins.CoreStatic.html">ya.mixins.CoreStatic</a></li>
             
+                <li><a href="../classes/ya.mixins.CSSStyle.html">ya.mixins.CSSStyle</a></li>
+            
+                <li><a href="../classes/ya.mixins.DOM.html">ya.mixins.DOM</a></li>
+            
                 <li><a href="../classes/ya.mixins.GetSet.html">ya.mixins.GetSet</a></li>
             
                 <li><a href="../classes/ya.mixins.Observable.html">ya.mixins.Observable</a></li>
-            
-                <li><a href="../classes/ya.mixins.Selector.html">ya.mixins.Selector</a></li>
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
@@ -77,9 +87,11 @@
             
                 <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
             
-                <li><a href="../classes/ya.view.DOM.html">ya.view.DOM</a></li>
+                <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
+            
+                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
             
             </ul>
 
@@ -144,8 +156,23 @@ ya.$set(&#x27;ya&#x27;, &#x27;Core&#x27;, (function () {
 
     /**
      @method init
+     @abstract
      */
     Core.prototype.init = function () {
+    };
+
+    /**
+     @method initDefaults
+     @abstract
+     */
+    Core.prototype.initDefaults = function () {
+    };
+
+    /**
+     @method initRequired
+     @abstract
+     */
+    Core.prototype.initRequired = function () {
     };
 
     /**
@@ -166,11 +193,11 @@ ya.$set(&#x27;ya&#x27;, &#x27;Core&#x27;, (function () {
      * @method initConfig
      * @chainable
      */
-    Core.prototype.initConfig = function () {
+    Core.prototype.initConfig = function (opts) {
         var me = this,
-            config = me.get(&#x27;config&#x27;),
             getter,
             setter,
+            config,
             property,
             init = function (property) {
                 getter = &quot;get&quot; + property.charAt(0).toUpperCase() + property.slice(1);
@@ -186,6 +213,13 @@ ya.$set(&#x27;ya&#x27;, &#x27;Core&#x27;, (function () {
                     }
                 };
             };
+
+        opts = opts || {};
+        config = ya.$merge(me._config, opts.config);
+
+        me.set(&#x27;initOpts&#x27;, opts);
+        me.set(&#x27;config&#x27;, config);
+
         for (property in config) {
             if (config.hasOwnProperty(property)) {
                 init(property);
@@ -280,7 +314,7 @@ ya.$set(&#x27;ya&#x27;, &#x27;Core&#x27;, (function () {
      * @returns {*} value stored under passed property
      */
 
-    // Add observable methods.
+        // Add observable methods.
     Core.$mixin(ya.mixins.Observable);
 
     return Core;

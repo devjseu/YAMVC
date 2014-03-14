@@ -68,7 +68,7 @@ ya.Core.$extend({
     },
     doit: function () {
         var me = this,
-            deferred = ya.$promise.deferred(),
+            deferred = ya.$Promise.deferred(),
             engine, fn;
 
         engine = me.getRepeat() > 1 || me.getRepeat() === 'infinity' ?

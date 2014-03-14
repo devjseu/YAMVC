@@ -41,6 +41,8 @@ ya.Core.$extend({
             .initDefaults()
             .initData();
 
+        ya.collection.$Manager.register(me.getId(), me);
+
         return me;
     },
     /**
@@ -50,12 +52,14 @@ ya.Core.$extend({
     initDefaults: function () {
         var me = this;
 
+        me.setId(me.getId() || 'collection-' + ya.collection.$Manager.getCount());
+        me.setModel(me.getModel() || ya.$get('ya.Model'));
+
         me.set('set', []);
         me.set('cache', []);
         me.set('removed', []);
         me.set('filters', []);
         me.set('raw', me.getData() || []);
-        me.setModel(me.getModel()|| ya.$get('ya.Model'));
 
         return me;
     },
@@ -71,11 +75,11 @@ ya.Core.$extend({
         return me;
     },
     /**
-     * @method forEach
+     * @method each
      * @param fn
      * @chainable
      */
-    forEach: function (fn) {
+    each: function (fn) {
         var me = this,
             records = me._set,
             t, len;
@@ -83,7 +87,7 @@ ya.Core.$extend({
         t = Object(records);
         len = t.length >>> 0;
         if (typeof fn !== "function")
-            throw ya.Error.$create('forEach argument should be a function', 'COLLECTION1');
+            throw ya.Error.$create('forEach argument should be a function', 'COL1');
 
         for (var i = 0; i < len; i++) {
             if (i in t)
@@ -111,14 +115,23 @@ ya.Core.$extend({
         while (records.length) {
 
             record = records.pop();
-            record = new ModelDefinition(
-                {
-                    config: {
-                        namespace: namespace,
-                        data: record
+
+            if (!(record instanceof ModelDefinition)) {
+                record = new ModelDefinition(
+                    {
+                        config: {
+                            namespace: namespace,
+                            data: record
+                        }
                     }
-                }
-            );
+                );
+            }
+
+            if(record.getNamespace() !== me.getNamespace()) {
+
+                throw ya.Error.$create('Model should have same namespace as collection', 'COL2');
+
+            }
 
             me._cache.push(record);
 
@@ -349,7 +362,7 @@ ya.Core.$extend({
         var me = this,
             data = me.get('data'),
             idProperty = me.get('idProperty'),
-            deferred = ya.$promise.deferred(),
+            deferred = ya.$Promise.deferred(),
             namespace = me.getNamespace(),
             action = ya.data.Action.$create(),
             callback,
@@ -392,7 +405,7 @@ ya.Core.$extend({
     },
     save: function () {
         var me = this,
-            deferred = ya.$promise.deferred(),
+            deferred = ya.$Promise.deferred(),
             action,
             toCreate = [],
             toUpdate = [],

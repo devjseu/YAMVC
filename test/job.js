@@ -10,13 +10,13 @@ asyncTest("basic", function () {
 
             start();
             ok(job instanceof ya.Job, 'is instance of ya.Job');
-            equal(actions, 2, 'action were perform 2 times');
+            equal(actions, 2, 'action was performed 2 times');
         };
 
     var job = ya.Job
         .$create({
             config: {
-                delay: 50,
+                delay: 70,
                 task: function () {
                     actions++;
                 },
@@ -25,9 +25,9 @@ asyncTest("basic", function () {
         });
 
     job.doit()
-        ["catch"](function () {
-        onFinish();
-    });
+        ['catch'](function () {
+            onFinish();
+        });
 
     setTimeout(function () {
         job.terminate();

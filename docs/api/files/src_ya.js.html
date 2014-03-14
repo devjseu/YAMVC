@@ -43,9 +43,11 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
+            
+                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
@@ -57,17 +59,25 @@
             
                 <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
             
+                <li><a href="../classes/ya.Error.html">ya.Error</a></li>
+            
                 <li><a href="../classes/ya.event.$dispatcher.html">ya.event.$dispatcher</a></li>
+            
+                <li><a href="../classes/ya.Job.html">ya.Job</a></li>
+            
+                <li><a href="../classes/ya.Manager.html">ya.Manager</a></li>
             
                 <li><a href="../classes/ya.mixins.Array.html">ya.mixins.Array</a></li>
             
                 <li><a href="../classes/ya.mixins.CoreStatic.html">ya.mixins.CoreStatic</a></li>
             
+                <li><a href="../classes/ya.mixins.CSSStyle.html">ya.mixins.CSSStyle</a></li>
+            
+                <li><a href="../classes/ya.mixins.DOM.html">ya.mixins.DOM</a></li>
+            
                 <li><a href="../classes/ya.mixins.GetSet.html">ya.mixins.GetSet</a></li>
             
                 <li><a href="../classes/ya.mixins.Observable.html">ya.mixins.Observable</a></li>
-            
-                <li><a href="../classes/ya.mixins.Selector.html">ya.mixins.Selector</a></li>
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
@@ -77,9 +87,11 @@
             
                 <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
             
-                <li><a href="../classes/ya.view.DOM.html">ya.view.DOM</a></li>
+                <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
+            
+                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
             
             </ul>
 
@@ -250,7 +262,7 @@
      * @returns {*}
      */
     ya.$get = function () {
-        var module = arguments.length &lt; 3 ? appNamespace : arguments[0],
+        var module = arguments.length &lt; 2 ? appNamespace : arguments[0],
             namespace = arguments.length &lt; 2 ? arguments[0] : arguments[1],
             namespaces = namespace ? (namespace.search(/\./) &gt; 0 ? namespace.split(&#x27;.&#x27;) : [namespace]) : [],
             pointer = null,
@@ -258,7 +270,7 @@
 
         if (namespaces.length) {
 
-            pointer = window[module];
+            pointer = window[module] = window[module] || {};
 
         }
 
@@ -283,6 +295,35 @@
         }
 
         return pointer;
+    };
+
+    /**
+     * @method $factory
+     * @static
+     * @param config
+     * @returns {*}
+     */
+    ya.$factory = function (config) {
+        var Class, instance, opts;
+
+        if (!config.alias) {
+
+            throw ya.Error.$create(&#x27;Factory method needs alias property&#x27;, &#x27;YA1&#x27;);
+
+        }
+
+        Class = ya.$get(config.module || appNamespace, config.alias);
+        opts = config.methods || {};
+
+        opts.config = config;
+
+        delete config.alias;
+        delete config.module;
+        delete config.methods;
+
+        instance = Class.$create(opts);
+
+        return instance;
     };
 
     /**

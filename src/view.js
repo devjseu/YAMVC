@@ -37,7 +37,7 @@
             clearInterval(iv);
 
             resize = 0;
-            views = ya.view.$manager.getItems();
+            views = ya.view.$Manager.getItems();
             l = views.length;
             i = 0;
 
@@ -104,6 +104,11 @@
              */
             models: null,
             /**
+             * @attribute config.collections
+             * @type ya.Collection
+             */
+            collections : null,
+            /**
              * @attribute config.autoCreate
              * @type boolean
              */
@@ -139,7 +144,7 @@
                 .initTemplate()
                 .initParent();
 
-            ya.view.$manager.register(me.getId(), me);
+            ya.view.$Manager.register(me.getId(), me);
 
             return me;
         },
@@ -161,9 +166,10 @@
         initDefaults: function () {
             var me = this;
 
-            me.setId(me.getId() || 'view-' + ya.view.$manager.getCount());
+            me.setId(me.getId() || 'view-' + ya.view.$Manager.getCount());
             me.setChildren(me.getChildren() || []);
             me.setModels(me.getModels() || []);
+            me.setCollections(me.getCollections() || []);
 
             return me;
         },
@@ -208,7 +214,6 @@
             }
 
             me.setTpl(tpl);
-            me.set('tdom', tpl.getTDOMInstance(me));
 
             return me;
         },
@@ -246,7 +251,6 @@
 
                 models.push(model);
                 me.setModels(models);
-                me.observeModel(model);
 
             }
 
@@ -285,11 +289,69 @@
 
             return model;
         },
-        observeModel: function () {
+        /**
+         * @returns {View}
+         */
+        setCollection: function (collection) {
+            var me = this,
+                collections = me.getCollections();
 
+            if (!(collection instanceof ya.Collection)) {
+
+                if (!collection.alias) {
+
+                    collection.module = 'ya';
+                    collection.alias = 'Model';
+
+                }
+
+                collection = ya.$factory(collection);
+            }
+
+            if (!me.hasCollection(collection.getId())) {
+
+                collections.push(collection);
+                me.setCollections(collections);
+
+            }
+
+            return me;
+        },
+        hasCollection: function (id) {
+            var collections = this.getCollections(),
+                l;
+
+            l = collections.length;
+            while (l--) {
+                if (collections[l].getId() === id) {
+                    return true;
+                }
+            }
+
+            return false;
         },
         /**
-         * @version 0.1.11
+         * @param id
+         * @returns {ya.Collection}
+         */
+        getCollection: function (id) {
+            var me = this,
+                collections = me.getCollections(),
+                collection = null,
+                l;
+
+            l = collections.length;
+            while (l--) {
+                if (collections[l].getNamespace() === id) {
+                    collection = collections[l];
+                    break;
+                }
+            }
+
+            return collections;
+        },
+        /**
+         * @version 0.2.0
          * @returns {Node}
          */
         render: function () {
@@ -307,7 +369,9 @@
 
             }
 
-            el = me._tdom.getDOM();
+            el = me.getTpl()
+                .getTDOMInstance(me)
+                .getEDOM();
 
             me.set('el', el);
 
@@ -334,100 +398,6 @@
             }
 
             return el;
-        },
-        /**
-         * @version 0.1.12
-         * @param model
-         */
-        resolveModelBindings: function (model) {
-            var me = this,
-                bindings = me._bindings,
-                bindFnFactory,
-                headers,
-                header,
-                binding,
-                eventName,
-                lenM = 0,
-                len = 0;
-
-            bindFnFactory = function (binding) {
-                return function () {
-                    me.partialRender(binding);
-                };
-            };
-
-            len = bindings.length;
-            while (len--) {
-
-                binding = bindings[len];
-                headers = binding.headers;
-                lenM = headers.length;
-                while (lenM--) {
-
-                    if (model.getNamespace() === headers[lenM][0]) {
-
-                        header = headers[lenM][1];
-                        eventName = 'data' + header.charAt(0).toUpperCase() + header.slice(1) + 'Change';
-                        binding.fn = bindFnFactory(binding);
-
-                        model.addEventListener(eventName, binding.fn);
-
-                        binding.fn();
-
-                    }
-
-                }
-            }
-        },
-        /**
-         * @version 0.1.12
-         */
-        resolveBindings: function () {
-            var me = this,
-                bindings = me._bindings,
-                bindFnFactory,
-                model,
-                headers,
-                header,
-                binding,
-                eventName,
-                lenM = 0,
-                len = 0;
-
-            bindFnFactory = function (binding) {
-                return function () {
-                    me.partialRender(binding);
-                };
-            };
-
-            len = bindings.length;
-            while (len--) {
-
-                binding = bindings[len];
-                headers = binding.headers;
-
-                if (binding.type === 3 && binding.oldDOM) {
-                    binding.oldDOM.parentNode.replaceChild(binding.pointer, binding.oldDOM);
-                    delete binding.oldDOM;
-                }
-
-                lenM = headers.length;
-                while (lenM--) {
-
-                    model = me.getModel(headers[lenM][0]);
-                    header = headers[lenM][1];
-
-                    if (model) {
-
-                        binding.fn = bindFnFactory(binding);
-                        eventName = 'data' + header.charAt(0).toUpperCase() + header.slice(1) + 'Change';
-
-                        model.addEventListener(eventName, binding.fn);
-
-                    }
-
-                }
-            }
         },
         /**
          * @version 0.1.11
@@ -470,37 +440,6 @@
                 } else {
 
                     binding.pointer.setAttribute(binding.attrName, org);
-
-                }
-
-            }
-
-            return me;
-        },
-        /**
-         * @version 0.1.12
-         */
-        removeBindings: function () {
-            var me = this,
-                bindings = me._bindings,
-                l = bindings.length,
-                binding,
-                model,
-                header,
-                l2,
-                eventName;
-
-            while (l--) {
-
-                binding = bindings[l];
-                l2 = binding.headers.length;
-                while (l2--) {
-
-                    header = binding.headers[l2];
-                    model = me.getModel(header[0]);
-                    eventName = 'data' + header[1].charAt(0).toUpperCase() + header[1].slice(1) + 'Change';
-
-                    model.removeEventListener(eventName, binding.fn);
 
                 }
 

@@ -43,9 +43,11 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
+            
+                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
@@ -57,17 +59,25 @@
             
                 <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
             
+                <li><a href="../classes/ya.Error.html">ya.Error</a></li>
+            
                 <li><a href="../classes/ya.event.$dispatcher.html">ya.event.$dispatcher</a></li>
+            
+                <li><a href="../classes/ya.Job.html">ya.Job</a></li>
+            
+                <li><a href="../classes/ya.Manager.html">ya.Manager</a></li>
             
                 <li><a href="../classes/ya.mixins.Array.html">ya.mixins.Array</a></li>
             
                 <li><a href="../classes/ya.mixins.CoreStatic.html">ya.mixins.CoreStatic</a></li>
             
+                <li><a href="../classes/ya.mixins.CSSStyle.html">ya.mixins.CSSStyle</a></li>
+            
+                <li><a href="../classes/ya.mixins.DOM.html">ya.mixins.DOM</a></li>
+            
                 <li><a href="../classes/ya.mixins.GetSet.html">ya.mixins.GetSet</a></li>
             
                 <li><a href="../classes/ya.mixins.Observable.html">ya.mixins.Observable</a></li>
-            
-                <li><a href="../classes/ya.mixins.Selector.html">ya.mixins.Selector</a></li>
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
@@ -77,9 +87,11 @@
             
                 <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
             
-                <li><a href="../classes/ya.view.DOM.html">ya.view.DOM</a></li>
+                <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
+            
+                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
             
             </ul>
 
@@ -146,19 +158,19 @@ ya.Core.$extend({
      * @param opts
      */
     init: function (opts) {
-        var me = this, config;
+        var me = this;
 
-        opts = opts || {};
+        me
+            .initConfig(opts)
+            .initDefaults();
+    },
+    initDefaults: function () {
+        var me = this;
 
-        me.__super(opts);
-        config = ya.$merge(me._config, opts.config);
-
-        me.set(&#x27;initOpts&#x27;, opts);
-        me.set(&#x27;config&#x27;, config);
         me.set(&#x27;response&#x27;, {});
         me.set(&#x27;status&#x27;, ya.data.Action.$status.PENDING);
 
-        me.initConfig();
+        return me;
     },
     /**
      * @methods init
@@ -230,7 +242,7 @@ ya.Core.$extend({
         }
 
         if (!check)
-            throw new Error(&#x27;ya.data.Action: Wrong status&#x27;);
+            throw ya.Error.$create(&#x27;ya.data.Action: Wrong status&#x27;, &#x27;ACTION1&#x27;);
 
         return this.set(&#x27;status&#x27;, status);
     },

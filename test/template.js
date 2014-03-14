@@ -13,8 +13,8 @@
                     '<ul ya-collection="$examples list">' +
                     '<li>{{list.value}}</li>' +
                     '</ul>' +
-                    '{{text.node}}' +
-                    '<div ya-view="$todos [alias=app.view.Todos]">' +
+                    '{{text.node}} sialalala {{text.node2}}' +
+                    '<div ya-view="id:todos class:app.view.Todos">' +
                     '</div>' +
                     '</div>';
 
@@ -23,18 +23,18 @@
 
 
     test("initialize", function () {
-        var Template;
+        var tpl;
 
-        Template = ya.view.Template.$create({
+        tpl = ya.view.Template.$create({
             config: {
                 tpl: htmlMock,
                 id: 'tpl-id-0'
             }
         });
 
-        ok(Template instanceof ya.view.Template, 'is instance of ya.view.Template');
+        ok(tpl instanceof ya.view.Template, 'is instance of ya.view.Template');
 
-        ok(typeof Template.initBindings !== 'undefined', 'has findBindings method');
+        ok(typeof tpl.initBindings !== 'undefined', 'has findBindings method');
 
     });
 
@@ -94,7 +94,7 @@
             }
         });
 
-        div.setAttribute('ya-collection', 'alias:app.collection.Todos id:todos namespace:todo model:ya.Model view:app.todos.element');
+        div.setAttribute('ya-collection', 'class:app.collection.Todos id:todos namespace:todo model:ya.Model view:app.todos.element');
 
         attr = {
             name: 'ya-collection',
@@ -106,7 +106,7 @@
 
         equal(binding.pointer, div.getAttribute('ya-id'), 'binding contains node element');
         equal(binding.collection.id, 'todos', 'binding contains id of collection');
-        equal(binding.collection.alias, 'app.collection.Todos', 'binding contains an alias of collection');
+        equal(binding.collection.class, 'app.collection.Todos', 'binding contains collection class');
         equal(binding.collection.namespace, 'todo', 'binding contains collection namespace');
         equal(binding.collection.model, 'ya.Model', 'binding contains model');
         equal(binding.collection.view, 'app.todos.element', 'view was read from attribute');
@@ -128,7 +128,7 @@
 
         equal(binding.collection.view, 'ya.View', 'binding should have default view');
 
-        var tpl = ya.view.template.$manager.getItem(binding.collection.tpl);
+        var tpl = ya.view.template.$Manager.getItem(binding.collection.tpl);
 
         equal(tpl.getTpl().hasChildNodes(), true, 'template retrieved from DOM');
 
@@ -145,11 +145,11 @@
             }
         });
 
-        div.setAttribute('ya-view', 'alias:ya.View');
+        div.setAttribute('ya-view', 'class:ya.View');
 
         attr = {
             name: 'ya-collection',
-            value: 'alias:app.collection.Todos id:todos namespace:todo model:ya.Model',
+            value: 'class:app.collection.Todos id:todos namespace:todo model:ya.Model',
             ownerElement: div
         };
 
@@ -157,7 +157,7 @@
 
         equal(binding.pointer, div.getAttribute('ya-id'));
         equal(binding.view.id, 'todos');
-        equal(binding.view.alias, 'app.collection.Todos');
+        equal(binding.view.class, 'app.collection.Todos');
 
     });
 
@@ -208,7 +208,7 @@
     });
 
     test("clone DOM and bindings", function () {
-        var template, instance;
+        var template, instance, view;
 
         template = ya.view.Template.$create({
             config: {
@@ -217,31 +217,19 @@
             }
         });
 
-        instance = template.prepareInstance();
 
-        ok(instance.dom instanceof DocumentFragment);
+        view = ya.View.$create({
+            config: {
+                tpl: template
+            }
+        });
 
-    });
 
-    test("return TDOM instance", function () {
-        var tpl = ya.view.Template.$create({
-                config: {
-                    tpl: htmlMock,
-                    id: 'tpl-id-5'
-                }
-            }),
-            view = ya.View.$create({
-                config: {
-                    tpl: tpl
-                },
-                init: function () {
-                }
-            }),
-            tDOM;
+        instance = template.getTDOMInstance(view);
 
-        tDOM = tpl.getTDOMInstance(view);
 
-        ok(tDOM instanceof ya.view.TDOM);
+        ok(instance.getDOM() instanceof DocumentFragment);
+        ok(instance.getBindings() instanceof Array);
 
     });
 

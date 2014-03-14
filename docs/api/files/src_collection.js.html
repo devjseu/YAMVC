@@ -43,9 +43,11 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
+            
+                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
@@ -57,17 +59,25 @@
             
                 <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
             
+                <li><a href="../classes/ya.Error.html">ya.Error</a></li>
+            
                 <li><a href="../classes/ya.event.$dispatcher.html">ya.event.$dispatcher</a></li>
+            
+                <li><a href="../classes/ya.Job.html">ya.Job</a></li>
+            
+                <li><a href="../classes/ya.Manager.html">ya.Manager</a></li>
             
                 <li><a href="../classes/ya.mixins.Array.html">ya.mixins.Array</a></li>
             
                 <li><a href="../classes/ya.mixins.CoreStatic.html">ya.mixins.CoreStatic</a></li>
             
+                <li><a href="../classes/ya.mixins.CSSStyle.html">ya.mixins.CSSStyle</a></li>
+            
+                <li><a href="../classes/ya.mixins.DOM.html">ya.mixins.DOM</a></li>
+            
                 <li><a href="../classes/ya.mixins.GetSet.html">ya.mixins.GetSet</a></li>
             
                 <li><a href="../classes/ya.mixins.Observable.html">ya.mixins.Observable</a></li>
-            
-                <li><a href="../classes/ya.mixins.Selector.html">ya.mixins.Selector</a></li>
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
@@ -77,9 +87,11 @@
             
                 <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
             
-                <li><a href="../classes/ya.view.DOM.html">ya.view.DOM</a></li>
+                <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
+            
+                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
             
             </ul>
 
@@ -135,6 +147,7 @@ ya.Core.$extend({
     module: &#x27;ya&#x27;,
     alias: &#x27;Collection&#x27;,
     defaults: {
+        id: null,
         /**
          * @attribute config.namespace
          * @type String Namespace of collection
@@ -142,34 +155,51 @@ ya.Core.$extend({
          */
         namespace: null,
         /**
+         * @attribute config.model
+         * @type ya.Model Model instance
+         * @required
+         */
+        model: null,
+        /**
          * @attribute config.namespace
-         * @type ya.data.Proxy Instance of proxy for transfering data
+         * @type ya.data.Proxy Instance of proxy for transferring data
          * @required
          */
         proxy: null
     },
     /**
-     * @method init
      * initialize collection
+     * @method init
      * @param opts
      */
     init: function (opts) {
-        var me = this, config;
+        var me = this;
 
         me.__super(opts);
 
-        opts = opts || {};
-        config = ya.$merge(me._config, opts.config);
+        me.initConfig(opts)
+            .initDefaults()
+            .initData();
 
-        me.set(&#x27;initOpts&#x27;, opts);
-        me.set(&#x27;config&#x27;, config);
+        ya.collection.$Manager.register(me.getId(), me);
+
+        return me;
+    },
+    /**
+     * @method init
+     * @returns {*}
+     */
+    initDefaults: function () {
+        var me = this;
+
+        me.setId(me.getId() || &#x27;collection-&#x27; + ya.collection.$Manager.getCount());
+        me.setModel(me.getModel() || ya.$get(&#x27;ya.Model&#x27;));
+
         me.set(&#x27;set&#x27;, []);
         me.set(&#x27;cache&#x27;, []);
         me.set(&#x27;removed&#x27;, []);
         me.set(&#x27;filters&#x27;, []);
-
-        me.initConfig();
-        me.initData();
+        me.set(&#x27;raw&#x27;, me.getData() || []);
 
         return me;
     },
@@ -178,20 +208,18 @@ ya.Core.$extend({
      * initialize data
      */
     initData: function () {
-        var me = this,
-            data = me.getData() || [];
+        var me = this;
 
-        me.set(&#x27;raw&#x27;, data);
-        me.prepareData(data);
+        me.prepareData(me._raw);
 
         return me;
     },
     /**
-     * @method forEach
+     * @method each
      * @param fn
      * @chainable
      */
-    forEach: function (fn) {
+    each: function (fn) {
         var me = this,
             records = me._set,
             t, len;
@@ -199,7 +227,7 @@ ya.Core.$extend({
         t = Object(records);
         len = t.length &gt;&gt;&gt; 0;
         if (typeof fn !== &quot;function&quot;)
-            throw new TypeError();
+            throw ya.Error.$create(&#x27;forEach argument should be a function&#x27;, &#x27;COL1&#x27;);
 
         for (var i = 0; i &lt; len; i++) {
             if (i in t)
@@ -227,14 +255,23 @@ ya.Core.$extend({
         while (records.length) {
 
             record = records.pop();
-            record = new ModelDefinition(
-                {
-                    config: {
-                        namespace: namespace,
-                        data: record
+
+            if (!(record instanceof ModelDefinition)) {
+                record = new ModelDefinition(
+                    {
+                        config: {
+                            namespace: namespace,
+                            data: record
+                        }
                     }
-                }
-            );
+                );
+            }
+
+            if(record.getNamespace() !== me.getNamespace()) {
+
+                throw ya.Error.$create(&#x27;Model should have same namespace as collection&#x27;, &#x27;COL2&#x27;);
+
+            }
 
             me._cache.push(record);
 
@@ -465,9 +502,9 @@ ya.Core.$extend({
         var me = this,
             data = me.get(&#x27;data&#x27;),
             idProperty = me.get(&#x27;idProperty&#x27;),
-            deferred = ya.$promise.deferred(),
+            deferred = ya.$Promise.deferred(),
             namespace = me.getNamespace(),
-            action = new ya.data.Action(),
+            action = ya.data.Action.$create(),
             callback,
             key, i = 0;
 
@@ -476,10 +513,10 @@ ya.Core.$extend({
         if (
             i === 0
             )
-            throw new Error(&#x27;You need to pass at least one condition to load model collection&#x27;);
+            throw ya.Error.$create(&#x27;You need to pass at least one condition to load model collection&#x27;, &#x27;COLLECTION2&#x27;);
 
         if (!me.getProxy())
-            throw new Error(&#x27;To load collection you need to set proxy&#x27;);
+            throw ya.Error.$create(&#x27;To load collection you need to set proxy&#x27;, &#x27;COLLECTION3&#x27;);
 
 
         callback = function () {
@@ -508,7 +545,7 @@ ya.Core.$extend({
     },
     save: function () {
         var me = this,
-            deferred = ya.$promise.deferred(),
+            deferred = ya.$Promise.deferred(),
             action,
             toCreate = [],
             toUpdate = [],
@@ -613,7 +650,7 @@ ya.Core.$extend({
 
             toFinish++;
 
-            action = new ya.data.Action();
+            action = ya.data.Action.$create();
 
             action
                 .setOptions({
@@ -630,7 +667,7 @@ ya.Core.$extend({
 
             toFinish++;
 
-            action = new ya.data.Action();
+            action = ya.data.Action.$create();
 
             action
                 .setOptions({
@@ -646,7 +683,7 @@ ya.Core.$extend({
 
             toFinish++;
 
-            action = new ya.data.Action();
+            action = ya.data.Action.$create();
 
             action
                 .setOptions({
@@ -675,6 +712,7 @@ ya.Core.$extend({
             models = [];
 
         total = total || l;
+
         for (var i = 0; i &lt; l; i++) {
 
             modelConfig.data = data[i];

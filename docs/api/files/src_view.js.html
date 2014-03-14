@@ -43,9 +43,11 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
+            
+                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
@@ -57,17 +59,25 @@
             
                 <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
             
+                <li><a href="../classes/ya.Error.html">ya.Error</a></li>
+            
                 <li><a href="../classes/ya.event.$dispatcher.html">ya.event.$dispatcher</a></li>
+            
+                <li><a href="../classes/ya.Job.html">ya.Job</a></li>
+            
+                <li><a href="../classes/ya.Manager.html">ya.Manager</a></li>
             
                 <li><a href="../classes/ya.mixins.Array.html">ya.mixins.Array</a></li>
             
                 <li><a href="../classes/ya.mixins.CoreStatic.html">ya.mixins.CoreStatic</a></li>
             
+                <li><a href="../classes/ya.mixins.CSSStyle.html">ya.mixins.CSSStyle</a></li>
+            
+                <li><a href="../classes/ya.mixins.DOM.html">ya.mixins.DOM</a></li>
+            
                 <li><a href="../classes/ya.mixins.GetSet.html">ya.mixins.GetSet</a></li>
             
                 <li><a href="../classes/ya.mixins.Observable.html">ya.mixins.Observable</a></li>
-            
-                <li><a href="../classes/ya.mixins.Selector.html">ya.mixins.Selector</a></li>
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
@@ -77,9 +87,11 @@
             
                 <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
             
-                <li><a href="../classes/ya.view.DOM.html">ya.view.DOM</a></li>
+                <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
+            
+                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
             
             </ul>
 
@@ -133,24 +145,13 @@
 (function (undefined) {
     &quot;use strict&quot;;
 
-    var ya = window.ya || {},
+    var ya = window.ya,
         style = document.createElement(&#x27;style&#x27;),
         __slice = Array.prototype.slice,
         VM,
-        VTM,
         View,
-        renderId = 0,
-        fillAttrs,
         resize = 0,
         iv = 0;
-
-    function makeMap(str) {
-        // Make object map from string.
-        var obj = {}, items = str.split(&quot;,&quot;);
-        for (var i = 0; i &lt; items.length; i++)
-            obj[ items[i] ] = true;
-        return obj;
-    }
 
     function onWindowResize(e) {
         // When resize event occur wait 32 miliseconds
@@ -176,23 +177,20 @@
             clearInterval(iv);
 
             resize = 0;
-            views = VM.views;
+            views = ya.view.$Manager.getItems();
             l = views.length;
             i = 0;
 
             while (i &lt; l) {
 
-                if (views[i].getFit()) {
-                    views[i].fireEvent(&#x27;resize&#x27;, views[i]);
+                if (views[i].item.getFit()) {
+                    views[i].item.fireEvent(&#x27;resize&#x27;, views[i]);
                 }
 
                 i++;
             }
         }
     }
-
-    // Make object with attributes that not need any value.
-    fillAttrs = makeMap(&quot;checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected&quot;);
 
     // Append some basic css to document.
     style.innerHTML = &quot;.ya.inline {display:inline;} .ya.hidden {display: none !important;}&quot;;
@@ -201,77 +199,12 @@
     document.body.appendChild(style);
     window.addEventListener(&#x27;resize&#x27;, onWindowResize);
 
-    VM = {
-        // &#x60;ya.view.$Manager&#x60; stores all created views and allow as to
-        // use &#x60;get&#x60; method (with id as argument) to return requested view.
-        views: [],
-        toRender: [],
-        i: 0,
-        /**
-         * @method add
-         * @for ya.view.$Manager
-         * @param id
-         * @param view
-         */
-        add: function (id, view) {
-            // Add view to manager.
-            var me = this;
-
-            if (view.getAutoCreate()) {
-
-                view.render();
-
-            }
-
-            me.views.push(view);
-            me.i++;
-        },
-        /**
-         * @method get
-         * @for ya.view.$Manager
-         * @param id
-         * @returns {View}
-         */
-        get: function (id) {
-            // Get view by its id.
-            var me = this,
-                len = me.views.length;
-
-            while (len--) {
-
-                if (me.views[len].getId() === id) break;
-
-            }
-
-            return me.views[len];
-        }
-    };
-
-    ya.$set(&#x27;ya&#x27;, &#x27;view.$Manager&#x27;, VM);
-
-
-    VTM = {
-        // &#x60;VTM&#x60; is a private object that stores all templates used
-        // in application.
-        tpl: {},
-        add: function (id, view) {
-            var me = this;
-
-            me.tpl[id] = view;
-        },
-        get: function (id) {
-            var me = this;
-
-            return me.tpl[id];
-        }
-    };
-
     /**
      * @namespace ya
      * @class View
      * @constructor
      * @extends ya.Core
-     * @uses ya.mixins.Selector
+     * @uses ya.mixins.DOM
      * @params opts Object with configuration properties
      * @type {function}
      */
@@ -284,11 +217,17 @@
         // of window was changed
         // * &#x60;hidden&#x60; - if true, component will be hidden after render
         defaults: {
+            id: null,
             /**
              * @attribute config.parent
              * @type ya.View
              */
             parent: null,
+            /**
+             * @attribute config.children
+             * @type Array
+             */
+            children: null,
             /**
              * @attribute config.fit
              * @type boolean
@@ -305,13 +244,24 @@
              */
             models: null,
             /**
+             * @attribute config.collections
+             * @type ya.Collection
+             */
+            collections : null,
+            /**
              * @attribute config.autoCreate
              * @type boolean
              */
-            autoCreate: false
+            autoCreate: false,
+            /**
+             * @attribute config.autoCreate
+             * @type ya.view.Template|String
+             * @required
+             */
+            tpl: null
         },
         mixins: [
-            ya.mixins.Selector
+            ya.mixins.DOM
         ],
         /**
          * @method init
@@ -327,30 +277,39 @@
 
             me.__super();
 
-            me.initDefaults(opts);
-            me.initConfig();
-            me.initTemplate();
-            me.initParent();
-            VM.add(me.getId(), me);
+            me
+                .initConfig(opts)
+                .initDefaults()
+                .initRequired()
+                .initTemplate()
+                .initParent();
+
+            ya.view.$Manager.register(me.getId(), me);
+
+            return me;
+        },
+        initRequired: function () {
+            var me = this;
+
+            if (!me.getTpl()) {
+
+                throw ya.Error.$create(&#x27;ya.View: no tpl set for &#x27; + config.getId());
+
+            }
 
             return me;
         },
         /**
-         *
          * @method initDefaults
-         * @param opts
-         * @chainable
+         * @returns {*}
          */
-        initDefaults: function (opts) {
-            var me = this, config;
+        initDefaults: function () {
+            var me = this;
 
-            opts = opts || {};
-            config = ya.$merge(me._config, opts.config);
-            config.id = config.id || &#x27;view-&#x27; + VM.i;
-            config.children = config.children || [];
-
-            me.set(&#x27;initOpts&#x27;, opts);
-            me.set(&#x27;config&#x27;, config);
+            me.setId(me.getId() || &#x27;view-&#x27; + ya.view.$Manager.getCount());
+            me.setChildren(me.getChildren() || []);
+            me.setModels(me.getModels() || []);
+            me.setCollections(me.getCollections() || []);
 
             return me;
         },
@@ -361,47 +320,40 @@
          */
         initTemplate: function () {
             var me = this,
-                config = me.get(&#x27;config&#x27;),
-                div = document.createElement(&#x27;div&#x27;),
-                Instance,
-                _tpl;
+                tpl = me.getTpl(),
+                div = document.createElement(&#x27;div&#x27;);
 
-            if (!config.tpl) {
+            if (!(tpl instanceof ya.view.Template)) {
+                // If tpl is not a ya.view.Template object
 
-                throw new Error(config.id + &#x27;: no tpl set&#x27;);
+                if (
+                    tpl instanceof Array || typeof tpl === &#x27;array&#x27; ||
+                        typeof tpl == &#x27;string&#x27; || tpl instanceof String
+                    ) {
+                    // if its an array with html def
+                    // prepare configuration object and
+                    // instantiate it via factory method.
+                    tpl = ya.$factory({
+                        module: &#x27;ya&#x27;,
+                        alias: &#x27;view.Template&#x27;,
+                        tpl: tpl
+                    });
 
-            }
+                } else if (tpl instanceof Object || typeof tpl === &#x27;object&#x27;) {
+                    // Or if its a configuration object
+                    // do the same.
+                    if (!tpl.alias) {
+                        tpl.module = &#x27;ya&#x27;;
+                        tpl.alias = &#x27;view.Template&#x27;;
+                    }
 
-            if (config.tpl instanceof ya.view.Template) {
-
-                div.innerHTML = config.tpl.getHtml().innerHTML;
-
-            } else if (typeof config.tpl === &#x27;object&#x27;) {
-
-                Instance = ya.$get(config.tpl.alias);
-                config.tpl = Instance ? Instance.$create({config: config.tpl}) : ya.view.Template.$create({config: config.tpl});
-                div.innerHTML = config.tpl.getHtml().innerHTML;
-
-            } else if (typeof config.tpl == &#x27;string&#x27; || config.tpl instanceof String) {
-
-                if (VTM.get(config.tpl)) {
-
-                    div.innerHTML = VTM.get(config.tpl).innerHTML;
-
-                } else {
-
-                    _tpl = document.getElementById(config.tpl);
-
-                    if (!_tpl)
-                        throw new Error(&#x27;no tpl &#x27; + config.tpl + &#x27; found&#x27;);
-
-                    VTM.add(config.tpl, _tpl.parentNode.removeChild(_tpl));
-                    div.innerHTML = VTM.get(config.tpl).innerHTML;
-
+                    tpl = ya.$factory(tpl);
                 }
+
+
             }
 
-            me.set(&#x27;tpl&#x27;, div);
+            me.setTpl(tpl);
 
             return me;
         },
@@ -419,15 +371,43 @@
         /**
          * @returns {View}
          */
-        setModel: function (namespace, model) {
+        setModel: function (model) {
             var me = this,
                 models = me.getModels();
 
-            models.push(model);
-            me.setModels(models);
-            me.resolveModelBindings(model);
+            if (!(model instanceof ya.Model)) {
+
+                if (!model.alias) {
+
+                    model.module = &#x27;ya&#x27;;
+                    model.alias = &#x27;Model&#x27;;
+
+                }
+
+                model = ya.$factory(model);
+            }
+
+            if (!me.hasModel(model.getNamespace())) {
+
+                models.push(model);
+                me.setModels(models);
+
+            }
 
             return me;
+        },
+        hasModel: function (namespace) {
+            var models = this.getModels(),
+                l;
+
+            l = models.length;
+            while (l--) {
+                if (models[l].getNamespace() === namespace) {
+                    return true;
+                }
+            }
+
+            return false;
         },
         /**
          * @param namespace
@@ -450,33 +430,78 @@
             return model;
         },
         /**
-         * @version 0.1.11
+         * @returns {View}
+         */
+        setCollection: function (collection) {
+            var me = this,
+                collections = me.getCollections();
+
+            if (!(collection instanceof ya.Collection)) {
+
+                if (!collection.alias) {
+
+                    collection.module = &#x27;ya&#x27;;
+                    collection.alias = &#x27;Model&#x27;;
+
+                }
+
+                collection = ya.$factory(collection);
+            }
+
+            if (!me.hasCollection(collection.getId())) {
+
+                collections.push(collection);
+                me.setCollections(collections);
+
+            }
+
+            return me;
+        },
+        hasCollection: function (id) {
+            var collections = this.getCollections(),
+                l;
+
+            l = collections.length;
+            while (l--) {
+                if (collections[l].getId() === id) {
+                    return true;
+                }
+            }
+
+            return false;
+        },
+        /**
+         * @param id
+         * @returns {ya.Collection}
+         */
+        getCollection: function (id) {
+            var me = this,
+                collections = me.getCollections(),
+                collection = null,
+                l;
+
+            l = collections.length;
+            while (l--) {
+                if (collections[l].getNamespace() === id) {
+                    collection = collections[l];
+                    break;
+                }
+            }
+
+            return collections;
+        },
+        /**
+         * @version 0.2.0
          * @returns {Node}
          */
         render: function () {
             var me = this,
-                tpl = me._tpl,
                 config = me._config,
-                id = config.renderTo,
                 parent = config.parent,
-                parentView = config.parent,
-                bindings = [],
-                headers = [],
-                results,
-                result,
-                header,
-                ret,
-                value,
-                parsedTpl,
-                walker,
-                node,
-                el,
-                i = 0,
-                l = 0,
-                j = 0,
-                len = 0,
-                attrs = [],
-                attr;
+                selector = config.renderTo,
+                parentEl, el;
+
+            parentEl = me.getParentEl(selector, true);
 
             if (me.isInDOM()) {
 
@@ -484,222 +509,24 @@
 
             }
 
-            if (parent) {// If parent is set,
-
-                if (id &amp;&amp; parent.querySelector(id)) { // search for element to which we will append component.
-                    parent = parent.querySelector(id);
-                } else {// If not found, append to parent root element.
-                    parent = parent._el;
-                }
-
-            } else {// If parent not set,
-
-                if (id) { // but we have an id of element to which we want render new one,
-                    parent = document.querySelector(id);// we search for it in the whole document.
-                }
-
-            }
-
-            parsedTpl = tpl.cloneNode(true); // Next, clone template.
-
-            walker = document.createTreeWalker( // Create walker object and
-                parsedTpl,
-                NodeFilter.SHOW_ALL,
-                null,
-                false
-            );
-
-            node = walker.nextNode();
-            while (node) { // walk through all nodes.
-
-                if (node.nodeType === 3) { // If our element is text node
-                    results = node.data.match(/\{\{(.*?)\}\}/gi);// we searching for mustached text inside it
-                    if (results) { // and if we have positive match
-                        var text = node.value || node.data,
-                            doc = document.createElement(&#x27;span&#x27;),// we create new span element
-                            rId = &quot;v-r-b-&quot; + renderId++;
-
-                        i = 0;
-                        len = results.length;
-                        headers = [];
-
-                        doc.setAttribute(&#x27;id&#x27;, rId); // and add generated id.
-
-                        // In the end we replace all match via data.
-                        while (i &lt; len) {
-
-                            result = results[i++];
-                            header = result.substr(2, (result.length - 4)).split(&#x27;.&#x27;);
-
-                            if (me.getModel(header[0])) {
-                                ret = me.getModel(header[0]).data(header[1]);
-                                if (ret === undefined) {
-                                    ret = &quot;&quot;;
-                                }
-                            } else {
-                                ret = &quot;&quot;;
-                            }
-
-                            text = text.replace(result, ret);
-                            headers.push(header);
-
-                        }
-
-                        doc.appendChild(
-                            document.createTextNode(text)
-                        );
-
-                        // We also keep founded bindings.
-                        bindings.push({
-                            original: node.value || node.data,
-                            headers: headers,
-                            type: 3,
-                            pointer: doc,
-                            oldDOM: node
-                        });
-
-                    }
-                    /*node.value = node.value.replace(bindRegEx, function (match) {
-                     return replaceFn(match, 1, node);
-                     });*/
-                }
-                else {
-
-                    attrs = node.attributes;
-                    l = attrs.length;
-
-                    while (l--) {
-
-                        attr = attrs.item(l);
-                        results = attr.value &amp;&amp; attr.value.match(/\{\{(.*?)\}\}/gi);
-
-                        if (results) {
-                            var original = attr.value,
-                                fillAttr = fillAttrs[attr.nodeName];
-
-                            i = 0;
-                            len = results.length;
-                            headers = [];
-
-                            ret = fillAttr ? true : &quot;&quot;;
-
-                            while (i &lt; len) {
-
-                                result = results[i++];
-                                header = result.substr(2, (result.length - 4)).split(&#x27;.&#x27;);
-
-                                if (!fillAttr) {
-
-                                    if (me.getModel(header[0])) {
-                                        ret = me.getModel(header[0]).data(header[1]) || &quot;&quot;;
-                                    }
-
-                                    attr.value = attr.value.replace(result, ret);
-
-                                } else {
-
-                                    ret = ret &amp;&amp; me.getModel(header[0]).data(header[1]);
-
-                                }
-
-                                headers.push(header);
-
-                            }
-
-                            if (fillAttr) {
-
-                                if (!ret) {
-
-                                    node.removeAttribute(attr.nodeName);
-
-                                } else {
-
-                                    node.setAttribute(attr.nodeName, ret);
-
-                                }
-
-                            } else {
-
-                                if (attr.nodeName === &#x27;css&#x27;) {
-
-                                    value = attr.value;
-
-                                    attr = document.createAttribute(&quot;style&quot;);
-
-                                    attr.value = value;
-
-                                    node.removeAttribute(&#x27;css&#x27;);
-
-                                    attrs.setNamedItem(attr);
-
-                                }
-
-                            }
-
-                            bindings.push({
-                                original: original,
-                                headers: headers,
-                                fillAttr: fillAttr || false,
-                                type: 2,
-                                attrName: attr.nodeName,
-                                pointer: node
-                            });
-
-                        } else {
-
-                            if (attr.nodeName === &#x27;css&#x27;) {
-
-                                value = attr.value;
-
-                                attr = document.createAttribute(&quot;style&quot;);
-
-                                attr.value = value;
-
-                                node.removeAttribute(&#x27;css&#x27;);
-
-                                attrs.setNamedItem(attr);
-
-                            }
-
-                        }
-
-                        /*attrs.item(l).value = attrs[l].value.replace(bindRegEx, function (match) {
-                         return replaceFn(match, 0, attrs[l]);
-                         });*/
-                    }
-                }
-
-                node = walker.nextNode();
-
-            }
-
-            if (parsedTpl.childNodes.length === 1 &amp;&amp; parsedTpl.childNodes.item(0).nodeType === 1) {
-                el = parsedTpl.childNodes.item(0);
-            } else {
-                el = parsedTpl;
-                el.classList.add(&#x27;inline&#x27;);
-            }
-
-            el.setAttribute(&#x27;id&#x27;, config.id);
-            el.classList.add(&#x27;ya&#x27;);
+            el = me.getTpl()
+                .getTDOMInstance(me)
+                .getEDOM();
 
             me.set(&#x27;el&#x27;, el);
-            me.set(&#x27;bindings&#x27;, bindings);
-
-            me.resolveBindings();
 
             if (me.getHidden())
                 me.hide();
 
-            if (parent) {
+            if (parentEl) {
 
-                parent.appendChild(el);
+                parentEl.appendChild(el);
 
-                if (parentView) {
+                if (parent) {
 
-                    if (parentView.findChild(me.getId()) &lt; 0) {
+                    if (parent.findChild(me.getId()) &lt; 0) {
 
-                        parentView.getChildren().push(me);
+                        parent.getChildren().push(me);
 
                     }
 
@@ -711,100 +538,6 @@
             }
 
             return el;
-        },
-        /**
-         * @version 0.1.12
-         * @param model
-         */
-        resolveModelBindings: function (model) {
-            var me = this,
-                bindings = me._bindings,
-                bindFnFactory,
-                headers,
-                header,
-                binding,
-                eventName,
-                lenM = 0,
-                len = 0;
-
-            bindFnFactory = function (binding) {
-                return function () {
-                    me.partialRender(binding);
-                };
-            };
-
-            len = bindings.length;
-            while (len--) {
-
-                binding = bindings[len];
-                headers = binding.headers;
-                lenM = headers.length;
-                while (lenM--) {
-
-                    if (model.getNamespace() === headers[lenM][0]) {
-
-                        header = headers[lenM][1];
-                        eventName = &#x27;data&#x27; + header.charAt(0).toUpperCase() + header.slice(1) + &#x27;Change&#x27;;
-                        binding.fn = bindFnFactory(binding);
-
-                        model.addEventListener(eventName, binding.fn);
-
-                        binding.fn();
-
-                    }
-
-                }
-            }
-        },
-        /**
-         * @version 0.1.12
-         */
-        resolveBindings: function () {
-            var me = this,
-                bindings = me._bindings,
-                bindFnFactory,
-                model,
-                headers,
-                header,
-                binding,
-                eventName,
-                lenM = 0,
-                len = 0;
-
-            bindFnFactory = function (binding) {
-                return function () {
-                    me.partialRender(binding);
-                };
-            };
-
-            len = bindings.length;
-            while (len--) {
-
-                binding = bindings[len];
-                headers = binding.headers;
-
-                if (binding.type === 3 &amp;&amp; binding.oldDOM) {
-                    binding.oldDOM.parentNode.replaceChild(binding.pointer, binding.oldDOM);
-                    delete binding.oldDOM;
-                }
-
-                lenM = headers.length;
-                while (lenM--) {
-
-                    model = me.getModel(headers[lenM][0]);
-                    header = headers[lenM][1];
-
-                    if (model) {
-
-                        binding.fn = bindFnFactory(binding);
-                        eventName = &#x27;data&#x27; + header.charAt(0).toUpperCase() + header.slice(1) + &#x27;Change&#x27;;
-
-                        model.addEventListener(eventName, binding.fn);
-
-                    }
-
-                }
-            }
         },
         /**
          * @version 0.1.11
@@ -857,42 +590,10 @@
         /**
          * @version 0.1.12
          */
-        removeBindings: function () {
-            var me = this,
-                bindings = me._bindings,
-                l = bindings.length,
-                binding,
-                model,
-                header,
-                l2,
-                eventName;
-
-            while (l--) {
-
-                binding = bindings[l];
-                l2 = binding.headers.length;
-                while (l2--) {
-
-                    header = binding.headers[l2];
-                    model = me.getModel(header[0]);
-                    eventName = &#x27;data&#x27; + header[1].charAt(0).toUpperCase() + header[1].slice(1) + &#x27;Change&#x27;;
-
-                    model.removeEventListener(eventName, binding.fn);
-
-                }
-
-            }
-
-            return me;
-        },
-        /**
-         * @version 0.1.12
-         */
         removeRendered: function () {
             var me = this;
 
             me._el.parentNode.removeChild(me._el);
-            me.removeBindings();
             me.set(&#x27;el&#x27;, null);
             me.set(&#x27;isInDOM&#x27;, false);
 
@@ -1018,8 +719,34 @@
             return this._isInDOM;
         },
         /**
-         * @param parent
+         *
          * @param selector
+         * @param globally
+         */
+        getParentEl: function (selector, globally) {
+            var me = this,
+                parent = me._config.parent,
+                parentEl;
+
+            if (me.isElement(selector)) {
+
+                parentEl = selector;
+
+            } else if (parent) {
+
+                parentEl = selector ? parent._el.querySelector(selector) : parent._el;
+
+            } else if (globally) {
+
+                parentEl = document.querySelector(selector);
+
+            }
+
+            return parentEl;
+        },
+        /**
+         * @param parent
+         * @param {String|HTMLElement} selector String or DOM Element
          * @returns {View}
          */
         appendTo: function (parent, selector) {
@@ -1028,13 +755,11 @@
                 id = me.getId(),
                 views = parent.getChildren(),
                 oldParent = config.parent,
-                parentEl = selector ? parent._el.querySelector(selector) : parent._el;
+                parentEl;
 
-            if (selector) {
+            parentEl = me.getParentEl(selector, false);
 
-                config.renderTo = selector;
-
-            }
+            config.renderTo = parentEl;
 
             if (!oldParent) {
 

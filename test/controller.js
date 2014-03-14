@@ -30,7 +30,7 @@ test("bind events to view", function () {
                     tpl: [
                         '<div>Who are you ?</div>',
                         '<button style="margin: 10px;">answer</button>',
-                        '<div class="example" css="display: {{example.display}};">Hi {{example.name}}</div>'
+                        '<div class="example" ya-css="display: {{example.display}};">Hi {{example.name}}</div>'
                     ]
                 }
             }),
@@ -60,7 +60,7 @@ test("bind events to view", function () {
         alerted++;
     }
 
-    click(ya.view.$manager.getItem('controller-test').querySelector('button'));
+    click(ya.view.$Manager.getItem('controller-test').querySelector('button'));
 
     equal(alerted, 1, "Event fired!");
 

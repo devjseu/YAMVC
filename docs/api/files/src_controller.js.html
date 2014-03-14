@@ -43,9 +43,11 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
+            
+                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
@@ -57,17 +59,25 @@
             
                 <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
             
+                <li><a href="../classes/ya.Error.html">ya.Error</a></li>
+            
                 <li><a href="../classes/ya.event.$dispatcher.html">ya.event.$dispatcher</a></li>
+            
+                <li><a href="../classes/ya.Job.html">ya.Job</a></li>
+            
+                <li><a href="../classes/ya.Manager.html">ya.Manager</a></li>
             
                 <li><a href="../classes/ya.mixins.Array.html">ya.mixins.Array</a></li>
             
                 <li><a href="../classes/ya.mixins.CoreStatic.html">ya.mixins.CoreStatic</a></li>
             
+                <li><a href="../classes/ya.mixins.CSSStyle.html">ya.mixins.CSSStyle</a></li>
+            
+                <li><a href="../classes/ya.mixins.DOM.html">ya.mixins.DOM</a></li>
+            
                 <li><a href="../classes/ya.mixins.GetSet.html">ya.mixins.GetSet</a></li>
             
                 <li><a href="../classes/ya.mixins.Observable.html">ya.mixins.Observable</a></li>
-            
-                <li><a href="../classes/ya.mixins.Selector.html">ya.mixins.Selector</a></li>
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
@@ -77,9 +87,11 @@
             
                 <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
             
-                <li><a href="../classes/ya.view.DOM.html">ya.view.DOM</a></li>
+                <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
+            
+                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
             
             </ul>
 
@@ -135,7 +147,7 @@
  *         config: {
  *             name: &#x27;Main&#x27;,
  *             views: {
- *                 layout: view.$Manager.get(&#x27;view-0&#x27;)
+ *                 layout: ya.view.$Manager.getItem(&#x27;view-0&#x27;)
  *             },
  *             routes: {
  *                 &quot;page/{\\d+}&quot;: &#x27;changePage&#x27;
@@ -168,33 +180,29 @@
 ya.Core.$extend({
     module: &#x27;ya&#x27;,
     alias: &#x27;Controller&#x27;,
+    defaults: {
+        routes: null,
+        events: null
+    },
     static: {
-        id: 0,
         router: null,
-        idGenerator: function () {
-            return ya.Controller.id++;
-        },
         getRouter: function () {
+
             ya.Controller.$router = ya.Controller.$router || new ya.Router();
 
             return ya.Controller.$router;
         }
     },
     init: function (opts) {
-        var me = this, config;
+        var me = this;
 
-        opts = opts || {};
-        config = ya.$merge(me._config, opts.config);
-        config.id = config.id || &#x27;controller-&#x27; + ya.Controller.$idGenerator();
-        me.router = ya.Controller.$getRouter();
+        me.__super(opts);
 
-        me.set(&#x27;initOpts&#x27;, opts);
-        me.set(&#x27;config&#x27;, config);
-        me.set(&#x27;routes&#x27;, config.routes || {});
-        me.set(&#x27;events&#x27;, config.events || {});
-        me.set(&#x27;views&#x27;, config.views || {});
-
-        me.initConfig();
+        me
+            .initConfig(opts)
+            .initDefaults()
+            .initEvents()
+            .initRoutes();
 
         ya.$onReady(function () {
             me.restoreRouter();
@@ -202,23 +210,29 @@ ya.Core.$extend({
 
         return me;
     },
-    initConfig: function () {
-        ya.Core.prototype.initConfig.apply(this);
+    /**
+     * @method initDefaults
+     * @returns {*}
+     */
+    initDefaults: function () {
+        var me = this;
+
+        me.set(&#x27;router&#x27;, ya.Controller.$getRouter());
+        me.set(&#x27;dispatcher&#x27;, ya.event.$dispatcher);
+
+        return me;
+    },
+    /**
+     *
+     * @returns {*}
+     */
+    initEvents: function () {
         var me = this,
-            routes = me.get(&#x27;routes&#x27;),
-            events = me.get(&#x27;events&#x27;),
+            events = me.getEvents(),
             views = [],
             rx = new RegExp(&#x27;\\$([^\\s]+)&#x27;),
+            dispatcher = me._dispatcher,
             matches, view, l, obj;
-
-        if (routes) {
-            for (var k in routes) {
-                if (routes.hasOwnProperty(k)) {
-                    var callback = me[routes[k]].bind(me);
-                    router.when(k, callback);
-                }
-            }
-        }
 
         if (events) {
 
@@ -228,7 +242,8 @@ ya.Core.$extend({
 
                     obj = {};
                     obj[e] = events[e];
-                    ya.event.$dispatcher.add(me, obj);
+
+                    dispatcher.add(me, obj);
 
                     matches = e.match(rx);
                     if (matches) {
@@ -241,7 +256,9 @@ ya.Core.$extend({
 
                     } else {
 
-                        throw new Error(&#x27;Event query should begin from id of the view (current query: &#x27; + e + &#x27;)&#x27;);
+                        throw ya.Error.$create(
+                            &#x27;Event query should begin from id of the view (current query: &#x27; + e + &#x27;)&#x27;, &#x27;CONTROLLER1&#x27;
+                        );
 
                     }
 
@@ -254,7 +271,8 @@ ya.Core.$extend({
 
                 view = ya
                     .view.$Manager
-                    .get(views[l]);
+                    .getItem(views[l]);
+
                 if (view) {
 
                     if (view.isInDOM()) {
@@ -271,10 +289,31 @@ ya.Core.$extend({
             }
 
         }
-        return this;
+
+        return me;
+    },
+    /**
+     *
+     * @returns {*}
+     */
+    initRoutes: function () {
+        var me = this,
+            routes = me.getRoutes(),
+            router = me._router;
+
+        if (routes) {
+            for (var k in routes) {
+                if (routes.hasOwnProperty(k)) {
+                    var callback = me[routes[k]].bind(me);
+                    router.when(k, callback);
+                }
+            }
+        }
+
+        return me;
     },
     resolveEvents: function (view) {
-        var events = this.get(&#x27;events&#x27;),
+        var events = this.getEvents(),
             newScope = function (func, scope, arg) {
                 return func.bind(scope, arg);
             },
@@ -286,10 +325,10 @@ ya.Core.$extend({
             scope;
 
         for (var query in events) {
-
             if (events.hasOwnProperty(query)) {
 
                 matches = query.match(rx);
+
                 if (matches &amp;&amp; matches[1] === view.getId()) {
                     viewEvents = events[query];
                     selector = query.split(&quot; &quot;).slice(1);

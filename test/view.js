@@ -140,7 +140,7 @@ test("bind with model", function () {
                     tpl: [
                         '<div>Who are you ?</div>',
                         '<button style="margin: 10px;">answer</button>',
-                        '<div class="example" css="display: {{example.display}};">Hi {{example.name}}</div>'
+                        '<div class="example" ya-css="display: {{example.display}};">Hi {{example.name}}</div>'
                     ]
                 }
             }),
@@ -184,7 +184,7 @@ test("rendered two times", function () {
                     tpl: [
                         '<div>Who are you ?</div>',
                         '<button style="margin: 10px;">answer</button>',
-                        '<div class="example" css="display: {{example.display}};">Hi {{example.name}}</div>'
+                        '<div class="example" ya-css="display: {{example.display}};">Hi {{example.name}}</div>'
                     ]
                 }
             }),
@@ -242,11 +242,11 @@ test("check if query match", function () {
 
     v.render();
 
-    ok(ya.view.$manager.getItem('selector-test').isQueryMatch('div#selector-test.employee.senior'), 'selector should match');
+    ok(ya.view.$Manager.getItem('selector-test').isQueryMatch('div#selector-test.employee.senior'), 'selector should match');
 
-    ok(!ya.view.$manager.getItem('selector-test').isQueryMatch('span'), 'selector shouldn\'t match');
+    ok(!ya.view.$Manager.getItem('selector-test').isQueryMatch('span'), 'selector shouldn\'t match');
 
-    ok(ya.view.$manager.getItem('selector-test').isQueryMatch('#selector-test.senior'), 'selector should match');
+    ok(ya.view.$Manager.getItem('selector-test').isQueryMatch('#selector-test.senior'), 'selector should match');
 });
 
 test("initialize template in shorter way", function () {

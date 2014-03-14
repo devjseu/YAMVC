@@ -43,9 +43,11 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
+            
+                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
@@ -57,17 +59,25 @@
             
                 <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
             
+                <li><a href="../classes/ya.Error.html">ya.Error</a></li>
+            
                 <li><a href="../classes/ya.event.$dispatcher.html">ya.event.$dispatcher</a></li>
+            
+                <li><a href="../classes/ya.Job.html">ya.Job</a></li>
+            
+                <li><a href="../classes/ya.Manager.html">ya.Manager</a></li>
             
                 <li><a href="../classes/ya.mixins.Array.html">ya.mixins.Array</a></li>
             
                 <li><a href="../classes/ya.mixins.CoreStatic.html">ya.mixins.CoreStatic</a></li>
             
+                <li><a href="../classes/ya.mixins.CSSStyle.html">ya.mixins.CSSStyle</a></li>
+            
+                <li><a href="../classes/ya.mixins.DOM.html">ya.mixins.DOM</a></li>
+            
                 <li><a href="../classes/ya.mixins.GetSet.html">ya.mixins.GetSet</a></li>
             
                 <li><a href="../classes/ya.mixins.Observable.html">ya.mixins.Observable</a></li>
-            
-                <li><a href="../classes/ya.mixins.Selector.html">ya.mixins.Selector</a></li>
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
@@ -77,9 +87,11 @@
             
                 <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
             
-                <li><a href="../classes/ya.view.DOM.html">ya.view.DOM</a></li>
+                <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
+            
+                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
             
             </ul>
 
@@ -164,13 +176,13 @@ ya.Core.$extend({
             id;
 
         if (!(action instanceof ya.data.Action))
-            throw new Error(&#x27;ya.data.Proxy: read argument action should be instance of ya.data.Action&#x27;);
+            throw ya.Error.$create(&#x27;ya.data.Proxy: read argument action should be instance of ya.data.Action&#x27;);
 
         opts = action.getOptions();
         id = opts.params &amp;&amp; opts.params.id;
 
         if (!action.getOption(&#x27;namespace&#x27;))
-            throw new Error(&#x27;ya.data.Proxy: namespace should be set&#x27;);
+            throw ya.Error.$create(&#x27;ya.data.Proxy: namespace should be set&#x27;);
 
         if (typeof id === &#x27;undefined&#x27;) {
             me.readBy(action);
@@ -189,13 +201,13 @@ ya.Core.$extend({
         var me = this;
 
         if (!(action instanceof ya.data.Action))
-            throw new Error(&#x27;ya.data.Proxy: create argument action should be instance of ya.data.Action&#x27;);
+            throw ya.Error.$create(&#x27;ya.data.Proxy: create argument action should be instance of ya.data.Action&#x27;);
 
         if (!action.getOption(&#x27;namespace&#x27;))
-            throw new Error(&#x27;ya.data.Proxy: namespace should be set&#x27;);
+            throw ya.Error.$create(&#x27;ya.data.Proxy: namespace should be set&#x27;);
 
         if (!action.getData() || typeof action.getData() !== &#x27;object&#x27;)
-            throw new Error(&#x27;ya.data.Proxy: Data should be object&#x27;);
+            throw ya.Error.$create(&#x27;ya.data.Proxy: Data should be object&#x27;);
 
         return me;
     },
@@ -208,13 +220,13 @@ ya.Core.$extend({
         var me = this;
 
         if (!(action instanceof ya.data.Action))
-            throw new Error(&#x27;ya.data.Proxy: update argument action should be instance of ya.data.Action&#x27;);
+            throw ya.Error.$create(&#x27;ya.data.Proxy: update argument action should be instance of ya.data.Action&#x27;);
 
         if (!action.getOption(&#x27;namespace&#x27;))
-            throw new Error(&#x27;ya.data.Proxy: namespace should be set&#x27;);
+            throw ya.Error.$create(&#x27;ya.data.Proxy: namespace should be set&#x27;);
 
         if (!action.getData() || typeof action.getData() !== &#x27;object&#x27;)
-            throw new Error(&#x27;ya.data.Proxy: Data should be object&#x27;);
+            throw ya.Error.$create(&#x27;ya.data.Proxy: Data should be object&#x27;);
 
         return me;
     },
@@ -227,13 +239,13 @@ ya.Core.$extend({
         var me = this;
 
         if (!(action instanceof ya.data.Action))
-            throw new Error(&#x27;ya.data.Proxy: destroy argument action should be instance of ya.data.Action&#x27;);
+            throw ya.Error.$create(&#x27;ya.data.Proxy: destroy argument action should be instance of ya.data.Action&#x27;);
 
         if (!action.getOption(&#x27;namespace&#x27;))
-            throw new Error(&#x27;ya.data.Proxy: namespace should be set&#x27;);
+            throw ya.Error.$create(&#x27;ya.data.Proxy: namespace should be set&#x27;);
 
         if (!action.getData() || typeof action.getData() !== &#x27;object&#x27;)
-            throw new Error(&#x27;Data should be pass as object&#x27;);
+            throw ya.Error.$create(&#x27;Data should be pass as object&#x27;);
 
         return me;
     }

@@ -57,7 +57,7 @@ ya.$set('ya', 'mixins.CoreStatic', {
 
             Instance.prototype = parent.prototype;
             child.prototype = new Instance();
-            child.prototype.__name__ = (opts.module || ya.$module()) + '.' + opts.alias;
+            child.prototype.__class__ = (opts.module || ya.$module()) + '.' + opts.alias;
 
             for (var staticCore in ya.mixins.CoreStatic) {
 

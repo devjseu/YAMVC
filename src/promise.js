@@ -2,17 +2,17 @@
  * @author angularjs
  * @contributed mkalafior
  * @namespace ya
- * @class $promise
+ * @class $Promise
  * @static
  */
-ya.$set('ya', '$promise', function (undefined) {
+ya.$set('ya', '$Promise', function (undefined) {
     "use strict";
 
     var ya = window.ya || {},
         isFunction = function (func) {
             return typeof func === 'function';
         },
-        forEach = ya.mixins.Array.each,
+        each = ya.mixins.Array.each,
         _promise;
 
 
@@ -318,7 +318,7 @@ ya.$set('ya', '$promise', function (undefined) {
                 counter = 0,
                 results = isArray(promises) ? [] : {};
 
-            forEach(promises, function (promise, key) {
+            each(promises, function (promise, key) {
                 counter++;
                 ref(promise).then(function (value) {
                     if (results.hasOwnProperty(key)) return;

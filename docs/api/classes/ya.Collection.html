@@ -43,9 +43,11 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
+            
+                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
@@ -57,17 +59,25 @@
             
                 <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
             
+                <li><a href="../classes/ya.Error.html">ya.Error</a></li>
+            
                 <li><a href="../classes/ya.event.$dispatcher.html">ya.event.$dispatcher</a></li>
+            
+                <li><a href="../classes/ya.Job.html">ya.Job</a></li>
+            
+                <li><a href="../classes/ya.Manager.html">ya.Manager</a></li>
             
                 <li><a href="../classes/ya.mixins.Array.html">ya.mixins.Array</a></li>
             
                 <li><a href="../classes/ya.mixins.CoreStatic.html">ya.mixins.CoreStatic</a></li>
             
+                <li><a href="../classes/ya.mixins.CSSStyle.html">ya.mixins.CSSStyle</a></li>
+            
+                <li><a href="../classes/ya.mixins.DOM.html">ya.mixins.DOM</a></li>
+            
                 <li><a href="../classes/ya.mixins.GetSet.html">ya.mixins.GetSet</a></li>
             
                 <li><a href="../classes/ya.mixins.Observable.html">ya.mixins.Observable</a></li>
-            
-                <li><a href="../classes/ya.mixins.Selector.html">ya.mixins.Selector</a></li>
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
@@ -77,9 +87,11 @@
             
                 <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
             
-                <li><a href="../classes/ya.view.DOM.html">ya.view.DOM</a></li>
+                <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
+            
+                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
             
             </ul>
 
@@ -215,14 +227,14 @@
                             </li>
                         
                             <li class="index-item method">
-                                <a href="#method_filter">filter</a>
+                                <a href="#method_each">each</a>
 
                                 
                                 
                             </li>
                         
                             <li class="index-item method">
-                                <a href="#method_forEach">forEach</a>
+                                <a href="#method_filter">filter</a>
 
                                 
                                 
@@ -257,9 +269,7 @@
                             </li>
                         
                             <li class="index-item method">
-                                <a href="#method_init
-initialize collection">init
-initialize collection</a>
+                                <a href="#method_init">init</a>
 
                                 
                                 
@@ -276,6 +286,20 @@ initialize collection</a>
                                 <a href="#method_initData
 initialize data">initData
 initialize data</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method inherited">
+                                <a href="#method_initDefaults">initDefaults</a>
+
+                                
+                                
+                            </li>
+                        
+                            <li class="index-item method inherited">
+                                <a href="#method_initRequired">initRequired</a>
 
                                 
                                 
@@ -320,6 +344,10 @@ initialize data</a>
                     <h3>Attributes</h3>
 
                     <ul class="index-list attrs extends">
+                        
+                            <li class="index-item attr">
+                                <a href="#attr_config.model">config.model</a>
+                            </li>
                         
                             <li class="index-item attr">
                                 <a href="#attr_config.namespace">config.namespace</a>
@@ -382,7 +410,7 @@ initialize data</a>
             
         
         
-        <a href="../files/src_core.js.html#l71"><code>src\core.js:71</code></a>
+        <a href="../files/src_core.js.html#l93"><code>src\core.js:93</code></a>
         
         </p>
 
@@ -476,7 +504,7 @@ initialize data</a>
             
         
         
-        <a href="../files/src_collection.js.html#l158"><code>src\collection.js:158</code></a>
+        <a href="../files/src_collection.js.html#l183"><code>src\collection.js:183</code></a>
         
         </p>
 
@@ -571,7 +599,7 @@ initialize data</a>
             
         
         
-        <a href="../files/src_collection.js.html#l130"><code>src\collection.js:130</code></a>
+        <a href="../files/src_collection.js.html#l155"><code>src\collection.js:155</code></a>
         
         </p>
 
@@ -643,7 +671,7 @@ initialize data</a>
             
         
         
-        <a href="../files/src_collection.js.html#l144"><code>src\collection.js:144</code></a>
+        <a href="../files/src_collection.js.html#l169"><code>src\collection.js:169</code></a>
         
         </p>
 
@@ -715,7 +743,7 @@ initialize data</a>
             
         
         
-        <a href="../files/src_collection.js.html#l122"><code>src\collection.js:122</code></a>
+        <a href="../files/src_collection.js.html#l147"><code>src\collection.js:147</code></a>
         
         </p>
 
@@ -743,6 +771,95 @@ initialize data</a>
                 
             </div>
         </div>
+    
+
+    
+</div>
+
+                
+                    <div id="method_each" class="method item">
+    <h3 class="name"><code>each</code></h3>
+
+    
+        <div class="args">
+            <span class="paren">(</span><ul class="args-list inline commas">
+            
+                <li class="arg">
+                    
+                        <code>fn</code>
+                    
+                </li>
+            
+            </ul><span class="paren">)</span>
+        </div>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <span class="flag chainable">chainable</span>
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/src_collection.js.html#l77"><code>src\collection.js:77</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+    
+        <div class="params">
+            <h4>Parameters:</h4>
+
+            <ul class="params-list">
+            
+                <li class="param">
+                    
+                        <code class="param-name">fn</code>
+                        <span class="type">Object</span>
+                    
+
+                    
+
+                    <div class="param-description">
+                         
+                    </div>
+
+                    
+                </li>
+            
+            </ul>
+        </div>
+    
+
     
 
     
@@ -797,7 +914,7 @@ initialize data</a>
             
         
         
-        <a href="../files/src_collection.js.html#l189"><code>src\collection.js:189</code></a>
+        <a href="../files/src_collection.js.html#l214"><code>src\collection.js:214</code></a>
         
         </p>
 
@@ -854,95 +971,6 @@ initialize data</a>
 </div>
 
                 
-                    <div id="method_forEach" class="method item">
-    <h3 class="name"><code>forEach</code></h3>
-
-    
-        <div class="args">
-            <span class="paren">(</span><ul class="args-list inline commas">
-            
-                <li class="arg">
-                    
-                        <code>fn</code>
-                    
-                </li>
-            
-            </ul><span class="paren">)</span>
-        </div>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <span class="flag chainable">chainable</span>
-    
-
-    
-
-    <div class="meta">
-        
-            
-                
-                <p>
-                
-                Defined in
-                
-            
-        
-        
-        <a href="../files/src_collection.js.html#l61"><code>src\collection.js:61</code></a>
-        
-        </p>
-
-
-        
-
-        
-    </div>
-
-    <div class="description">
-        
-    </div>
-
-    
-        <div class="params">
-            <h4>Parameters:</h4>
-
-            <ul class="params-list">
-            
-                <li class="param">
-                    
-                        <code class="param-name">fn</code>
-                        <span class="type">Object</span>
-                    
-
-                    
-
-                    <div class="param-description">
-                         
-                    </div>
-
-                    
-                </li>
-            
-            </ul>
-        </div>
-    
-
-    
-
-    
-</div>
-
-                
                     <div id="method_get" class="method item inherited">
     <h3 class="name"><code>get</code></h3>
 
@@ -986,7 +1014,7 @@ initialize data</a>
             
         
         
-        <a href="../files/src_core.js.html#l149"><code>src\core.js:149</code></a>
+        <a href="../files/src_core.js.html#l171"><code>src\core.js:171</code></a>
         
         </p>
 
@@ -1091,7 +1119,7 @@ initialize data</a>
             
         
         
-        <a href="../files/src_collection.js.html#l255"><code>src\collection.js:255</code></a>
+        <a href="../files/src_collection.js.html#l280"><code>src\collection.js:280</code></a>
         
         </p>
 
@@ -1195,7 +1223,7 @@ initialize data</a>
             
         
         
-        <a href="../files/src_collection.js.html#l264"><code>src\collection.js:264</code></a>
+        <a href="../files/src_collection.js.html#l289"><code>src\collection.js:289</code></a>
         
         </p>
 
@@ -1252,61 +1280,8 @@ initialize data</a>
 </div>
 
                 
-                    <div id="method_init" class="method item inherited">
+                    <div id="method_init" class="method item">
     <h3 class="name"><code>init</code></h3>
-
-    
-        <span class="paren">()</span>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    <div class="meta">
-        
-            
-                <p>Inherited from
-                <a href="..\classes\ya.Core.html#method_init">ya.Core</a>:
-            
-        
-        
-        <a href="../files/src_core.js.html#l17"><code>src\core.js:17</code></a>
-        
-        </p>
-
-
-        
-
-        
-    </div>
-
-    <div class="description">
-        
-    </div>
-
-    
-
-    
-
-    
-</div>
-
-                
-                    <div id="method_init
-initialize collection" class="method item">
-    <h3 class="name"><code>init
-initialize collection</code></h3>
 
     
         <div class="args">
@@ -1338,16 +1313,16 @@ initialize collection</code></h3>
 
     <div class="meta">
         
+            <p>Inherited from
+            <a href="..\classes\ya.Core.html#method_init">
+                ya.Core
+            </a>
             
-                
-                <p>
-                
-                Defined in
-                
+            but overwritten in
             
         
         
-        <a href="../files/src_collection.js.html#l23"><code>src\collection.js:23</code></a>
+        <a href="../files/src_collection.js.html#l30"><code>src\collection.js:30</code></a>
         
         </p>
 
@@ -1358,7 +1333,8 @@ initialize collection</code></h3>
     </div>
 
     <div class="description">
-        
+        <p>initialize collection</p>
+
     </div>
 
     
@@ -1386,6 +1362,76 @@ initialize collection</code></h3>
         </div>
     
 
+    
+
+    
+</div>
+
+                
+                    <div id="method_init" class="method item">
+    <h3 class="name"><code>init</code></h3>
+
+    
+        <span class="paren">()</span>
+    
+
+    
+        <span class="returns-inline">
+            <span class="type"></span>
+        </span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/src_collection.js.html#l48"><code>src\collection.js:48</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+    
+
+    
+        <div class="returns">
+            <h4>Returns:</h4>
+
+            <div class="returns-description">
+                
+                    
+                        <span class="type"></span>:
+                    
+                
+            </div>
+        </div>
     
 
     
@@ -1423,7 +1469,7 @@ initialize collection</code></h3>
             
         
         
-        <a href="../files/src_core.js.html#l23"><code>src\core.js:23</code></a>
+        <a href="../files/src_core.js.html#l38"><code>src\core.js:38</code></a>
         
         </p>
 
@@ -1499,7 +1545,109 @@ initialize data</code></h3>
             
         
         
-        <a href="../files/src_collection.js.html#l48"><code>src\collection.js:48</code></a>
+        <a href="../files/src_collection.js.html#l66"><code>src\collection.js:66</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_initDefaults" class="method item inherited">
+    <h3 class="name"><code>initDefaults</code></h3>
+
+    
+        <span class="paren">()</span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                <p>Inherited from
+                <a href="..\classes\ya.Core.html#method_initDefaults">ya.Core</a>:
+            
+        
+        
+        <a href="../files/src_core.js.html#l24"><code>src\core.js:24</code></a>
+        
+        </p>
+
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+    
+
+    
+
+    
+</div>
+
+                
+                    <div id="method_initRequired" class="method item inherited">
+    <h3 class="name"><code>initRequired</code></h3>
+
+    
+        <span class="paren">()</span>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div class="meta">
+        
+            
+                <p>Inherited from
+                <a href="..\classes\ya.Core.html#method_initRequired">ya.Core</a>:
+            
+        
+        
+        <a href="../files/src_core.js.html#l31"><code>src\core.js:31</code></a>
         
         </p>
 
@@ -1568,7 +1716,7 @@ initialize data</code></h3>
             
         
         
-        <a href="../files/src_core.js.html#l91"><code>src\core.js:91</code></a>
+        <a href="../files/src_core.js.html#l113"><code>src\core.js:113</code></a>
         
         </p>
 
@@ -1676,7 +1824,7 @@ initialize data</code></h3>
             
         
         
-        <a href="../files/src_collection.js.html#l83"><code>src\collection.js:83</code></a>
+        <a href="../files/src_collection.js.html#l99"><code>src\collection.js:99</code></a>
         
         </p>
 
@@ -1780,7 +1928,7 @@ initialize data</code></h3>
             
         
         
-        <a href="../files/src_core.js.html#l142"><code>src\core.js:142</code></a>
+        <a href="../files/src_core.js.html#l164"><code>src\core.js:164</code></a>
         
         </p>
 
@@ -1887,7 +2035,7 @@ initialize data</code></h3>
             
         
         
-        <a href="../files/src_core.js.html#l106"><code>src\core.js:106</code></a>
+        <a href="../files/src_core.js.html#l128"><code>src\core.js:128</code></a>
         
         </p>
 
@@ -1957,6 +2105,59 @@ initialize data</code></h3>
                 <h2 class="off-left">Attributes</h2>
 
                 
+                    <div id="attr_config.model" class="attr item">
+    <a name="config_config.model"></a> 
+    <h3 class="name"><code>config.model</code></h3>
+    <span class="type">ya.Model Model instance</span>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <span class="flag required">required</span>
+    
+
+    
+
+    <div class="meta">
+        
+            
+                
+                <p>
+                
+                Defined in
+                
+            
+        
+        
+        <a href="../files/src_collection.js.html#l17"><code>src\collection.js:17</code></a>
+        
+        </p>
+
+        
+
+        
+    </div>
+
+    <div class="description">
+        
+    </div>
+
+    
+
+    
+
+    
+</div>
+
+                
                     <div id="attr_config.namespace" class="attr item">
     <a name="config_config.namespace"></a> 
     <h3 class="name"><code>config.namespace</code></h3>
@@ -1989,7 +2190,7 @@ initialize data</code></h3>
             
         
         
-        <a href="../files/src_collection.js.html#l10"><code>src\collection.js:10</code></a>
+        <a href="../files/src_collection.js.html#l11"><code>src\collection.js:11</code></a>
         
         </p>
 
@@ -2013,7 +2214,7 @@ initialize data</code></h3>
                     <div id="attr_config.namespace" class="attr item">
     <a name="config_config.namespace"></a> 
     <h3 class="name"><code>config.namespace</code></h3>
-    <span class="type">ya.data.Proxy Instance of proxy for transfering data</span>
+    <span class="type">ya.data.Proxy Instance of proxy for transferring data</span>
 
     
 
@@ -2042,7 +2243,7 @@ initialize data</code></h3>
             
         
         
-        <a href="../files/src_collection.js.html#l16"><code>src\collection.js:16</code></a>
+        <a href="../files/src_collection.js.html#l23"><code>src\collection.js:23</code></a>
         
         </p>
 

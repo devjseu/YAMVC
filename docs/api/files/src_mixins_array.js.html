@@ -43,9 +43,11 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
+            
+                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
@@ -57,17 +59,25 @@
             
                 <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
             
+                <li><a href="../classes/ya.Error.html">ya.Error</a></li>
+            
                 <li><a href="../classes/ya.event.$dispatcher.html">ya.event.$dispatcher</a></li>
+            
+                <li><a href="../classes/ya.Job.html">ya.Job</a></li>
+            
+                <li><a href="../classes/ya.Manager.html">ya.Manager</a></li>
             
                 <li><a href="../classes/ya.mixins.Array.html">ya.mixins.Array</a></li>
             
                 <li><a href="../classes/ya.mixins.CoreStatic.html">ya.mixins.CoreStatic</a></li>
             
+                <li><a href="../classes/ya.mixins.CSSStyle.html">ya.mixins.CSSStyle</a></li>
+            
+                <li><a href="../classes/ya.mixins.DOM.html">ya.mixins.DOM</a></li>
+            
                 <li><a href="../classes/ya.mixins.GetSet.html">ya.mixins.GetSet</a></li>
             
                 <li><a href="../classes/ya.mixins.Observable.html">ya.mixins.Observable</a></li>
-            
-                <li><a href="../classes/ya.mixins.Selector.html">ya.mixins.Selector</a></li>
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
@@ -77,9 +87,11 @@
             
                 <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
             
-                <li><a href="../classes/ya.view.DOM.html">ya.view.DOM</a></li>
+                <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
+            
+                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
             
             </ul>
 
@@ -133,46 +145,56 @@
 ya.$set(&#x27;ya&#x27;, &#x27;mixins.Array&#x27;, {
     /**
      *
+     * @param array
      * @param key
      * @returns {Number}
      */
-    find: function (key /*[, value]*/) {
-        var len = this.length,
+    find: function (array, key /*[, value]*/) {
+        var len = array.length,
             argsLen = arguments.length,
-            val = argsLen &gt; 1 ? arguments[1] : null,
+            val = argsLen &gt; 2 ? arguments[2] : null,
             rec;
 
-        while (len--) {
+        if (argsLen &gt; 1) {
 
-            rec = this[len];
-            if (argsLen &gt; 1) {
+            while (len--) {
 
+                rec = array[len];
                 if (rec[key] === val) {
                     break;
                 }
-
-            } else if (rec === key) {
-                break;
             }
+
+        } else {
+
+            while (len--) {
+
+                rec = array[len];
+                if (rec === key) {
+                    break;
+                }
+            }
+
         }
 
         return len;
     },
     /**
      *
+     * @param array
      * @param key
      * @returns {Array}
      */
-    findAll: function (key /*[, value]*/) {
-        var len = this.length,
+    findAll: function (array, key /*[, value]*/) {
+        var len = array.length,
             argsLen = arguments.length,
-            val = argsLen &gt; 1 ? arguments[1] : null,
+            val = argsLen &gt; 2 ? arguments[2] : null,
             result = [],
             rec;
 
         while (len--) {
 
-            rec = this[len];
+            rec = array[len];
             if (argsLen &gt; 1) {
 
                 if (rec[key] === val) {
@@ -187,17 +209,17 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.Array&#x27;, {
         return result;
     },
     /**
-     *
+     * @param array
      * @param {Function} fn
      * @returns {Array}
      */
-    findAllByFn: function (fn) {
-        var len = this.length,
+    findAllByFn: function (array, fn) {
+        var len = array.length,
             result = [];
 
         while (len--) {
 
-            if (fn(this[len])) {
+            if (fn(array[len])) {
 
                 result.push(len);
 
@@ -207,21 +229,47 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.Array&#x27;, {
 
         return result;
     },
-    each: Array.prototype.forEach || function (fun /*, thisArg */) {
+    /**
+     * @param array
+     * @param fun
+     */
+    each: Array.prototype.forEach ? function (array, fun) {
+        Array.prototype.forEach.call(array, fun);
+    } : function (array, fun) {
+
+        if (array === void 0 || array === null)
+            throw new TypeError();
+
+        var t = Object(array);
+        var len = t.length &gt;&gt;&gt; 0;
+        if (typeof fun !== &quot;function&quot;)
+            throw new TypeError();
+
+        for (var i = 0; i &lt; len; i++) {
+            if (i in t)
+                fun.call(array, t[i], i, t);
+        }
+    },
+    some: Array.prototype.some ? function (array, fun) {
+        Array.prototype.some.call(array, fun);
+    } : function (fun /*, thisArg */) {
+        &#x27;use strict&#x27;;
 
         if (this === void 0 || this === null)
             throw new TypeError();
 
         var t = Object(this);
         var len = t.length &gt;&gt;&gt; 0;
-        if (typeof fun !== &quot;function&quot;)
+        if (typeof fun !== &#x27;function&#x27;)
             throw new TypeError();
 
         var thisArg = arguments.length &gt;= 2 ? arguments[1] : void 0;
         for (var i = 0; i &lt; len; i++) {
-            if (i in t)
-                fun.call(thisArg, t[i], i, t);
+            if (i in t &amp;&amp; fun.call(thisArg, t[i], i, t))
+                return true;
         }
+
+        return false;
     }
 });
     </pre>

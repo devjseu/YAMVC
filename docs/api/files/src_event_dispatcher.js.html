@@ -43,9 +43,11 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
+            
+                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
@@ -57,17 +59,25 @@
             
                 <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
             
+                <li><a href="../classes/ya.Error.html">ya.Error</a></li>
+            
                 <li><a href="../classes/ya.event.$dispatcher.html">ya.event.$dispatcher</a></li>
+            
+                <li><a href="../classes/ya.Job.html">ya.Job</a></li>
+            
+                <li><a href="../classes/ya.Manager.html">ya.Manager</a></li>
             
                 <li><a href="../classes/ya.mixins.Array.html">ya.mixins.Array</a></li>
             
                 <li><a href="../classes/ya.mixins.CoreStatic.html">ya.mixins.CoreStatic</a></li>
             
+                <li><a href="../classes/ya.mixins.CSSStyle.html">ya.mixins.CSSStyle</a></li>
+            
+                <li><a href="../classes/ya.mixins.DOM.html">ya.mixins.DOM</a></li>
+            
                 <li><a href="../classes/ya.mixins.GetSet.html">ya.mixins.GetSet</a></li>
             
                 <li><a href="../classes/ya.mixins.Observable.html">ya.mixins.Observable</a></li>
-            
-                <li><a href="../classes/ya.mixins.Selector.html">ya.mixins.Selector</a></li>
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
@@ -77,9 +87,11 @@
             
                 <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
             
-                <li><a href="../classes/ya.view.DOM.html">ya.view.DOM</a></li>
+                <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
+            
+                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
             
             </ul>
 
@@ -146,29 +158,22 @@ ya.Core.$extend({
          */
         init: function (opts) {
             // Standard way of initialization.
-            var me = this, config;
+            var me = this;
 
-            me.__super(opts);
+            me.__super();
 
-            opts = opts || {};
-            config = ya.$merge(me._config, opts.config);
-
-            me.set(&#x27;initOpts&#x27;, opts);
-            me.set(&#x27;config&#x27;, config);
-
-            me.initConfig();
+            me
+                .initConfig(opts)
+                .initDefaults();
 
             return me;
         },
     /**
-     * @methods initConfig
+     * @methods initDefaults
      * @returns {*}
      */
-        initConfig: function () {
+    initDefaults: function () {
             var me = this;
-
-            // After calling parent method
-            me.__super.apply(me, arguments);
 
             // set defaults.
             me.setDelegates([]);
@@ -217,7 +222,7 @@ ya.Core.$extend({
                     return r.selector.search(regExp) &gt;= 0;
 
                 },
-                isQueryMatch = ya.mixins.Selector.isQueryMatch,
+                isQueryMatch = ya.mixins.DOM.isQueryMatch,
                 __findAllByFn = ya.mixins.Array.findAllByFn,
                 __each = ya.mixins.Array.each,
             // Other variables which need to be defined.
@@ -230,11 +235,11 @@ ya.Core.$extend({
                 // query.
                 regExp = new RegExp(&#x27;^\\$&#x27; + view.getId() + &quot;[\\s]&quot;);
                 // Get position for events which were matched.
-                matchPos = __findAllByFn.call(delegates, matchIdFn);
+                matchPos = __findAllByFn(delegates, matchIdFn);
                 if (matchPos.length) {
                     /*jshint -W083 */
                     // If we found any events which need to be delegated,
-                    __each.call(matchPos, function (r) {
+                    __each(matchPos, function (r) {
                         // iterate through all of them.
                         // As first step clear the array of elements
                         els.length = 0;
@@ -253,7 +258,7 @@ ya.Core.$extend({
                             els = newView.querySelectorAll(selector.pop());
                             // Copy array with rest of them
                             cpSelector = selector.slice();
-                            __each.call(els, function (el) {
+                            __each(els, function (el) {
                                 // and iterate through all founded elements.
                                 if (cpSelector.length) {
 

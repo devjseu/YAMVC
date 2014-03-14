@@ -1,4 +1,4 @@
-/*! yamvc v0.2.0 - 2014-03-05 
+/*! yamvc v0.2.0 - 2014-03-14 
  *  License:  */
 /**
  Main framework object...
@@ -124,7 +124,7 @@
      * @returns {*}
      */
     ya.$get = function () {
-        var module = arguments.length < 3 ? appNamespace : arguments[0],
+        var module = arguments.length < 2 ? appNamespace : arguments[0],
             namespace = arguments.length < 2 ? arguments[0] : arguments[1],
             namespaces = namespace ? (namespace.search(/\./) > 0 ? namespace.split('.') : [namespace]) : [],
             pointer = null,
@@ -132,7 +132,7 @@
 
         if (namespaces.length) {
 
-            pointer = window[module];
+            pointer = window[module] = window[module] || {};
 
         }
 
@@ -157,6 +157,35 @@
         }
 
         return pointer;
+    };
+
+    /**
+     * @method $factory
+     * @static
+     * @param config
+     * @returns {*}
+     */
+    ya.$factory = function (config) {
+        var Class, instance, opts;
+
+        if (!config.alias) {
+
+            throw ya.Error.$create('Factory method needs alias property', 'YA1');
+
+        }
+
+        Class = ya.$get(config.module || appNamespace, config.alias);
+        opts = config.methods || {};
+
+        opts.config = config;
+
+        delete config.alias;
+        delete config.module;
+        delete config.methods;
+
+        instance = Class.$create(opts);
+
+        return instance;
     };
 
     /**
@@ -185,46 +214,56 @@
 ya.$set('ya', 'mixins.Array', {
     /**
      *
+     * @param array
      * @param key
      * @returns {Number}
      */
-    find: function (key /*[, value]*/) {
-        var len = this.length,
+    find: function (array, key /*[, value]*/) {
+        var len = array.length,
             argsLen = arguments.length,
-            val = argsLen > 1 ? arguments[1] : null,
+            val = argsLen > 2 ? arguments[2] : null,
             rec;
 
-        while (len--) {
+        if (argsLen > 1) {
 
-            rec = this[len];
-            if (argsLen > 1) {
+            while (len--) {
 
+                rec = array[len];
                 if (rec[key] === val) {
                     break;
                 }
-
-            } else if (rec === key) {
-                break;
             }
+
+        } else {
+
+            while (len--) {
+
+                rec = array[len];
+                if (rec === key) {
+                    break;
+                }
+            }
+
         }
 
         return len;
     },
     /**
      *
+     * @param array
      * @param key
      * @returns {Array}
      */
-    findAll: function (key /*[, value]*/) {
-        var len = this.length,
+    findAll: function (array, key /*[, value]*/) {
+        var len = array.length,
             argsLen = arguments.length,
-            val = argsLen > 1 ? arguments[1] : null,
+            val = argsLen > 2 ? arguments[2] : null,
             result = [],
             rec;
 
         while (len--) {
 
-            rec = this[len];
+            rec = array[len];
             if (argsLen > 1) {
 
                 if (rec[key] === val) {
@@ -239,17 +278,17 @@ ya.$set('ya', 'mixins.Array', {
         return result;
     },
     /**
-     *
+     * @param array
      * @param {Function} fn
      * @returns {Array}
      */
-    findAllByFn: function (fn) {
-        var len = this.length,
+    findAllByFn: function (array, fn) {
+        var len = array.length,
             result = [];
 
         while (len--) {
 
-            if (fn(this[len])) {
+            if (fn(array[len])) {
 
                 result.push(len);
 
@@ -259,21 +298,47 @@ ya.$set('ya', 'mixins.Array', {
 
         return result;
     },
-    each: Array.prototype.forEach || function (fun /*, thisArg */) {
+    /**
+     * @param array
+     * @param fun
+     */
+    each: Array.prototype.forEach ? function (array, fun) {
+        Array.prototype.forEach.call(array, fun);
+    } : function (array, fun) {
+
+        if (array === void 0 || array === null)
+            throw new TypeError();
+
+        var t = Object(array);
+        var len = t.length >>> 0;
+        if (typeof fun !== "function")
+            throw new TypeError();
+
+        for (var i = 0; i < len; i++) {
+            if (i in t)
+                fun.call(array, t[i], i, t);
+        }
+    },
+    some: Array.prototype.some ? function (array, fun) {
+        Array.prototype.some.call(array, fun);
+    } : function (fun /*, thisArg */) {
+        'use strict';
 
         if (this === void 0 || this === null)
             throw new TypeError();
 
         var t = Object(this);
         var len = t.length >>> 0;
-        if (typeof fun !== "function")
+        if (typeof fun !== 'function')
             throw new TypeError();
 
         var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
         for (var i = 0; i < len; i++) {
-            if (i in t)
-                fun.call(thisArg, t[i], i, t);
+            if (i in t && fun.call(thisArg, t[i], i, t))
+                return true;
         }
+
+        return false;
     }
 });
 /**
@@ -320,6 +385,7 @@ ya.$set('ya', 'mixins.CoreStatic', {
             for (key in defaults) {
                 if (__hasProp.call(defaults, key)) this._config[key] = defaults[key];
             }
+
             ya.Core.apply(this, arguments);
         };
 
@@ -334,6 +400,7 @@ ya.$set('ya', 'mixins.CoreStatic', {
 
             Instance.prototype = parent.prototype;
             child.prototype = new Instance();
+            child.prototype.__class__ = (opts.module || ya.$module()) + '.' + opts.alias;
 
             for (var staticCore in ya.mixins.CoreStatic) {
 
@@ -380,10 +447,12 @@ ya.$set('ya', 'mixins.CoreStatic', {
 
         return __Class;
     },
-    $create: function (opts) {
-        var Obj = this;
-        // for jshint
-        return new Obj(opts);
+    $create: function () {
+        /*jshint -W058 */
+        var Obj = this,
+            args = Array.prototype.concat.apply([Obj], arguments);
+
+        return  new (Function.prototype.bind.apply(Obj, args));
     },
     $mixin: function (obj, mixin) {
         var prototype,
@@ -405,6 +474,183 @@ ya.$set('ya', 'mixins.CoreStatic', {
     }
 });
 
+(function (undefined) {
+    'use strict';
+
+    var fillAttrs;
+
+    function makeMap(str) {
+        // Make object map from string.
+        var obj = {}, items = str.split(",");
+        for (var i = 0; i < items.length; i++)
+            obj[ items[i] ] = true;
+        return obj;
+    }
+
+    fillAttrs = makeMap("checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected");
+
+
+    /**
+     * @namespace ya.mixins
+     * @class CSSStyle
+     */
+    ya.$set('ya', 'mixins.CSSStyle', {
+        isFillAttr: function (attr) {
+            return typeof fillAttrs[attr] !== 'undefined';
+        },
+        get: function () {
+
+        }
+    });
+
+}());
+
+/**
+ * @namespace ya.mixins
+ * @class DOM
+ */
+ya.$set('ya', 'mixins.DOM', { // todo: change name to mixins.DOM
+    /**
+     * checks if passed selector match to main DOM element
+     * @method isQueryMatch
+     * @param selector String with selector
+     * @param {HTMLElement} el DOM to match
+     */
+    isQueryMatch: function (selector, el) {
+        var match = true, tag, id, classes;
+
+        el = this._el || el;
+
+        if (selector.search(" ") === -1) {
+            // If selector is only for one lvl element
+            // (ex. div.class and not div .class),
+            // find tag,
+            tag = selector.match(/^[^\.#]+/gi);
+            // find id,
+            id = selector.match(/#[^\.#]+/gi);
+            // and find classes.
+            classes = selector.match(/\.[^\.#]+/gi);
+
+            // Check if tag of the element match to the one founded
+            // in selector string.
+            if (tag && el.nodeName.toLowerCase() !== tag.pop()) {
+
+                match = false;
+
+            }
+
+            if (classes) {
+                // If any classes were founded
+                while (classes.length) {
+
+                    // check if the element have all of them.
+                    if (!el.classList.contains(classes.pop().substring(1))) {
+                        match = false;
+                        break;
+                    }
+
+                }
+            }
+
+            // Do the same with id.
+            if (id && el.getAttribute('id') !== id.pop().substring(1)) {
+
+                match = false;
+
+            }
+
+        } else {
+
+            match = false;
+
+        }
+
+        // And return the result.
+        return match;
+
+    },
+    /**
+     * checks if object is an element
+     * @method isElement
+     * @param obj
+     * @returns {boolean}
+     */
+    isElement: function (obj) {
+        try {
+            //Using W3 DOM2 (works for FF, Opera and Chrom)
+            return obj instanceof HTMLElement;
+        }
+        catch (e) {
+            //Browsers not supporting W3 DOM2 don't have HTMLElement and
+            //an exception is thrown and we end up here. Testing some
+            //properties that all elements have. (works on IE7)
+            return (typeof obj === "object") &&
+                (obj.nodeType === 1) && (typeof obj.style === "object") &&
+                (typeof obj.ownerDocument === "object");
+        }
+    },
+    /**
+     *
+     * @method removeChildren
+     * @param node
+     * @returns {DocumentFragment}
+     */
+    removeChildren: function (node) {
+        var fragment = document.createDocumentFragment();
+
+        while (node.hasChildNodes()) {
+
+            fragment.appendChild(node.removeChild(node.firstChild));
+
+        }
+
+        return fragment;
+    },
+    /**
+     *
+     * @param node
+     * @returns {*}
+     */
+    toString: function (node) {
+        var fn = function (node) {
+                var string;
+
+                if (typeof(XMLSerializer) !== 'undefined') {
+                    var serializer = new XMLSerializer();
+                    string = serializer.serializeToString(node);
+                } else if (node.xml) {
+                    string = node.xml;
+                }
+
+                return string;
+            },
+            i = 0, string = '', len;
+
+        if (node instanceof DocumentFragment) {
+
+            node = node.firstChild;
+            while (node) {
+
+                string += fn(node);
+                node = node.nextSibling;
+            }
+
+        } else if (node instanceof NodeList) {
+
+            len = node.length;
+            while (i < len) {
+                string += fn(node);
+            }
+
+        } else if (node instanceof HTMLElement) {
+
+            string = fn(node);
+
+        }
+
+        return string;
+    }
+});
 /**
  * @namespace ya.mixins
  * @class GetSet
@@ -530,69 +776,6 @@ ya.$set('ya', 'mixins.Observable', {
     }
 });
 
-/**
- * @namespace ya.mixins
- * @class Selector
- */
-ya.$set('ya', 'mixins.Selector', {
-    /**
-     * check if passed selector match to main DOM element
-     * @param selector String with selector
-     */
-    isQueryMatch: function (selector, el) {
-        var match = true, tag, id, classes;
-
-        el = this._el || el;
-
-        if (selector.search(" ") === -1) {
-            // If selector is only for one lvl element
-            // (ex. div.class and not div .class),
-            // find tag,
-            tag = selector.match(/^[^\.#]+/gi);
-            // find id,
-            id = selector.match(/#[^\.#]+/gi);
-            // and find classes.
-            classes = selector.match(/\.[^\.#]+/gi);
-
-            // Check if tag of the element match to the one founded
-            // in selector string.
-            if (tag && el.nodeName.toLowerCase() !== tag.pop()) {
-
-                match = false;
-
-            }
-
-            if (classes) {
-                // If any classes were founded
-                while (classes.length) {
-
-                    // check if the element have all of them.
-                    if (!el.classList.contains(classes.pop().substring(1))) {
-                        match = false;
-                        break;
-                    }
-
-                }
-            }
-
-            // Do the same with id.
-            if (id && el.getAttribute('id') !== id.pop().substring(1)) {
-
-                match = false;
-
-            }
-
-        } else {
-
-            match = false;
-
-        }
-
-        // And return the result.
-        return match;
-
-    }
-});
 ya.$set('ya', 'Core', (function () {
     "use strict";
 
@@ -611,8 +794,23 @@ ya.$set('ya', 'Core', (function () {
 
     /**
      @method init
+     @abstract
      */
     Core.prototype.init = function () {
+    };
+
+    /**
+     @method initDefaults
+     @abstract
+     */
+    Core.prototype.initDefaults = function () {
+    };
+
+    /**
+     @method initRequired
+     @abstract
+     */
+    Core.prototype.initRequired = function () {
     };
 
     /**
@@ -633,11 +831,11 @@ ya.$set('ya', 'Core', (function () {
      * @method initConfig
      * @chainable
      */
-    Core.prototype.initConfig = function () {
+    Core.prototype.initConfig = function (opts) {
         var me = this,
-            config = me.get('config'),
             getter,
             setter,
+            config,
             property,
             init = function (property) {
                 getter = "get" + property.charAt(0).toUpperCase() + property.slice(1);
@@ -653,6 +851,13 @@ ya.$set('ya', 'Core', (function () {
                     }
                 };
             };
+
+        opts = opts || {};
+        config = ya.$merge(me._config, opts.config);
+
+        me.set('initOpts', opts);
+        me.set('config', config);
+
         for (property in config) {
             if (config.hasOwnProperty(property)) {
                 init(property);
@@ -747,11 +952,71 @@ ya.$set('ya', 'Core', (function () {
      * @returns {*} value stored under passed property
      */
 
-    // Add observable methods.
+        // Add observable methods.
     Core.$mixin(ya.mixins.Observable);
 
     return Core;
 }()));
+/**
+ * @namespace ya
+ * @class Error
+ */
+ya.Core.$extend({
+    module: 'ya',
+    alias: 'Error',
+    defaults: {
+        id: null,
+        message: null,
+        stack: null
+    },
+    /**
+     * @method
+     * @param msg
+     * @param id
+     */
+    init: function (msg, id) {
+        var me = this;
+
+        me
+            .initConfig(arguments)
+            .initDefaults();
+    },
+    /**
+     *
+     * @method
+     * @param opts
+     * @returns {*}
+     */
+    initConfig: function (opts) {
+        var me = this;
+
+        me.__super({
+            config: {
+                message: opts[0],
+                id: opts[1]
+            }
+        });
+
+        return me;
+    },
+    /**
+     *
+     * @method
+     * @returns {*}
+     */
+    initDefaults: function () {
+        var me = this;
+
+        me.setStack((new Error(me.getMessage())).stack);
+
+        return me;
+    },
+    toString: function () {
+        var me = this;
+
+        return 'ya.Error(' + me.getId() + '): ' + me.getMessage();
+    }
+});
 /**
  * @namespace ya
  * @class Collection
@@ -761,6 +1026,7 @@ ya.Core.$extend({
     module: 'ya',
     alias: 'Collection',
     defaults: {
+        id: null,
         /**
          * @attribute config.namespace
          * @type String Namespace of collection
@@ -768,34 +1034,51 @@ ya.Core.$extend({
          */
         namespace: null,
         /**
+         * @attribute config.model
+         * @type ya.Model Model instance
+         * @required
+         */
+        model: null,
+        /**
          * @attribute config.namespace
-         * @type ya.data.Proxy Instance of proxy for transfering data
+         * @type ya.data.Proxy Instance of proxy for transferring data
          * @required
          */
         proxy: null
     },
     /**
-     * @method init
      * initialize collection
+     * @method init
      * @param opts
      */
     init: function (opts) {
-        var me = this, config;
+        var me = this;
 
         me.__super(opts);
 
-        opts = opts || {};
-        config = ya.$merge(me._config, opts.config);
+        me.initConfig(opts)
+            .initDefaults()
+            .initData();
 
-        me.set('initOpts', opts);
-        me.set('config', config);
+        ya.collection.$Manager.register(me.getId(), me);
+
+        return me;
+    },
+    /**
+     * @method init
+     * @returns {*}
+     */
+    initDefaults: function () {
+        var me = this;
+
+        me.setId(me.getId() || 'collection-' + ya.collection.$Manager.getCount());
+        me.setModel(me.getModel() || ya.$get('ya.Model'));
+
         me.set('set', []);
         me.set('cache', []);
         me.set('removed', []);
         me.set('filters', []);
-
-        me.initConfig();
-        me.initData();
+        me.set('raw', me.getData() || []);
 
         return me;
     },
@@ -804,20 +1087,18 @@ ya.Core.$extend({
      * initialize data
      */
     initData: function () {
-        var me = this,
-            data = me.getData() || [];
+        var me = this;
 
-        me.set('raw', data);
-        me.prepareData(data);
+        me.prepareData(me._raw);
 
         return me;
     },
     /**
-     * @method forEach
+     * @method each
      * @param fn
      * @chainable
      */
-    forEach: function (fn) {
+    each: function (fn) {
         var me = this,
             records = me._set,
             t, len;
@@ -825,7 +1106,7 @@ ya.Core.$extend({
         t = Object(records);
         len = t.length >>> 0;
         if (typeof fn !== "function")
-            throw new TypeError();
+            throw ya.Error.$create('forEach argument should be a function', 'COL1');
 
         for (var i = 0; i < len; i++) {
             if (i in t)
@@ -853,14 +1134,23 @@ ya.Core.$extend({
         while (records.length) {
 
             record = records.pop();
-            record = new ModelDefinition(
-                {
-                    config: {
-                        namespace: namespace,
-                        data: record
+
+            if (!(record instanceof ModelDefinition)) {
+                record = new ModelDefinition(
+                    {
+                        config: {
+                            namespace: namespace,
+                            data: record
+                        }
                     }
-                }
-            );
+                );
+            }
+
+            if(record.getNamespace() !== me.getNamespace()) {
+
+                throw ya.Error.$create('Model should have same namespace as collection', 'COL2');
+
+            }
 
             me._cache.push(record);
 
@@ -1091,9 +1381,9 @@ ya.Core.$extend({
         var me = this,
             data = me.get('data'),
             idProperty = me.get('idProperty'),
-            deferred = ya.$promise.deferred(),
+            deferred = ya.$Promise.deferred(),
             namespace = me.getNamespace(),
-            action = new ya.data.Action(),
+            action = ya.data.Action.$create(),
             callback,
             key, i = 0;
 
@@ -1102,10 +1392,10 @@ ya.Core.$extend({
         if (
             i === 0
             )
-            throw new Error('You need to pass at least one condition to load model collection');
+            throw ya.Error.$create('You need to pass at least one condition to load model collection', 'COLLECTION2');
 
         if (!me.getProxy())
-            throw new Error('To load collection you need to set proxy');
+            throw ya.Error.$create('To load collection you need to set proxy', 'COLLECTION3');
 
 
         callback = function () {
@@ -1134,7 +1424,7 @@ ya.Core.$extend({
     },
     save: function () {
         var me = this,
-            deferred = ya.$promise.deferred(),
+            deferred = ya.$Promise.deferred(),
             action,
             toCreate = [],
             toUpdate = [],
@@ -1239,7 +1529,7 @@ ya.Core.$extend({
 
             toFinish++;
 
-            action = new ya.data.Action();
+            action = ya.data.Action.$create();
 
             action
                 .setOptions({
@@ -1256,7 +1546,7 @@ ya.Core.$extend({
 
             toFinish++;
 
-            action = new ya.data.Action();
+            action = ya.data.Action.$create();
 
             action
                 .setOptions({
@@ -1272,7 +1562,7 @@ ya.Core.$extend({
 
             toFinish++;
 
-            action = new ya.data.Action();
+            action = ya.data.Action.$create();
 
             action
                 .setOptions({
@@ -1301,6 +1591,7 @@ ya.Core.$extend({
             models = [];
 
         total = total || l;
+
         for (var i = 0; i < l; i++) {
 
             modelConfig.data = data[i];
@@ -1357,6 +1648,16 @@ ya.Core.$extend({
 });
 
 /**
+ * @namespace ya
+ * @class collection.$Manager
+ * @extends ya.Manager
+ */
+ya.Manager.$extend({
+    module: 'ya',
+    alias: 'collection.$Manager',
+    singleton: true
+});
+/**
  * @description
  * ## Basic controller usage
  *
@@ -1365,7 +1666,7 @@ ya.Core.$extend({
  *         config: {
  *             name: 'Main',
  *             views: {
- *                 layout: view.$Manager.get('view-0')
+ *                 layout: ya.view.$Manager.getItem('view-0')
  *             },
  *             routes: {
  *                 "page/{\\d+}": 'changePage'
@@ -1398,33 +1699,29 @@ ya.Core.$extend({
 ya.Core.$extend({
     module: 'ya',
     alias: 'Controller',
+    defaults: {
+        routes: null,
+        events: null
+    },
     static: {
-        id: 0,
         router: null,
-        idGenerator: function () {
-            return ya.Controller.id++;
-        },
         getRouter: function () {
+
             ya.Controller.$router = ya.Controller.$router || new ya.Router();
 
             return ya.Controller.$router;
         }
     },
     init: function (opts) {
-        var me = this, config;
+        var me = this;
 
-        opts = opts || {};
-        config = ya.$merge(me._config, opts.config);
-        config.id = config.id || 'controller-' + ya.Controller.$idGenerator();
-        me.router = ya.Controller.$getRouter();
+        me.__super(opts);
 
-        me.set('initOpts', opts);
-        me.set('config', config);
-        me.set('routes', config.routes || {});
-        me.set('events', config.events || {});
-        me.set('views', config.views || {});
-
-        me.initConfig();
+        me
+            .initConfig(opts)
+            .initDefaults()
+            .initEvents()
+            .initRoutes();
 
         ya.$onReady(function () {
             me.restoreRouter();
@@ -1432,23 +1729,29 @@ ya.Core.$extend({
 
         return me;
     },
-    initConfig: function () {
-        ya.Core.prototype.initConfig.apply(this);
+    /**
+     * @method initDefaults
+     * @returns {*}
+     */
+    initDefaults: function () {
+        var me = this;
+
+        me.set('router', ya.Controller.$getRouter());
+        me.set('dispatcher', ya.event.$dispatcher);
+
+        return me;
+    },
+    /**
+     *
+     * @returns {*}
+     */
+    initEvents: function () {
         var me = this,
-            routes = me.get('routes'),
-            events = me.get('events'),
+            events = me.getEvents(),
             views = [],
             rx = new RegExp('\\$([^\\s]+)'),
+            dispatcher = me._dispatcher,
             matches, view, l, obj;
-
-        if (routes) {
-            for (var k in routes) {
-                if (routes.hasOwnProperty(k)) {
-                    var callback = me[routes[k]].bind(me);
-                    router.when(k, callback);
-                }
-            }
-        }
 
         if (events) {
 
@@ -1458,7 +1761,8 @@ ya.Core.$extend({
 
                     obj = {};
                     obj[e] = events[e];
-                    ya.event.$dispatcher.add(me, obj);
+
+                    dispatcher.add(me, obj);
 
                     matches = e.match(rx);
                     if (matches) {
@@ -1471,7 +1775,9 @@ ya.Core.$extend({
 
                     } else {
 
-                        throw new Error('Event query should begin from id of the view (current query: ' + e + ')');
+                        throw ya.Error.$create(
+                            'Event query should begin from id of the view (current query: ' + e + ')', 'CONTROLLER1'
+                        );
 
                     }
 
@@ -1484,7 +1790,8 @@ ya.Core.$extend({
 
                 view = ya
                     .view.$Manager
-                    .get(views[l]);
+                    .getItem(views[l]);
+
                 if (view) {
 
                     if (view.isInDOM()) {
@@ -1501,10 +1808,31 @@ ya.Core.$extend({
             }
 
         }
-        return this;
+
+        return me;
+    },
+    /**
+     *
+     * @returns {*}
+     */
+    initRoutes: function () {
+        var me = this,
+            routes = me.getRoutes(),
+            router = me._router;
+
+        if (routes) {
+            for (var k in routes) {
+                if (routes.hasOwnProperty(k)) {
+                    var callback = me[routes[k]].bind(me);
+                    router.when(k, callback);
+                }
+            }
+        }
+
+        return me;
     },
     resolveEvents: function (view) {
-        var events = this.get('events'),
+        var events = this.getEvents(),
             newScope = function (func, scope, arg) {
                 return func.bind(scope, arg);
             },
@@ -1516,10 +1844,10 @@ ya.Core.$extend({
             scope;
 
         for (var query in events) {
-
             if (events.hasOwnProperty(query)) {
 
                 matches = query.match(rx);
+
                 if (matches && matches[1] === view.getId()) {
                     viewEvents = events[query];
                     selector = query.split(" ").slice(1);
@@ -1593,19 +1921,19 @@ ya.Core.$extend({
      * @param opts
      */
     init: function (opts) {
-        var me = this, config;
+        var me = this;
 
-        opts = opts || {};
+        me
+            .initConfig(opts)
+            .initDefaults();
+    },
+    initDefaults: function () {
+        var me = this;
 
-        me.__super(opts);
-        config = ya.$merge(me._config, opts.config);
-
-        me.set('initOpts', opts);
-        me.set('config', config);
         me.set('response', {});
         me.set('status', ya.data.Action.$status.PENDING);
 
-        me.initConfig();
+        return me;
     },
     /**
      * @methods init
@@ -1677,7 +2005,7 @@ ya.Core.$extend({
         }
 
         if (!check)
-            throw new Error('ya.data.Action: Wrong status');
+            throw ya.Error.$create('ya.data.Action: Wrong status', 'ACTION1');
 
         return this.set('status', status);
     },
@@ -1728,13 +2056,13 @@ ya.Core.$extend({
             id;
 
         if (!(action instanceof ya.data.Action))
-            throw new Error('ya.data.Proxy: read argument action should be instance of ya.data.Action');
+            throw ya.Error.$create('ya.data.Proxy: read argument action should be instance of ya.data.Action');
 
         opts = action.getOptions();
         id = opts.params && opts.params.id;
 
         if (!action.getOption('namespace'))
-            throw new Error('ya.data.Proxy: namespace should be set');
+            throw ya.Error.$create('ya.data.Proxy: namespace should be set');
 
         if (typeof id === 'undefined') {
             me.readBy(action);
@@ -1753,13 +2081,13 @@ ya.Core.$extend({
         var me = this;
 
         if (!(action instanceof ya.data.Action))
-            throw new Error('ya.data.Proxy: create argument action should be instance of ya.data.Action');
+            throw ya.Error.$create('ya.data.Proxy: create argument action should be instance of ya.data.Action');
 
         if (!action.getOption('namespace'))
-            throw new Error('ya.data.Proxy: namespace should be set');
+            throw ya.Error.$create('ya.data.Proxy: namespace should be set');
 
         if (!action.getData() || typeof action.getData() !== 'object')
-            throw new Error('ya.data.Proxy: Data should be object');
+            throw ya.Error.$create('ya.data.Proxy: Data should be object');
 
         return me;
     },
@@ -1772,13 +2100,13 @@ ya.Core.$extend({
         var me = this;
 
         if (!(action instanceof ya.data.Action))
-            throw new Error('ya.data.Proxy: update argument action should be instance of ya.data.Action');
+            throw ya.Error.$create('ya.data.Proxy: update argument action should be instance of ya.data.Action');
 
         if (!action.getOption('namespace'))
-            throw new Error('ya.data.Proxy: namespace should be set');
+            throw ya.Error.$create('ya.data.Proxy: namespace should be set');
 
         if (!action.getData() || typeof action.getData() !== 'object')
-            throw new Error('ya.data.Proxy: Data should be object');
+            throw ya.Error.$create('ya.data.Proxy: Data should be object');
 
         return me;
     },
@@ -1791,13 +2119,13 @@ ya.Core.$extend({
         var me = this;
 
         if (!(action instanceof ya.data.Action))
-            throw new Error('ya.data.Proxy: destroy argument action should be instance of ya.data.Action');
+            throw ya.Error.$create('ya.data.Proxy: destroy argument action should be instance of ya.data.Action');
 
         if (!action.getOption('namespace'))
-            throw new Error('ya.data.Proxy: namespace should be set');
+            throw ya.Error.$create('ya.data.Proxy: namespace should be set');
 
         if (!action.getData() || typeof action.getData() !== 'object')
-            throw new Error('Data should be pass as object');
+            throw ya.Error.$create('Data should be pass as object');
 
         return me;
     }
@@ -1997,7 +2325,7 @@ ya.data.Proxy.$extend({
             }
 
             me.setStatus(ya.data.Action.$status.FAIL);
-            response.error = new Error("Not found");
+            response.error = ya.Error.$create("Not found");
             callback(me, action);
         };
 
@@ -2162,7 +2490,7 @@ ya.data.Proxy.$extend({
             }
 
             response.success = false;
-            response.error = new Error("Not found");
+            response.error = ya.Error.$create("Not found");
 
             action
                 .setStatus(ya.data.Action.$status.FAIL)
@@ -2243,7 +2571,7 @@ ya.data.Proxy.$extend({
             }
 
             response.success = false;
-            response.error = new Error("Not found");
+            response.error = ya.Error.$create("Not found");
 
             action
                 .setStatus(ya.data.Action.$status.FAIL)
@@ -2333,29 +2661,22 @@ ya.Core.$extend({
          */
         init: function (opts) {
             // Standard way of initialization.
-            var me = this, config;
+            var me = this;
 
-            me.__super(opts);
+            me.__super();
 
-            opts = opts || {};
-            config = ya.$merge(me._config, opts.config);
-
-            me.set('initOpts', opts);
-            me.set('config', config);
-
-            me.initConfig();
+            me
+                .initConfig(opts)
+                .initDefaults();
 
             return me;
         },
     /**
-     * @methods initConfig
+     * @methods initDefaults
      * @returns {*}
      */
-        initConfig: function () {
+    initDefaults: function () {
             var me = this;
-
-            // After calling parent method
-            me.__super.apply(me, arguments);
 
             // set defaults.
             me.setDelegates([]);
@@ -2404,7 +2725,7 @@ ya.Core.$extend({
                     return r.selector.search(regExp) >= 0;
 
                 },
-                isQueryMatch = ya.mixins.Selector.isQueryMatch,
+                isQueryMatch = ya.mixins.DOM.isQueryMatch,
                 __findAllByFn = ya.mixins.Array.findAllByFn,
                 __each = ya.mixins.Array.each,
             // Other variables which need to be defined.
@@ -2417,11 +2738,11 @@ ya.Core.$extend({
                 // query.
                 regExp = new RegExp('^\\$' + view.getId() + "[\\s]");
                 // Get position for events which were matched.
-                matchPos = __findAllByFn.call(delegates, matchIdFn);
+                matchPos = __findAllByFn(delegates, matchIdFn);
                 if (matchPos.length) {
                     /*jshint -W083 */
                     // If we found any events which need to be delegated,
-                    __each.call(matchPos, function (r) {
+                    __each(matchPos, function (r) {
                         // iterate through all of them.
                         // As first step clear the array of elements
                         els.length = 0;
@@ -2440,7 +2761,7 @@ ya.Core.$extend({
                             els = newView.querySelectorAll(selector.pop());
                             // Copy array with rest of them
                             cpSelector = selector.slice();
-                            __each.call(els, function (el) {
+                            __each(els, function (el) {
                                 // and iterate through all founded elements.
                                 if (cpSelector.length) {
 
@@ -2509,9 +2830,249 @@ ya.Core.$extend({
     });
 
 /**
- * Created by sebastian on 01.03.14.
+ * @namespace ya
+ * @class Job
  */
+ya.Core.$extend({
+    module: 'ya',
+    alias: 'Job',
+    static: {
+        id: 0
+    },
+    defaults: {
+        id: null,
+        delay: 0,
+        tasks: null,
+        repeat: 1,
+        spawn: false
+    },
+    /**
+     * @method init
+     */
+    init: function (opts) {
+        var me = this;
 
+        me
+            .initConfig(opts)
+            .initRequired()
+            .initDefaults();
+
+        return me;
+    },
+    /**
+     *
+     * @method initRequired
+     * @returns {*}
+     */
+    initRequired: function () {
+        var me = this;
+
+        if (!me.getTasks() && !me._config.task) {
+
+            throw ya.Error.$create('At least one task should be defined', 'YJ1');
+
+        }
+
+        return me;
+    },
+    /**
+     *
+     * @method initDefaults
+     * @returns {*}
+     */
+    initDefaults: function () {
+        var me = this,
+            config = me._config,
+            tasks = config.tasks || [],
+            task = config.task;
+
+        if (task) {
+
+            tasks.push(task);
+
+        }
+
+        me.setId(ya.Job.$id++);
+        me.setTasks(tasks);
+
+        return me;
+    },
+    doit: function () {
+        var me = this,
+            deferred = ya.$Promise.deferred(),
+            engine, fn;
+
+        engine = me.getRepeat() > 1 || me.getRepeat() === 'infinity' ?
+        {run: function (a, b) {
+            me.set('clear', setInterval(a, b));
+        }, clear: function (success) {
+
+            clearInterval(me._clear);
+
+            if (!success) {
+
+                deferred.reject({
+                    id: 'YJ2',
+                    message: 'Task terminated'
+                });
+
+            }
+
+            return me;
+        }} :
+        {run: function (a, b) {
+            me.set('clear', setTimeout(a, b));
+        }, clear: function (success) {
+
+            clearTimeout(me._clear);
+
+            if (!success) {
+
+                deferred.reject({
+                    id: 'YJ2',
+                    message: 'Task terminated'
+                });
+
+            }
+
+            return me;
+        }};
+
+        me.set('engine', engine);
+
+        fn = function () {
+            var repeat = me.getRepeat(),
+                tasks = me.getTasks(),
+                i = 0,
+                len;
+
+            if (repeat !== 'infinity') {
+
+                me.setRepeat(--repeat);
+                if (repeat < 0) {
+
+                    engine.clear(true);
+                    return deferred.resolve({
+                        success: true,
+                        message: 'Task finished'
+                    });
+
+                }
+
+            }
+
+            len = tasks.length;
+            while (i < len) {
+
+                tasks[i]();
+                i++;
+
+            }
+
+        };
+
+        engine.run(fn, me.getDelay());
+
+        return deferred.promise;
+    },
+    terminate: function () {
+
+        return this._engine.clear();
+
+    }
+});
+/**
+ * @namespace ya
+ * @class Manager
+ */
+ya.Core.$extend({
+    module: 'ya',
+    alias: 'Manager',
+    defaults: {
+        items: null
+    },
+    mixins: [
+        ya.mixins.Array
+    ],
+    /**
+     * @method
+     * @param opts
+     */
+    init: function (opts) {
+        var me = this;
+
+        me
+            .initConfig(opts)
+            .initDefaults();
+    },
+    /**
+     *
+     * @method
+     * @returns {*}
+     */
+    initDefaults: function () {
+        var me = this;
+
+        me.setItems([]);
+
+        return me;
+    },
+    getItem: function (id) {
+        var me = this,
+            items = me.getItems(),
+            find;
+
+        find = me
+            .find(items, 'id', id);
+
+        return find > -1 ? items[find].item : null;
+    },
+    getCount : function () {
+        return this.getItems().length;
+    },
+    register: function (id, item) {
+        var me = this;
+
+        if (
+            !me.isRegistered(id)
+            ) {
+
+            me.getItems().push({id: id, item: item});
+            me.fireEvent('registered', item);
+
+        } else {
+
+            throw ya.Error.$create(this.__class__ + ': ID ' + id + ' already registered.', 'YVTM1');
+
+        }
+
+        return me;
+
+    },
+    deregister: function (id) {
+        var me = this,
+            items = me.getItems(),
+            find;
+
+        find = me.find(items, 'id', id);
+
+        if (find > -1) {
+
+            me.fireEvent('unregistered', items.slice(find, 1));
+
+        }
+
+        return me;
+    },
+    /**
+     *
+     * @param id
+     * @returns {boolean}
+     */
+    isRegistered: function (id) {
+        return this.find(this.getItems(), 'id', id) > -1 ? true : false;
+    }
+});
 /**
  * @namespace ya
  * @class Model
@@ -2544,54 +3105,61 @@ ya.Core.$extend({
          * @attribute config.proxy
          * @type ya.data.Proxy
          */
-        proxy: null
+        proxy: null,
+        /**
+         * @attribute config.namespace
+         * @type String tell us what type of data is stored in model, can be the same us ex. table name in database
+         * @default id
+         * @required
+         */
+        namespace: null,
+        /**
+         * @attribute config.data
+         * @type Array stores raw data
+         * @default {}
+         * @required
+         */
+        data: null
     },
     /**
      * @method init
      * @param opts
      */
     init: function (opts) {
-        var me = this, config;
+        var me = this;
 
-        me.__super(opts);
+        me.__super();
 
-        opts = opts || {};
-        config = ya.$merge(me._config, opts.config);
-
-        me.set('initOpts', opts);
-        me.set('config', config);
-        me.set('isDirty', true);
-
-        me.initConfig();
-        me.initData();
+        me
+            .initConfig(opts)
+            .initRequired()
+            .initDefaults();
 
     },
     /**
-     * @method initConfig
-     * @returns {Model}
+     * @method initRequired
+     * @returns {*}
      */
-    initConfig: function () {
-        var me = this,
-            config = me._config;
+    initRequired: function () {
+        var me = this;
 
-        if (!config.namespace)
-            throw new Error("Model need to have namespace");
+        if (!me.getNamespace()){
 
-        if (!config.data)
-            config.data = {};
+            throw ya.Error.$create("Model need to have namespace");
 
-        me.set('clientId', config.namespace + '-' + ya.Model.$idGenerator());
-
-        me.__super();
+        }
 
         return me;
     },
     /**
-     * @method initData
+     * @method initDefaults
+     * @returns {*}
      */
-    initData: function () {
+    initDefaults: function () {
         var me = this;
 
+        me.set('isDirty', true);
+        me.set('clientId', me.getNamespace() + '-' + ya.Model.$idGenerator());
         me.set('data', me.getData() || {});
 
         return me;
@@ -2605,10 +3173,14 @@ ya.Core.$extend({
         var me = this,
             data = me._data,
             oldVal = data[property];
+
         if (value !== oldVal) {
+
             data[property] = value;
+
             me.set('isDirty', true);
             me.fireEvent('data' + property.charAt(0).toUpperCase() + property.slice(1) + 'Change', me, value, oldVal);
+
         }
     },
     /**
@@ -2684,7 +3256,7 @@ ya.Core.$extend({
         var me = this,
             data = me.get('data'),
             idProperty = me.getIdProperty(),
-            deferred = ya.$promise.deferred(),
+            deferred = ya.$Promise.deferred(),
             action = new ya.data.Action(),
             opts = {},
             response;
@@ -2692,7 +3264,7 @@ ya.Core.$extend({
         if (
             typeof params[idProperty] === 'undefined' && typeof data[idProperty] === 'undefined'
             )
-            throw new Error('You need to pass id to load model');
+            throw ya.Error.$create('You need to pass id to load model');
 
         params[idProperty] = data[idProperty];
 
@@ -2733,7 +3305,7 @@ ya.Core.$extend({
         var me = this,
             data = me.get('data'),
             idProperty = me.getIdProperty(),
-            deferred = ya.$promise.deferred(),
+            deferred = ya.$Promise.deferred(),
             action = new ya.data.Action(),
             proxy = me.getProxy(),
             opts = {},
@@ -2795,14 +3367,14 @@ ya.Core.$extend({
         var me = this,
             data = me.get('data'),
             idProperty = me.getIdProperty(),
-            deferred = ya.$promise.deferred(),
+            deferred = ya.$Promise.deferred(),
             action = new ya.data.Action(),
             proxy = me.getProxy(),
             opts = {},
             response;
 
         if (typeof data[idProperty] === 'undefined')
-            throw new Error('Can not remove empty model');
+            throw ya.Error.$create('Can not remove empty model');
 
         opts.namespace = me.getNamespace();
         opts.callback = function (proxy, action) {
@@ -3052,17 +3624,17 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
  * @author angularjs
  * @contributed mkalafior
  * @namespace ya
- * @class $promise
+ * @class $Promise
  * @static
  */
-ya.$set('ya', '$promise', function (undefined) {
+ya.$set('ya', '$Promise', function (undefined) {
     "use strict";
 
     var ya = window.ya || {},
         isFunction = function (func) {
             return typeof func === 'function';
         },
-        forEach = ya.mixins.Array.each,
+        each = ya.mixins.Array.each,
         _promise;
 
 
@@ -3368,7 +3940,7 @@ ya.$set('ya', '$promise', function (undefined) {
                 counter = 0,
                 results = isArray(promises) ? [] : {};
 
-            forEach(promises, function (promise, key) {
+            each(promises, function (promise, key) {
                 counter++;
                 ref(promise).then(function (value) {
                     if (results.hasOwnProperty(key)) return;
@@ -3423,11 +3995,25 @@ ya.Core.$extend({
     /**
      * @method init
      */
-    init: function () {
+    init: function (opts) {
+        var me = this;
+
+        me.__super();
+
+        me.initConfig(opts)
+            .initDefaults()
+            .bindEvents();
+
+        return me;
+    },
+    /**
+     * @method initDefaults
+     * @returns {*}
+     */
+    initDefaults: function () {
         var me = this;
 
         me.set('routing', {});
-        me.bindEvents();
 
         return me;
     },
@@ -3504,24 +4090,13 @@ ya.Core.$extend({
 (function (undefined) {
     "use strict";
 
-    var ya = window.ya || {},
+    var ya = window.ya,
         style = document.createElement('style'),
         __slice = Array.prototype.slice,
         VM,
-        VTM,
         View,
-        renderId = 0,
-        fillAttrs,
         resize = 0,
         iv = 0;
-
-    function makeMap(str) {
-        // Make object map from string.
-        var obj = {}, items = str.split(",");
-        for (var i = 0; i < items.length; i++)
-            obj[ items[i] ] = true;
-        return obj;
-    }
 
     function onWindowResize(e) {
         // When resize event occur wait 32 miliseconds
@@ -3547,23 +4122,20 @@ ya.Core.$extend({
             clearInterval(iv);
 
             resize = 0;
-            views = VM.views;
+            views = ya.view.$Manager.getItems();
             l = views.length;
             i = 0;
 
             while (i < l) {
 
-                if (views[i].getFit()) {
-                    views[i].fireEvent('resize', views[i]);
+                if (views[i].item.getFit()) {
+                    views[i].item.fireEvent('resize', views[i]);
                 }
 
                 i++;
             }
         }
     }
-
-    // Make object with attributes that not need any value.
-    fillAttrs = makeMap("checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected");
 
     // Append some basic css to document.
     style.innerHTML = ".ya.inline {display:inline;} .ya.hidden {display: none !important;}";
@@ -3572,77 +4144,12 @@ ya.Core.$extend({
     document.body.appendChild(style);
     window.addEventListener('resize', onWindowResize);
 
-    VM = {
-        // `ya.view.$Manager` stores all created views and allow as to
-        // use `get` method (with id as argument) to return requested view.
-        views: [],
-        toRender: [],
-        i: 0,
-        /**
-         * @method add
-         * @for ya.view.$Manager
-         * @param id
-         * @param view
-         */
-        add: function (id, view) {
-            // Add view to manager.
-            var me = this;
-
-            if (view.getAutoCreate()) {
-
-                view.render();
-
-            }
-
-            me.views.push(view);
-            me.i++;
-        },
-        /**
-         * @method get
-         * @for ya.view.$Manager
-         * @param id
-         * @returns {View}
-         */
-        get: function (id) {
-            // Get view by its id.
-            var me = this,
-                len = me.views.length;
-
-            while (len--) {
-
-                if (me.views[len].getId() === id) break;
-
-            }
-
-            return me.views[len];
-        }
-    };
-
-    ya.$set('ya', 'view.$Manager', VM);
-
-
-    VTM = {
-        // `VTM` is a private object that stores all templates used
-        // in application.
-        tpl: {},
-        add: function (id, view) {
-            var me = this;
-
-            me.tpl[id] = view;
-        },
-        get: function (id) {
-            var me = this;
-
-            return me.tpl[id];
-        }
-    };
-
     /**
      * @namespace ya
      * @class View
      * @constructor
      * @extends ya.Core
-     * @uses ya.mixins.Selector
+     * @uses ya.mixins.DOM
      * @params opts Object with configuration properties
      * @type {function}
      */
@@ -3655,11 +4162,17 @@ ya.Core.$extend({
         // of window was changed
         // * `hidden` - if true, component will be hidden after render
         defaults: {
+            id: null,
             /**
              * @attribute config.parent
              * @type ya.View
              */
             parent: null,
+            /**
+             * @attribute config.children
+             * @type Array
+             */
+            children: null,
             /**
              * @attribute config.fit
              * @type boolean
@@ -3676,13 +4189,24 @@ ya.Core.$extend({
              */
             models: null,
             /**
+             * @attribute config.collections
+             * @type ya.Collection
+             */
+            collections : null,
+            /**
              * @attribute config.autoCreate
              * @type boolean
              */
-            autoCreate: false
+            autoCreate: false,
+            /**
+             * @attribute config.autoCreate
+             * @type ya.view.Template|String
+             * @required
+             */
+            tpl: null
         },
         mixins: [
-            ya.mixins.Selector
+            ya.mixins.DOM
         ],
         /**
          * @method init
@@ -3698,30 +4222,39 @@ ya.Core.$extend({
 
             me.__super();
 
-            me.initDefaults(opts);
-            me.initConfig();
-            me.initTemplate();
-            me.initParent();
-            VM.add(me.getId(), me);
+            me
+                .initConfig(opts)
+                .initDefaults()
+                .initRequired()
+                .initTemplate()
+                .initParent();
+
+            ya.view.$Manager.register(me.getId(), me);
+
+            return me;
+        },
+        initRequired: function () {
+            var me = this;
+
+            if (!me.getTpl()) {
+
+                throw ya.Error.$create('ya.View: no tpl set for ' + config.getId());
+
+            }
 
             return me;
         },
         /**
-         *
          * @method initDefaults
-         * @param opts
-         * @chainable
+         * @returns {*}
          */
-        initDefaults: function (opts) {
-            var me = this, config;
+        initDefaults: function () {
+            var me = this;
 
-            opts = opts || {};
-            config = ya.$merge(me._config, opts.config);
-            config.id = config.id || 'view-' + VM.i;
-            config.children = config.children || [];
-
-            me.set('initOpts', opts);
-            me.set('config', config);
+            me.setId(me.getId() || 'view-' + ya.view.$Manager.getCount());
+            me.setChildren(me.getChildren() || []);
+            me.setModels(me.getModels() || []);
+            me.setCollections(me.getCollections() || []);
 
             return me;
         },
@@ -3732,47 +4265,40 @@ ya.Core.$extend({
          */
         initTemplate: function () {
             var me = this,
-                config = me.get('config'),
-                div = document.createElement('div'),
-                Instance,
-                _tpl;
+                tpl = me.getTpl(),
+                div = document.createElement('div');
 
-            if (!config.tpl) {
+            if (!(tpl instanceof ya.view.Template)) {
+                // If tpl is not a ya.view.Template object
 
-                throw new Error(config.id + ': no tpl set');
+                if (
+                    tpl instanceof Array || typeof tpl === 'array' ||
+                        typeof tpl == 'string' || tpl instanceof String
+                    ) {
+                    // if its an array with html def
+                    // prepare configuration object and
+                    // instantiate it via factory method.
+                    tpl = ya.$factory({
+                        module: 'ya',
+                        alias: 'view.Template',
+                        tpl: tpl
+                    });
 
-            }
+                } else if (tpl instanceof Object || typeof tpl === 'object') {
+                    // Or if its a configuration object
+                    // do the same.
+                    if (!tpl.alias) {
+                        tpl.module = 'ya';
+                        tpl.alias = 'view.Template';
+                    }
 
-            if (config.tpl instanceof ya.view.Template) {
-
-                div.innerHTML = config.tpl.getHtml().innerHTML;
-
-            } else if (typeof config.tpl === 'object') {
-
-                Instance = ya.$get(config.tpl.alias);
-                config.tpl = Instance ? Instance.$create({config: config.tpl}) : ya.view.Template.$create({config: config.tpl});
-                div.innerHTML = config.tpl.getHtml().innerHTML;
-
-            } else if (typeof config.tpl == 'string' || config.tpl instanceof String) {
-
-                if (VTM.get(config.tpl)) {
-
-                    div.innerHTML = VTM.get(config.tpl).innerHTML;
-
-                } else {
-
-                    _tpl = document.getElementById(config.tpl);
-
-                    if (!_tpl)
-                        throw new Error('no tpl ' + config.tpl + ' found');
-
-                    VTM.add(config.tpl, _tpl.parentNode.removeChild(_tpl));
-                    div.innerHTML = VTM.get(config.tpl).innerHTML;
-
+                    tpl = ya.$factory(tpl);
                 }
+
+
             }
 
-            me.set('tpl', div);
+            me.setTpl(tpl);
 
             return me;
         },
@@ -3790,15 +4316,43 @@ ya.Core.$extend({
         /**
          * @returns {View}
          */
-        setModel: function (namespace, model) {
+        setModel: function (model) {
             var me = this,
                 models = me.getModels();
 
-            models.push(model);
-            me.setModels(models);
-            me.resolveModelBindings(model);
+            if (!(model instanceof ya.Model)) {
+
+                if (!model.alias) {
+
+                    model.module = 'ya';
+                    model.alias = 'Model';
+
+                }
+
+                model = ya.$factory(model);
+            }
+
+            if (!me.hasModel(model.getNamespace())) {
+
+                models.push(model);
+                me.setModels(models);
+
+            }
 
             return me;
+        },
+        hasModel: function (namespace) {
+            var models = this.getModels(),
+                l;
+
+            l = models.length;
+            while (l--) {
+                if (models[l].getNamespace() === namespace) {
+                    return true;
+                }
+            }
+
+            return false;
         },
         /**
          * @param namespace
@@ -3821,33 +4375,78 @@ ya.Core.$extend({
             return model;
         },
         /**
-         * @version 0.1.11
+         * @returns {View}
+         */
+        setCollection: function (collection) {
+            var me = this,
+                collections = me.getCollections();
+
+            if (!(collection instanceof ya.Collection)) {
+
+                if (!collection.alias) {
+
+                    collection.module = 'ya';
+                    collection.alias = 'Model';
+
+                }
+
+                collection = ya.$factory(collection);
+            }
+
+            if (!me.hasCollection(collection.getId())) {
+
+                collections.push(collection);
+                me.setCollections(collections);
+
+            }
+
+            return me;
+        },
+        hasCollection: function (id) {
+            var collections = this.getCollections(),
+                l;
+
+            l = collections.length;
+            while (l--) {
+                if (collections[l].getId() === id) {
+                    return true;
+                }
+            }
+
+            return false;
+        },
+        /**
+         * @param id
+         * @returns {ya.Collection}
+         */
+        getCollection: function (id) {
+            var me = this,
+                collections = me.getCollections(),
+                collection = null,
+                l;
+
+            l = collections.length;
+            while (l--) {
+                if (collections[l].getNamespace() === id) {
+                    collection = collections[l];
+                    break;
+                }
+            }
+
+            return collections;
+        },
+        /**
+         * @version 0.2.0
          * @returns {Node}
          */
         render: function () {
             var me = this,
-                tpl = me._tpl,
                 config = me._config,
-                id = config.renderTo,
                 parent = config.parent,
-                parentView = config.parent,
-                bindings = [],
-                headers = [],
-                results,
-                result,
-                header,
-                ret,
-                value,
-                parsedTpl,
-                walker,
-                node,
-                el,
-                i = 0,
-                l = 0,
-                j = 0,
-                len = 0,
-                attrs = [],
-                attr;
+                selector = config.renderTo,
+                parentEl, el;
+
+            parentEl = me.getParentEl(selector, true);
 
             if (me.isInDOM()) {
 
@@ -3855,222 +4454,24 @@ ya.Core.$extend({
 
             }
 
-            if (parent) {// If parent is set,
-
-                if (id && parent.querySelector(id)) { // search for element to which we will append component.
-                    parent = parent.querySelector(id);
-                } else {// If not found, append to parent root element.
-                    parent = parent._el;
-                }
-
-            } else {// If parent not set,
-
-                if (id) { // but we have an id of element to which we want render new one,
-                    parent = document.querySelector(id);// we search for it in the whole document.
-                }
-
-            }
-
-            parsedTpl = tpl.cloneNode(true); // Next, clone template.
-
-            walker = document.createTreeWalker( // Create walker object and
-                parsedTpl,
-                NodeFilter.SHOW_ALL,
-                null,
-                false
-            );
-
-            node = walker.nextNode();
-            while (node) { // walk through all nodes.
-
-                if (node.nodeType === 3) { // If our element is text node
-                    results = node.data.match(/\{\{(.*?)\}\}/gi);// we searching for mustached text inside it
-                    if (results) { // and if we have positive match
-                        var text = node.value || node.data,
-                            doc = document.createElement('span'),// we create new span element
-                            rId = "v-r-b-" + renderId++;
-
-                        i = 0;
-                        len = results.length;
-                        headers = [];
-
-                        doc.setAttribute('id', rId); // and add generated id.
-
-                        // In the end we replace all match via data.
-                        while (i < len) {
-
-                            result = results[i++];
-                            header = result.substr(2, (result.length - 4)).split('.');
-
-                            if (me.getModel(header[0])) {
-                                ret = me.getModel(header[0]).data(header[1]);
-                                if (ret === undefined) {
-                                    ret = "";
-                                }
-                            } else {
-                                ret = "";
-                            }
-
-                            text = text.replace(result, ret);
-                            headers.push(header);
-
-                        }
-
-                        doc.appendChild(
-                            document.createTextNode(text)
-                        );
-
-                        // We also keep founded bindings.
-                        bindings.push({
-                            original: node.value || node.data,
-                            headers: headers,
-                            type: 3,
-                            pointer: doc,
-                            oldDOM: node
-                        });
-
-                    }
-                    /*node.value = node.value.replace(bindRegEx, function (match) {
-                     return replaceFn(match, 1, node);
-                     });*/
-                }
-                else {
-
-                    attrs = node.attributes;
-                    l = attrs.length;
-
-                    while (l--) {
-
-                        attr = attrs.item(l);
-                        results = attr.value && attr.value.match(/\{\{(.*?)\}\}/gi);
-
-                        if (results) {
-                            var original = attr.value,
-                                fillAttr = fillAttrs[attr.nodeName];
-
-                            i = 0;
-                            len = results.length;
-                            headers = [];
-
-                            ret = fillAttr ? true : "";
-
-                            while (i < len) {
-
-                                result = results[i++];
-                                header = result.substr(2, (result.length - 4)).split('.');
-
-                                if (!fillAttr) {
-
-                                    if (me.getModel(header[0])) {
-                                        ret = me.getModel(header[0]).data(header[1]) || "";
-                                    }
-
-                                    attr.value = attr.value.replace(result, ret);
-
-                                } else {
-
-                                    ret = ret && me.getModel(header[0]).data(header[1]);
-
-                                }
-
-                                headers.push(header);
-
-                            }
-
-                            if (fillAttr) {
-
-                                if (!ret) {
-
-                                    node.removeAttribute(attr.nodeName);
-
-                                } else {
-
-                                    node.setAttribute(attr.nodeName, ret);
-
-                                }
-
-                            } else {
-
-                                if (attr.nodeName === 'css') {
-
-                                    value = attr.value;
-
-                                    attr = document.createAttribute("style");
-
-                                    attr.value = value;
-
-                                    node.removeAttribute('css');
-
-                                    attrs.setNamedItem(attr);
-
-                                }
-
-                            }
-
-                            bindings.push({
-                                original: original,
-                                headers: headers,
-                                fillAttr: fillAttr || false,
-                                type: 2,
-                                attrName: attr.nodeName,
-                                pointer: node
-                            });
-
-                        } else {
-
-                            if (attr.nodeName === 'css') {
-
-                                value = attr.value;
-
-                                attr = document.createAttribute("style");
-
-                                attr.value = value;
-
-                                node.removeAttribute('css');
-
-                                attrs.setNamedItem(attr);
-
-                            }
-
-                        }
-
-                        /*attrs.item(l).value = attrs[l].value.replace(bindRegEx, function (match) {
-                         return replaceFn(match, 0, attrs[l]);
-                         });*/
-                    }
-                }
-
-                node = walker.nextNode();
-
-            }
-
-            if (parsedTpl.childNodes.length === 1 && parsedTpl.childNodes.item(0).nodeType === 1) {
-                el = parsedTpl.childNodes.item(0);
-            } else {
-                el = parsedTpl;
-                el.classList.add('inline');
-            }
-
-            el.setAttribute('id', config.id);
-            el.classList.add('ya');
+            el = me.getTpl()
+                .getTDOMInstance(me)
+                .getEDOM();
 
             me.set('el', el);
-            me.set('bindings', bindings);
-
-            me.resolveBindings();
 
             if (me.getHidden())
                 me.hide();
 
-            if (parent) {
+            if (parentEl) {
 
-                parent.appendChild(el);
+                parentEl.appendChild(el);
 
-                if (parentView) {
+                if (parent) {
 
-                    if (parentView.findChild(me.getId()) < 0) {
+                    if (parent.findChild(me.getId()) < 0) {
 
-                        parentView.getChildren().push(me);
+                        parent.getChildren().push(me);
 
                     }
 
@@ -4082,100 +4483,6 @@ ya.Core.$extend({
             }
 
             return el;
-        },
-        /**
-         * @version 0.1.12
-         * @param model
-         */
-        resolveModelBindings: function (model) {
-            var me = this,
-                bindings = me._bindings,
-                bindFnFactory,
-                headers,
-                header,
-                binding,
-                eventName,
-                lenM = 0,
-                len = 0;
-
-            bindFnFactory = function (binding) {
-                return function () {
-                    me.partialRender(binding);
-                };
-            };
-
-            len = bindings.length;
-            while (len--) {
-
-                binding = bindings[len];
-                headers = binding.headers;
-                lenM = headers.length;
-                while (lenM--) {
-
-                    if (model.getNamespace() === headers[lenM][0]) {
-
-                        header = headers[lenM][1];
-                        eventName = 'data' + header.charAt(0).toUpperCase() + header.slice(1) + 'Change';
-                        binding.fn = bindFnFactory(binding);
-
-                        model.addEventListener(eventName, binding.fn);
-
-                        binding.fn();
-
-                    }
-
-                }
-            }
-        },
-        /**
-         * @version 0.1.12
-         */
-        resolveBindings: function () {
-            var me = this,
-                bindings = me._bindings,
-                bindFnFactory,
-                model,
-                headers,
-                header,
-                binding,
-                eventName,
-                lenM = 0,
-                len = 0;
-
-            bindFnFactory = function (binding) {
-                return function () {
-                    me.partialRender(binding);
-                };
-            };
-
-            len = bindings.length;
-            while (len--) {
-
-                binding = bindings[len];
-                headers = binding.headers;
-
-                if (binding.type === 3 && binding.oldDOM) {
-                    binding.oldDOM.parentNode.replaceChild(binding.pointer, binding.oldDOM);
-                    delete binding.oldDOM;
-                }
-
-                lenM = headers.length;
-                while (lenM--) {
-
-                    model = me.getModel(headers[lenM][0]);
-                    header = headers[lenM][1];
-
-                    if (model) {
-
-                        binding.fn = bindFnFactory(binding);
-                        eventName = 'data' + header.charAt(0).toUpperCase() + header.slice(1) + 'Change';
-
-                        model.addEventListener(eventName, binding.fn);
-
-                    }
-
-                }
-            }
         },
         /**
          * @version 0.1.11
@@ -4228,42 +4535,10 @@ ya.Core.$extend({
         /**
          * @version 0.1.12
          */
-        removeBindings: function () {
-            var me = this,
-                bindings = me._bindings,
-                l = bindings.length,
-                binding,
-                model,
-                header,
-                l2,
-                eventName;
-
-            while (l--) {
-
-                binding = bindings[l];
-                l2 = binding.headers.length;
-                while (l2--) {
-
-                    header = binding.headers[l2];
-                    model = me.getModel(header[0]);
-                    eventName = 'data' + header[1].charAt(0).toUpperCase() + header[1].slice(1) + 'Change';
-
-                    model.removeEventListener(eventName, binding.fn);
-
-                }
-
-            }
-
-            return me;
-        },
-        /**
-         * @version 0.1.12
-         */
         removeRendered: function () {
             var me = this;
 
             me._el.parentNode.removeChild(me._el);
-            me.removeBindings();
             me.set('el', null);
             me.set('isInDOM', false);
 
@@ -4389,8 +4664,34 @@ ya.Core.$extend({
             return this._isInDOM;
         },
         /**
-         * @param parent
+         *
          * @param selector
+         * @param globally
+         */
+        getParentEl: function (selector, globally) {
+            var me = this,
+                parent = me._config.parent,
+                parentEl;
+
+            if (me.isElement(selector)) {
+
+                parentEl = selector;
+
+            } else if (parent) {
+
+                parentEl = selector ? parent._el.querySelector(selector) : parent._el;
+
+            } else if (globally) {
+
+                parentEl = document.querySelector(selector);
+
+            }
+
+            return parentEl;
+        },
+        /**
+         * @param parent
+         * @param {String|HTMLElement} selector String or DOM Element
          * @returns {View}
          */
         appendTo: function (parent, selector) {
@@ -4399,13 +4700,11 @@ ya.Core.$extend({
                 id = me.getId(),
                 views = parent.getChildren(),
                 oldParent = config.parent,
-                parentEl = selector ? parent._el.querySelector(selector) : parent._el;
+                parentEl;
 
-            if (selector) {
+            parentEl = me.getParentEl(selector, false);
 
-                config.renderTo = selector;
-
-            }
+            config.renderTo = parentEl;
 
             if (!oldParent) {
 
@@ -4522,68 +4821,706 @@ ya.Core.$extend({
 
 }());
 /**
+ * @namespace ya
+ * @class view.$Manager
+ * @extends ya.Manager
+ */
+ya.Manager.$extend({
+    module: 'ya',
+    alias: 'view.$Manager',
+    singleton: true
+});
+/**
  * @namespace ya.view
- * @class DOM
+ * @class TDOM
  * @extends ya.Core
  */
 ya.Core.$extend({
-    module : 'ya',
-    alias : 'view.DOM',
+    module: 'ya',
+    alias: 'view.TDOM',
     defaults: {
-        el: null
+        /**
+         * @attribute config.view
+         * @type ya.View
+         * @required
+         */
+        view: null,
+        /**
+         * @attribute config.DOM
+         * @type Node
+         * @required
+         */
+        DOM: null,
+        bindings: null
+    },
+    mixins: [
+        ya.mixins.Array
+    ],
+    init: function (opts) {
+        var me = this;
+
+        me
+            .initConfig(opts)
+            .initRequired()
+            .initTDOM();
+
+        return me;
+    },
+    initRequired: function () {
+        var me = this;
+
+        if (!me.getView()) {
+            throw ya.Error.$create('ya.view.TDOM requires view object', 'T2DOM1');
+        }
+
+        if (!me.getDOM()) {
+            throw ya.Error.$create('ya.view.TDOM requires DOM cloned from template', 'T2DOM2');
+        }
+
+        if (!me.getBindings()) {
+            throw ya.Error.$create('ya.view.TDOM requires bindings cloned from template', 'T2DOM3');
+        }
+
+        return me;
+    },
+    initTDOM: function () {
+        var me = this,
+            view = me.getView(),
+            bindings = me.getBindings(),
+            dom = me.getDOM(),
+            $B = ya.view.Template.$BindingType,
+            namespace;
+
+        me.each(bindings, function (binding) {
+
+            switch (binding.type) {
+                case $B.ATTR :
+
+                    binding.pointer = dom
+                        .querySelector('[ya-id="' + binding.pointer + '"]')
+                        .attributes
+                        .getNamedItem(binding.name);
+
+                    me.each(binding.headers, function (header) {
+
+                        namespace = header[0];
+                        model = view.getModel(namespace);
+                        if (model) {
+
+                            binding.models[namespace] = model;
+                            model.addEventListener(
+                                'data' + header[1].charAt(0).toUpperCase() + header[1].slice(1) + 'Change',
+                                (function (binding) {
+                                    return function () {
+                                        me.updateAttr(binding);
+                                    };
+                                }(binding)));
+                            me.updateAttr(binding);
+                        }
+
+                    });
+
+                    delete binding.name;
+
+                    break;
+
+                case $B.TEXT :
+                    var model;
+
+                    binding.pointer = dom.querySelector('[ya-id="' + binding.pointer + '"]');
+
+                    me.each(binding.headers, function (header) {
+
+                        namespace = header[0];
+                        model = view.getModel(namespace);
+                        if (model) {
+
+                            binding.models[namespace] = model;
+                            model.addEventListener(
+                                'data' + header[1].charAt(0).toUpperCase() + header[1].slice(1) + 'Change',
+                                (function (binding) {
+                                    return function () {
+                                        me.updateTxt(binding);
+                                    };
+                                }(binding)));
+                            me.updateTxt(binding);
+                        }
+
+                    });
+
+
+                    break;
+
+                case $B.COL :
+                    var collection, collections, definition;
+
+                    binding.pointer = dom.querySelector('[ya-id="' + binding.pointer + '"]');
+                    collection = binding.collection;
+
+                    if (collection.id) {
+
+                        // Try to find collection by its id
+                        collection.pointer = ya.collection.$Manager.getItem(collection.id);
+
+                    } else {
+
+                        // If not founded try match one from view,
+                        // by namespace (if exist) or by class name
+                        collections = view.getCollections();
+                        me.some(collections, collection.namespace ?
+                            function (_collection) {
+
+                                if (_collection.getNamespace() === collection.namespace) {
+                                    collection.pointer = _collection;
+
+                                    return true;
+                                }
+
+                            } : function (_collection) {
+
+                            if (_collection.__class__ === collection.class) {
+                                collection.pointer = _collection;
+
+                                return true;
+                            }
+
+                        });
+
+                    }
+
+                    if (!collection.pointer) {
+
+                        definition = collection.class.split(".");
+                        collection.pointer = ya.$factory({
+                            module: definition.shift(),
+                            alias: definition.join("."),
+                            id: collection.id
+                        });
+
+                        view.setCollection(collection.pointer);
+
+                    }
+
+
+                    break;
+                default:
+
+                    binding.pointer = dom.querySelector('[ya-id="' + binding.pointer + '"]');
+
+            }
+
+        });
+
+        me.setDOM(dom);
+        me.setBindings(bindings);
+
+        return me;
+    },
+    updateTxt: function (binding) {
+        var me = this,
+            txt = binding.original;
+
+        me.each(binding.headers, function (header) {
+            txt = txt.replace('{{' + header.join('.') + '}}', binding.models[header[0]].data(header[1]) || "");
+        });
+
+        binding.pointer.innerHTML = txt;
+
+    },
+    updateAttr: function (binding) {
+        var me = this,
+            txt = binding.original;
+
+        me.each(binding.headers, function (header) {
+            txt = txt.replace('{{' + header.join('.') + '}}', binding.models[header[0]].data(header[1]) || "");
+        });
+
+        binding.pointer.value = txt;
+
+    },
+    getEDOM: function () {
+        var me = this,
+            dom = me.getDOM(),
+            div, firstChild;
+
+        if (
+            dom.childNodes.length > 1 ||
+                dom.firstChild.nodeType === 3
+            ) {
+
+            div = document.createElement('div');
+
+            while (dom.childNodes.length) {
+                div.appendChild(dom.firstChild);
+            }
+
+            div
+                .setAttribute(
+                    'class',
+                    'ya inline'
+                );
+
+            dom
+                .appendChild(div);
+
+
+        }
+
+        firstChild = dom.firstChild;
+
+        firstChild.setAttribute(
+            'id',
+            me.getView().getId()
+        );
+
+        return firstChild;
     }
 });
+
 /**
  * @namespace ya.view
  * @class Template
  * @extends ya.Core
  */
 ya.Core.$extend({
-    module : 'ya',
-    alias : 'view.Template',
+    module: 'ya',
+    alias: 'view.Template',
+    static: {
+        id: 0,
+        DOM4: (function () {
+            return !document.createAttribute('rel') instanceof Node;
+        }),
+        BindingType: {
+            CSS: 5,
+            VIEW: 4,
+            TEXT: 3,
+            ATTR: 2,
+            COL: 1
+        }
+    },
+    mixins: [
+        ya.mixins.Array
+    ],
     defaults: {
-        tpl: null
+        id: null,
+        /**
+         * @attribute config.tpl
+         * @type HTMLElement
+         * @required
+         */
+        tpl: null,
+        /**
+         * @attribute config.tDOM TDOM object definition
+         * @type {Object}
+         */
+        tDOM: null
     },
     init: function (opts) {
-        var me = this, config;
+        var me = this;
 
-        me.__super(opts);
+        me.
+            __super();
 
-        opts = opts || {};
-        config = ya.$merge(me._config, opts.config);
-
-        me.set('initOpts', opts);
-        me.set('config', config);
-
-        me.initConfig();
-        me.initTpl();
+        me
+            .initConfig(opts)
+            .initRequired()
+            .initDefaults()
+            .initBindings()
+            .initRegister();
 
     },
-    initConfig: function () {
-        var me = this,
-            config = me.get('config');
+    initRequired: function () {
+        var me = this;
 
-        me.__super();
+        if (!me.getTpl()) {
 
-        if (!config.id)
-            throw new Error("ya.view.Template: Template need to have id");
+            throw ya.Error.$create('ya.view.Template: Missing tpl property', 'YVT1');
+
+        }
 
         return me;
     },
-    initTpl: function () {
+    initDefaults: function () {
         var me = this,
             html = me.getTpl(),
-            tpl = document.createElement('div');
+            docFragment = document.createDocumentFragment();
+
+        me.setId(me.getId() || 'template-' + ya.view.template.$Manager.getCount());
+        me.setTDOM(me.getTDOM() || ya.view.TDOM);
 
         if (Array.isArray(html)) {
             html = html.join("");
         }
 
-        tpl.innerHTML = html;
+        if (typeof html === 'string' || html instanceof String) {
+            var evaluated = document.createElement('div');
 
-        me.set('html', tpl);
+            evaluated.innerHTML = html;
+
+            while (evaluated.hasChildNodes()) {
+
+                docFragment.appendChild(evaluated.firstChild);
+
+            }
+
+        } else if (html instanceof DocumentFragment) {
+
+            docFragment = html;
+
+        } else {
+
+            docFragment.appendChild(html);
+
+        }
+
+        me.set('html', docFragment);
+
+        return me;
     },
-    getHtml: function () {
-        return this._html;
+    initRegister: function () {
+        var me = this;
+
+        ya.view.template
+            .$Manager.register(
+                me.getId(),
+                me
+            );
+
+        return me;
+    },
+    /**
+     * @method initBindings
+     * @returns {*}
+     */
+    initBindings: function () {
+        var me = this,
+            texts,
+            attrs;
+
+
+        attrs = me.findAttrsBindings();
+        texts = me.findTextBindings();
+
+        me.set('bindings', attrs.concat(texts));
+
+        return me;
+    },
+    /**
+     * @method findAttrsBindings
+     */
+    findAttrsBindings: function () {
+        var me = this,
+            attrs = [],
+            bindings = [],
+            regEx = /^ya-(.*)/i,
+            nodeAttrs = [],
+            __slice = Array.prototype.slice,
+            binding,
+            walker,
+            match,
+            attr,
+            node;
+
+        walker = document.createTreeWalker( // Create walker object and
+            me._html,
+            NodeFilter.SHOW_ELEMENT,
+            null,
+            false
+        );
+
+        while (walker.nextNode()) {
+            // walk through all nodes
+
+            node = walker.currentNode;
+            // HTMLElement node
+            // get all attributes
+            // and push to array
+            nodeAttrs = __slice.call(node.attributes);
+
+            // DOM4 polyfill - attribute no longer inherits from Node
+            // so we need to set owner element manually
+            if (ya.view.Template.$DOM4) {
+                /*jshint -W083 */
+                me.each(nodeAttrs, function (attr) {
+                    attr.ownerElement = node;
+                });
+
+            }
+
+            attrs = attrs.concat(nodeAttrs);
+
+        }
+        // execute attribute processing
+
+        while (attrs.length) {
+
+            attr = attrs.pop();
+
+            match = attr.nodeName.match(regEx);
+
+            switch (match && match[1]) {
+                case 'collection' :
+                    binding = me.prepareColBindings(attr);
+                    break;
+                case 'view' :
+                    binding = me.prepareViewBindings(attr);
+                    break;
+                case 'css' :
+                    binding = me.prepareCSSBindings(attr);
+                    break;
+                default :
+                    binding = me.prepareAttrBindings(attr);
+
+            }
+
+            if (binding) {
+                bindings.push(binding);
+            }
+
+        }
+
+        return bindings;
+    },
+    findTextBindings: function () {
+        var me = this,
+            bindings = [],
+            binding,
+            walker;
+
+        walker = document.createTreeWalker( // Create walker object and
+            me._html,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+
+        while (walker.nextNode()) {
+            // walk through all nodes
+
+            binding = me.prepareTextBindings(walker.currentNode);
+            if (binding) {
+                bindings.push(binding);
+            }
+
+        }
+
+        // we cant mess with DOM when we walking through it
+        // so we need to replace text nodes after we found all
+        // matches
+        me.each(bindings, function (binding) {
+
+            binding.old.parentNode.replaceChild(binding.doc, binding.old);
+
+            delete binding.doc;
+            delete binding.old;
+
+        });
+
+        return bindings;
+    },
+    prepareTextBindings: function (node) {
+        var results = node.data.match(/\{\{(.*?)\}\}/gi),// we searching for mustached text inside it
+            i, len, headers, header, binding = false;
+
+        if (results) { // and if we have positive match
+            var doc = document.createElement('span'),// we create new span element
+            // and id for binding
+                rId = ya.view.Template.$id++;
+
+            doc.setAttribute('ya-id', rId); // and add generated id.
+
+            i = 0;
+            len = results.length;
+            headers = [];
+
+            // In the end we replace all match via data.
+            while (i < len) {
+
+                result = results[i++];
+                header = result.substr(2, (result.length - 4)).split('.');
+                headers.push(header);
+
+            }
+
+            // We also keep founded bindings.
+            binding = {
+                original: node.value || node.data,
+                old: node,
+                doc: doc,
+                models: {},
+                headers: headers,
+                type: 3,
+                pointer: rId
+            };
+
+        }
+
+        return binding;
+    },
+    prepareColBindings: function (attr) {
+        var options = attr.value.match(/(?:class|id|namespace|model|view)[?!:]([\S]+)/gi),
+            node = attr.ownerElement,
+            rId = node.getAttribute('ya-id') || ya.view.Template.$id++,
+            collection = {
+                view: 'ya.View',
+                class: 'ya.Collection'
+            },
+            binding = {
+                pointer: rId,
+                type: ya.view.Template.$BindingType.COL,
+                collection: collection
+            },
+            DOM = ya.mixins.DOM,
+            option;
+
+        node.setAttribute('ya-id', rId);
+
+        while (options && options.length) {
+
+            option = options.pop().split(':');
+            collection[option[0]] = option[1];
+
+        }
+
+        if (node.hasChildNodes()) {
+
+            var tpl = ya.$factory({
+                module: 'ya',
+                alias: 'view.Template',
+                tpl: DOM.removeChildren(node)
+            });
+
+            collection.tpl = tpl.getId();
+
+        }
+
+        return binding;
+    },
+    prepareViewBindings: function (attr) {
+        var node = attr.ownerElement,
+            view = node.getAttribute('ya-view') || 'ya.View',
+            rId = node.getAttribute('ya-id') || ya.view.Template.$id++,
+            options = attr.value.match(/(?:class|id)[?!:]([\w\.]+)/gi),
+            binding = {
+                pointer: rId,
+                type: ya.view.Template.$BindingType.VIEW,
+                view: {
+                    class: 'ya.View'
+                }
+            },
+            option;
+
+        node.setAttribute('ya-id', rId);
+
+        while (options && options.length) {
+            option = options.pop().split(':');
+            binding.view[option[0]] = option[1];
+        }
+
+        return binding;
+    },
+    prepareCSSBindings: function (attr) {
+        var node = attr.ownerElement,
+            results = attr.value && attr.value.match(/\{\{(.*?)\}\}/gi),
+            len = results && results.length,
+            headers = [], i = 0,
+            original, binding, header, rId, style;
+
+        rId = node.getAttribute('ya-id');
+        if (!rId) {
+
+            rId = ya.view.Template.$id++;
+            node.setAttribute('ya-id', rId);
+
+        }
+
+        if (results) {
+
+            while (i < len) {
+
+                result = results[i++];
+                header = result.substr(2, (result.length - 4)).split('.');
+                headers.push(header);
+
+            }
+
+        }
+
+        original = (node.getAttribute('style') || "") + attr.value;
+
+        node.setAttribute('style', original);
+
+        binding = {
+            original: original,
+            fillAttr: false,
+            headers: headers,
+            models: {},
+            name: 'style',
+            type: ya.view.Template.$BindingType.ATTR,
+            pointer: rId
+        };
+
+        return binding;
+    },
+    prepareAttrBindings: function (attr) {
+        var node = attr.ownerElement,
+            results = attr.value && attr.value.match(/\{\{(.*?)\}\}/gi),
+            len = results && results.length,
+            original = attr.value,
+            headers = [], i = 0,
+            binding, rId, header;
+
+        if (results) {
+
+            rId = node.getAttribute('ya-id');
+            if (!rId) {
+
+                rId = ya.view.Template.$id++;
+                node.setAttribute('ya-id', rId);
+
+            }
+
+            while (i < len) {
+
+                result = results[i++];
+                header = result.substr(2, (result.length - 4)).split('.');
+                headers.push(header);
+
+            }
+
+            binding = {
+                fillAttr: ya.mixins.CSSStyle.isFillAttr(attr.name),
+                name: attr.name,
+                original: original,
+                headers: headers,
+                type: ya.view.Template.$BindingType.ATTR,
+                pointer: rId
+            };
+
+        }
+
+        return results ? binding : null;
+    },
+    getTDOMInstance: function (view) {
+        var me = this;
+
+        return me.getTDOM().$create({
+            config: {
+                view: view,
+                bindings: ya.$clone(me.get('bindings')),
+                DOM: me.get('html').cloneNode(true)
+            }
+        });
     }
+});
+
+/**
+ * @namespace ya
+ * @class view.template.$Manager
+ * @extends ya.Manager
+ */
+ya.Manager.$extend({
+    module: 'ya',
+    alias: 'view.template.$Manager',
+    singleton: true
 });

@@ -59,7 +59,7 @@ ya.Core.$extend({
 
         } else {
 
-            throw ya.Error.$create(this.__name__ + ': ID ' + id + ' already registered.', 'YVTM1');
+            throw ya.Error.$create(this.__class__ + ': ID ' + id + ' already registered.', 'YVTM1');
 
         }
 
