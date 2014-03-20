@@ -47,21 +47,6 @@ ya.Core.$extend({
         data: null
     },
     /**
-     * @method init
-     * @param opts
-     */
-    init: function (opts) {
-        var me = this;
-
-        me.__super();
-
-        me
-            .initConfig(opts)
-            .initRequired()
-            .initDefaults();
-
-    },
-    /**
      * @method initRequired
      * @returns {*}
      */

@@ -51,6 +51,8 @@
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
+                <li><a href="../classes/ya.controller.$Manager.html">ya.controller.$Manager</a></li>
+            
                 <li><a href="../classes/ya.Core.html">ya.Core</a></li>
             
                 <li><a href="../classes/ya.data.Action.html">ya.data.Action</a></li>
@@ -150,6 +152,7 @@ ya.$set(&#x27;ya&#x27;, &#x27;Core&#x27;, (function () {
      */
     function Core() {
         this.set(&#x27;listeners&#x27;, {});
+        this.set(&#x27;suspendEvents&#x27;, false);
         this.bindMethods.apply(this, arguments);
         this.init.apply(this, arguments);
     }
@@ -158,14 +161,27 @@ ya.$set(&#x27;ya&#x27;, &#x27;Core&#x27;, (function () {
      @method init
      @abstract
      */
-    Core.prototype.init = function () {
+    Core.prototype.init = function (opts) {
+        return this
+            .initConfig(opts)
+            .initDefaults()
+            .initRequired();
     };
+
 
     /**
      @method initDefaults
-     @abstract
+     */
+    Core.prototype.initConfig = function (opts) {
+        return this;
+    };
+
+
+    /**
+     @method initDefaults
      */
     Core.prototype.initDefaults = function () {
+        return this;
     };
 
     /**
@@ -173,6 +189,7 @@ ya.$set(&#x27;ya&#x27;, &#x27;Core&#x27;, (function () {
      @abstract
      */
     Core.prototype.initRequired = function () {
+        return this;
     };
 
     /**
@@ -288,7 +305,7 @@ ya.$set(&#x27;ya&#x27;, &#x27;Core&#x27;, (function () {
     Core.__mixins__ = [];
 
     // Stores all defaults.
-    Core.__defaults__ = {};
+    Core.__defaults__ = [];
 
     for (var staticCore in ya.mixins.CoreStatic) {
 

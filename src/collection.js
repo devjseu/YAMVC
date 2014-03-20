@@ -35,10 +35,8 @@ ya.Core.$extend({
     init: function (opts) {
         var me = this;
 
-        me.__super(opts);
-
-        me.initConfig(opts)
-            .initDefaults()
+        me
+            .__super(opts)
             .initData();
 
         ya.collection.$Manager.register(me.getId(), me);

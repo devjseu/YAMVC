@@ -12,17 +12,6 @@ ya.Core.$extend({
         ya.mixins.Array
     ],
     /**
-     * @method
-     * @param opts
-     */
-    init: function (opts) {
-        var me = this;
-
-        me
-            .initConfig(opts)
-            .initDefaults();
-    },
-    /**
      *
      * @method
      * @returns {*}

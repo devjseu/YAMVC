@@ -51,22 +51,15 @@
      * @returns {*}
      */
     ya.$merge = function (obj1, obj2) {
-        var nObj = {},
-            property;
-
-        for (property in obj1) {
-            if (obj1.hasOwnProperty(property)) {
-                nObj[property] = obj1[property];
-            }
-        }
+        var property;
 
         for (property in obj2) {
             if (obj2.hasOwnProperty(property)) {
-                nObj[property] = obj2[property];
+                obj1[property] = obj2[property];
             }
         }
 
-        return nObj;
+        return obj1;
     };
 
     // clone data object
@@ -144,6 +137,7 @@
             } else if (current in window) {
 
                 pointer = window[current];
+
             } else {
 
                 pointer = null;

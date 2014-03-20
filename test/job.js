@@ -16,7 +16,7 @@ asyncTest("basic", function () {
     var job = ya.Job
         .$create({
             config: {
-                delay: 70,
+                delay: 200,
                 task: function () {
                     actions++;
                 },
@@ -26,11 +26,11 @@ asyncTest("basic", function () {
 
     job.doit()
         ['catch'](function () {
-            onFinish();
-        });
+        onFinish();
+    });
 
     setTimeout(function () {
         job.terminate();
-    }, 150);
+    }, 500);
 
 });

@@ -51,6 +51,8 @@
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
+                <li><a href="../classes/ya.controller.$Manager.html">ya.controller.$Manager</a></li>
+            
                 <li><a href="../classes/ya.Core.html">ya.Core</a></li>
             
                 <li><a href="../classes/ya.data.Action.html">ya.data.Action</a></li>
@@ -146,27 +148,17 @@ ya.Core.$extend({
     module: &#x27;ya&#x27;,
     alias: &#x27;Job&#x27;,
     static: {
-        id: 0
+        id: 0,
+        INFINITY: &#x27;infinity&#x27;
     },
     defaults: {
         id: null,
         delay: 0,
         tasks: null,
         repeat: 1,
-        spawn: false
-    },
-    /**
-     * @method init
-     */
-    init: function (opts) {
-        var me = this;
-
-        me
-            .initConfig(opts)
-            .initRequired()
-            .initDefaults();
-
-        return me;
+        spawn: false,
+        results: null,
+        maxTime: null
     },
     /**
      *
@@ -203,6 +195,7 @@ ya.Core.$extend({
 
         me.setId(ya.Job.$id++);
         me.setTasks(tasks);
+        me.setResults([]);
 
         return me;
     },
@@ -211,74 +204,86 @@ ya.Core.$extend({
             deferred = ya.$Promise.deferred(),
             engine, fn;
 
-        engine = me.getRepeat() &gt; 1 || me.getRepeat() === &#x27;infinity&#x27; ?
-        {run: function (a, b) {
-            me.set(&#x27;clear&#x27;, setInterval(a, b));
-        }, clear: function (success) {
+
+        engine = me.getRepeat() &gt; 1 || me.getRepeat() === ya.Job.$INFINITY ?
+        {terminate: function (code, msg) {
 
             clearInterval(me._clear);
 
-            if (!success) {
-
-                deferred.reject({
-                    id: &#x27;YJ2&#x27;,
-                    message: &#x27;Task terminated&#x27;
-                });
-
-            }
-
-            return me;
+            return deferred.reject({
+                id: code,
+                message: msg
+            });
         }} :
-        {run: function (a, b) {
-            me.set(&#x27;clear&#x27;, setTimeout(a, b));
-        }, clear: function (success) {
+        {terminate: function (code, msg) {
 
-            clearTimeout(me._clear);
+            clearInterval(me._clear);
 
-            if (!success) {
-
-                deferred.reject({
-                    id: &#x27;YJ2&#x27;,
-                    message: &#x27;Task terminated&#x27;
-                });
-
-            }
-
-            return me;
+            return deferred.reject({
+                id: code,
+                message: msg
+            });
         }};
 
-        me.set(&#x27;engine&#x27;, engine);
+        engine.run = function (a, b) {
+            me.set(&#x27;clear&#x27;, setInterval(a, b));
+        };
+
+        engine.finish = function () {
+
+            clearInterval(me._clear);
+
+            return deferred.resolve({
+                success: true,
+                message: &#x27;Task finished&#x27;,
+                results: me.getResults()
+            });
+
+
+        };
 
         fn = function () {
             var repeat = me.getRepeat(),
                 tasks = me.getTasks(),
+                results = [],
                 i = 0,
                 len;
 
-            if (repeat !== &#x27;infinity&#x27;) {
+
+            if (
+                me.getMaxTime() &amp;&amp;
+                    (+new Date() - me._start) &gt; me.getMaxTime()
+                ) {
+
+                return engine.terminate(&#x27;YJ3&#x27;, &#x27;Timeout&#x27;);
+
+            }
+            if (repeat !== ya.Job.$INFINITY) {
 
                 me.setRepeat(--repeat);
                 if (repeat &lt; 0) {
 
-                    engine.clear(true);
-                    return deferred.resolve({
-                        success: true,
-                        message: &#x27;Task finished&#x27;
-                    });
+                    engine.finish();
 
                 }
 
             }
 
             len = tasks.length;
+
             while (i &lt; len) {
 
-                tasks[i]();
+                results.push(tasks[i].call(engine));
                 i++;
 
             }
 
+            me.getResults().push(results);
+
         };
+
+        me.set(&#x27;engine&#x27;, engine);
+        me.set(&#x27;start&#x27;, +new Date());
 
         engine.run(fn, me.getDelay());
 
@@ -286,7 +291,7 @@ ya.Core.$extend({
     },
     terminate: function () {
 
-        return this._engine.clear();
+        return this._engine.terminate(&#x27;YJ2&#x27;, &#x27;Task terminated after &#x27; + ((+new Date() - this._start) / 1000) + &#x27; seconds of execution&#x27;);
 
     }
 });

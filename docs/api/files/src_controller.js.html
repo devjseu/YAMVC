@@ -51,6 +51,8 @@
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
+                <li><a href="../classes/ya.controller.$Manager.html">ya.controller.$Manager</a></li>
+            
                 <li><a href="../classes/ya.Core.html">ya.Core</a></li>
             
                 <li><a href="../classes/ya.data.Action.html">ya.data.Action</a></li>
@@ -143,27 +145,18 @@
  * ## Basic controller usage
  *
  *     @example
- *     var ctl = new Controller({
+ *     var ctl = ya.Controller.$create({
  *         config: {
  *             name: &#x27;Main&#x27;,
- *             views: {
- *                 layout: ya.view.$Manager.getItem(&#x27;view-0&#x27;)
- *             },
  *             routes: {
- *                 &quot;page/{\\d+}&quot;: &#x27;changePage&#x27;
+ *                 &quot;page/{\\d+}&quot;: &#x27;onPageChange&#x27;
  *             },
+ *             events : {
+ *                  &#x27;$layout .btn-right&#x27; : &#x27;onNextPage&#x27;,
+ *                  &#x27;$layout .btn-eft&#x27; : &#x27;onPrevPage&#x27;
+ *             }
  *         },
- *         bindElements : function (){
- *             var me = this;
- *             me.set(&#x27;$arrowRight&#x27;, document.querySelector(&#x27;#arrow-right&#x27;));
- *             me.set(&#x27;$arrowLeft&#x27;, document.querySelector(&#x27;#arrow-left&#x27;));
- *         },
- *         bindEvents: function () {
- *             var me = this;
- *             me.get(&#x27;$arrowRight&#x27;).addEventListener(&#x27;click&#x27;, this.nextPage.bind(this));
- *             me.get(&#x27;$arrowLeft&#x27;).addEventListener(&#x27;click&#x27;, this.prevPage.bind(this));
- *         },
- *         changePage: function (id) {
+ *         onPageChange: function (id) {
  *             // changing page mechanism
  *         },
  *         nextPage: function () {
@@ -181,6 +174,7 @@ ya.Core.$extend({
     module: &#x27;ya&#x27;,
     alias: &#x27;Controller&#x27;,
     defaults: {
+        id: null,
         routes: null,
         events: null
     },
@@ -196,13 +190,12 @@ ya.Core.$extend({
     init: function (opts) {
         var me = this;
 
-        me.__super(opts);
-
         me
-            .initConfig(opts)
-            .initDefaults()
+            .__super(opts)
             .initEvents()
             .initRoutes();
+
+        ya.controller.$Manager.register(me.getId(), me);
 
         ya.$onReady(function () {
             me.restoreRouter();
@@ -216,6 +209,8 @@ ya.Core.$extend({
      */
     initDefaults: function () {
         var me = this;
+
+        me.setId(me.getId() || &#x27;controller-&#x27; + ya.view.$Manager.getCount());
 
         me.set(&#x27;router&#x27;, ya.Controller.$getRouter());
         me.set(&#x27;dispatcher&#x27;, ya.event.$dispatcher);
@@ -257,7 +252,7 @@ ya.Core.$extend({
                     } else {
 
                         throw ya.Error.$create(
-                            &#x27;Event query should begin from id of the view (current query: &#x27; + e + &#x27;)&#x27;, &#x27;CONTROLLER1&#x27;
+                            me.__class__ + &#x27;: Event query should begin from id of the view (current query: &#x27; + e + &#x27;)&#x27;, &#x27;CTRL1&#x27;
                         );
 
                     }

@@ -67,8 +67,15 @@ module.exports = function (grunt) {
                 sourceMappingURL: sourceMapUrl
             },
             target: {
-                src: ['src/ya.js', 'src/mixins/**/*.js', 'src/core.js', 'src/error.js', 'src/manager.js', 'src/**/*.js'],
-                dest: minRelease
+                src: [
+                    'src/ya.js',
+                    'src/mixins/**/*.js',
+                    'src/core.js',
+                    'src/error.js',
+                    'src/manager.js',
+                    'src/**/manager.js',
+                    'src/**/*.js'
+                ],dest: minRelease
             }
         },
         concat: {
@@ -76,7 +83,15 @@ module.exports = function (grunt) {
                 banner: bannerContent
             },
             target: {
-                src: ['src/ya.js', 'src/mixins/**/*.js', 'src/core.js', 'src/error.js', 'src/manager.js', 'src/**/*.js'],
+                src: [
+                    'src/ya.js',
+                    'src/mixins/**/*.js',
+                    'src/core.js',
+                    'src/error.js',
+                    'src/manager.js',
+                    'src/**/manager.js',
+                    'src/**/*.js'
+                ],
                 dest: devRelease
             }
         },
@@ -96,7 +111,8 @@ module.exports = function (grunt) {
                     'src/**/*.js',
                     'src/*.js',
                     'test/**/*.js',
-                    'test/*.js'
+                    'test/*.js',
+                    'test/*.html'
                 ],
                 tasks: ['jshint'],
                 options: {

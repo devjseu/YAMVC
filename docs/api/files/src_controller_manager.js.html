@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>ya.Job - yamvc</title>
+    <title>src\controller\manager.js - yamvc</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -136,236 +136,21 @@
             <div class="apidocs">
                 <div id="docs-main">
                     <div class="content">
-                        <h1>ya.Job Class</h1>
-<div class="box meta">
-    
+                        <h1 class="file-heading">File: src\controller\manager.js</h1>
 
-    
-
-    
-        <div class="foundat">
-            Defined in: <a href="../files/src_job.js.html#l1"><code>src\job.js:1</code></a>
-        </div>
-    
-
-    
-        
-            Module: <a href="../modules/ya.html">ya</a>
-        
-    
-
-    
-</div>
-
-
-
-<div class="box intro">
-    
-</div>
-
-
-
-<div id="classdocs" class="tabview">
-    <ul class="api-class-tabs">
-        <li class="api-class-tab index"><a href="#index">Index</a></li>
-
-        
-            <li class="api-class-tab methods"><a href="#methods">Methods</a></li>
-        
-        
-        
-        
-    </ul>
-
-    <div>
-        <div id="index" class="api-class-tabpanel index">
-            <h2 class="off-left">Item Index</h2>
-
-            
-                <div class="index-section methods">
-                    <h3>Methods</h3>
-
-                    <ul class="index-list methods">
-                        
-                            <li class="index-item method">
-                                <a href="#method_initDefaults">initDefaults</a>
-
-                                
-                                
-                            </li>
-                        
-                            <li class="index-item method">
-                                <a href="#method_initRequired">initRequired</a>
-
-                                
-                                
-                            </li>
-                        
-                    </ul>
-                </div>
-            
-
-            
-
-            
-
-            
-        </div>
-
-        
-            <div id="methods" class="api-class-tabpanel">
-                <h2 class="off-left">Methods</h2>
-
-                
-                    <div id="method_initDefaults" class="method item">
-    <h3 class="name"><code>initDefaults</code></h3>
-
-    
-        <span class="paren">()</span>
-    
-
-    
-        <span class="returns-inline">
-            <span class="type"></span>
-        </span>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    <div class="meta">
-        
-            
-                
-                <p>
-                
-                Defined in
-                
-            
-        
-        
-        <a href="../files/src_job.js.html#l37"><code>src\job.js:37</code></a>
-        
-        </p>
-
-
-        
-
-        
-    </div>
-
-    <div class="description">
-        
-    </div>
-
-    
-
-    
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                
-                    
-                        <span class="type"></span>:
-                    
-                
-            </div>
-        </div>
-    
-
-    
-</div>
-
-                
-                    <div id="method_initRequired" class="method item">
-    <h3 class="name"><code>initRequired</code></h3>
-
-    
-        <span class="paren">()</span>
-    
-
-    
-        <span class="returns-inline">
-            <span class="type"></span>
-        </span>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    <div class="meta">
-        
-            
-                
-                <p>
-                
-                Defined in
-                
-            
-        
-        
-        <a href="../files/src_job.js.html#l21"><code>src\job.js:21</code></a>
-        
-        </p>
-
-
-        
-
-        
-    </div>
-
-    <div class="description">
-        
-    </div>
-
-    
-
-    
-        <div class="returns">
-            <h4>Returns:</h4>
-
-            <div class="returns-description">
-                
-                    
-                        <span class="type"></span>:
-                    
-                
-            </div>
-        </div>
-    
-
-    
-</div>
-
-                
-            </div>
-        
-
-        
-
-        
-
-        
-    </div>
+<div class="file">
+    <pre class="code prettyprint linenums">
+/**
+ * @namespace ya
+ * @class controller.$Manager
+ * @extends ya.Manager
+ */
+ya.Manager.$extend({
+    module: &#x27;ya&#x27;,
+    alias: &#x27;controller.$Manager&#x27;,
+    singleton: true
+});
+    </pre>
 </div>
 
                     </div>

@@ -107,7 +107,7 @@
              * @attribute config.collections
              * @type ya.Collection
              */
-            collections : null,
+            collections: null,
             /**
              * @attribute config.autoCreate
              * @type boolean
@@ -121,6 +121,7 @@
             tpl: null
         },
         mixins: [
+            ya.mixins.Array,
             ya.mixins.DOM
         ],
         /**
@@ -135,12 +136,9 @@
             // and save reference to component in View Manager.
             var me = this;
 
-            me.__super();
-
             me
-                .initConfig(opts)
-                .initDefaults()
-                .initRequired()
+                .__super(opts)
+                .initModels()
                 .initTemplate()
                 .initParent();
 
@@ -153,7 +151,7 @@
 
             if (!me.getTpl()) {
 
-                throw ya.Error.$create('ya.View: no tpl set for ' + config.getId());
+                throw ya.Error.$create(me.__class__ + ': no tpl set for ' + me.getId(), 'YV1');
 
             }
 
@@ -170,6 +168,39 @@
             me.setChildren(me.getChildren() || []);
             me.setModels(me.getModels() || []);
             me.setCollections(me.getCollections() || []);
+
+            return me;
+        },
+        /**
+         * @method initTemplate
+         * @returns {View}
+         * @chainable
+         */
+        initModels: function () {
+            var me = this;
+
+            me.each(me.getModels(), function (model, i, array) {
+
+                if (!(model instanceof ya.Model)) {
+
+                    if (!model.alias) {
+
+                        model.module = 'ya';
+                        model.alias = 'Model';
+
+                    }
+
+                    try {
+
+                        array[i] = ya.$factory(model);
+
+                    } catch (e) {
+
+                        throw ya.Error.$create(me.__class__ + ': Can not create model', 'YV2');
+
+                    }
+                }
+            });
 
             return me;
         },
@@ -217,6 +248,11 @@
 
             return me;
         },
+        /**
+         * @method initParent
+         * @returns {View}
+         * @chainable
+         */
         initParent: function () {
             var me = this,
                 parent = me.getParent();

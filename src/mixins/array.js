@@ -111,7 +111,7 @@ ya.$set('ya', 'mixins.Array', {
         }
     },
     some: Array.prototype.some ? function (array, fun) {
-        Array.prototype.some.call(array, fun);
+        return Array.prototype.some.call(array, fun);
     } : function (fun /*, thisArg */) {
         'use strict';
 

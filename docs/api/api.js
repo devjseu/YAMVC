@@ -13,6 +13,7 @@ YUI.add("yuidoc-meta", function(Y) {
         "ya.Router",
         "ya.View",
         "ya.collection.$Manager",
+        "ya.controller.$Manager",
         "ya.data.Action",
         "ya.data.Proxy",
         "ya.data.proxy.Localstorage",

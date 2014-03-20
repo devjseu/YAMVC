@@ -51,6 +51,8 @@
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
+                <li><a href="../classes/ya.controller.$Manager.html">ya.controller.$Manager</a></li>
+            
                 <li><a href="../classes/ya.Core.html">ya.Core</a></li>
             
                 <li><a href="../classes/ya.data.Action.html">ya.data.Action</a></li>
@@ -179,13 +181,8 @@ ya.Core.$extend({
     init: function (opts) {
         var me = this;
 
-        me.
-            __super();
-
         me
-            .initConfig(opts)
-            .initRequired()
-            .initDefaults()
+            .__super(opts)
             .initBindings()
             .initRegister();
 
@@ -195,7 +192,13 @@ ya.Core.$extend({
 
         if (!me.getTpl()) {
 
-            throw ya.Error.$create(&#x27;ya.view.Template: Missing tpl property&#x27;, &#x27;YVT1&#x27;);
+            throw ya.Error.$create(&#x27;ya.view.Template: Missing tpl property in configuration object&#x27;, &#x27;YVT1&#x27;);
+
+        }
+
+        if (!me._html.hasChildNodes()) {
+
+            throw ya.Error.$create(me.__class__ + &#x27;: Its seems that object doesnt contain any template&#x27;, &#x27;YVT2&#x27;);
 
         }
 
@@ -228,9 +231,9 @@ ya.Core.$extend({
 
             docFragment = html;
 
-        } else {
+        } else if (html instanceof HTMLElement) {
 
-            docFragment.appendChild(html);
+            docFragment.appendChild(html.firstChild);
 
         }
 
@@ -553,6 +556,7 @@ ya.Core.$extend({
                 fillAttr: ya.mixins.CSSStyle.isFillAttr(attr.name),
                 name: attr.name,
                 original: original,
+                models: {},
                 headers: headers,
                 type: ya.view.Template.$BindingType.ATTR,
                 pointer: rId

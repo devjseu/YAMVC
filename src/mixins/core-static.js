@@ -13,7 +13,6 @@ ya.$set('ya', 'mixins.CoreStatic', {
 
         var Parent = this,
             _super = this.prototype,
-            defaults = ya.$merge(Parent.__defaults__ || {}, opts.defaults),
             mixins = (Parent.__mixins__ || []).concat(opts.mixins || []),
             statics = opts.static || {},
             fnTest = /xyz/.test(function () {
@@ -21,6 +20,7 @@ ya.$set('ya', 'mixins.CoreStatic', {
             }) ? /\b__super\b/ : /.*/,
             makeSuper = function (name, fn) {
                 return function () {
+
                     var tmp = this.__super;
                     this.__super = _super[name];
                     var ret = fn.apply(this, arguments);
@@ -34,13 +34,28 @@ ya.$set('ya', 'mixins.CoreStatic', {
             __extends;
 
         __Class = function () {
-            var key;
+            var defsArr = __Class.__defaults__,
+                len = defsArr.length,
+                i = 0, defs = {},
+                def, key;
             //
             this._config = {};
 
+
+            while (i < len) {
+
+                def = defsArr[i];
+                if (typeof def === 'function') {
+                    def = def();
+                }
+
+                ya.$merge(defs, def);
+                i++;
+            }
+
             // Initialize defaults.
-            for (key in defaults) {
-                if (__hasProp.call(defaults, key)) this._config[key] = defaults[key];
+            for (key in defs) {
+                if (__hasProp.call(defs, key)) this._config[key] = defs[key];
             }
 
             ya.Core.apply(this, arguments);
@@ -57,7 +72,8 @@ ya.$set('ya', 'mixins.CoreStatic', {
 
             Instance.prototype = parent.prototype;
             child.prototype = new Instance();
-            child.prototype.__class__ = (opts.module || ya.$module()) + '.' + opts.alias;
+            child.prototype.__module__ = opts.module || ya.$module();
+            child.prototype.__class__ = child.prototype.__module__ + '.' + opts.alias;
 
             for (var staticCore in ya.mixins.CoreStatic) {
 
@@ -76,7 +92,12 @@ ya.$set('ya', 'mixins.CoreStatic', {
             }
 
             child.__mixins__ = mixins.slice();
-            child.__defaults__ = defaults;
+            child.__defaults__ = parent.__defaults__.slice();
+            if (opts.defaults) {
+
+                child.__defaults__.push(opts.defaults);
+
+            }
 
             // Add external mixins.
             while (mixins.length) {

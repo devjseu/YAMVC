@@ -52,8 +52,12 @@ filtering function
 
 ##0.2.0
 * base methods segregated and moved to new files
-* overridden method can be now executed using `__super`
+* overridden methods can be now executed using `__super`
 * when extending object now you need to pass an alias for newly created one
 * documentation generated with yuidoc
 * `ya.view.T2DOM`, new layer for resolving view - model bindings
 * refactored code in nearly every classes to follow the framework guideline
+* tree static stores for templates, views and collections introduced
+* new `ya.Module` class which is a helper for combining views, models and controller
+* binding collection in DOM via `ya-collection` attribute
+* defaults property in class definition can be now function which return defaults object

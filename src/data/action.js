@@ -13,17 +13,6 @@ ya.Core.$extend({
             FAIL: 2
         }
     },
-    /**
-     * @methods init
-     * @param opts
-     */
-    init: function (opts) {
-        var me = this;
-
-        me
-            .initConfig(opts)
-            .initDefaults();
-    },
     initDefaults: function () {
         var me = this;
 

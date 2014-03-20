@@ -51,6 +51,8 @@
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
+                <li><a href="../classes/ya.controller.$Manager.html">ya.controller.$Manager</a></li>
+            
                 <li><a href="../classes/ya.Core.html">ya.Core</a></li>
             
                 <li><a href="../classes/ya.data.Action.html">ya.data.Action</a></li>
@@ -175,10 +177,8 @@ ya.Core.$extend({
     init: function (opts) {
         var me = this;
 
-        me.__super(opts);
-
-        me.initConfig(opts)
-            .initDefaults()
+        me
+            .__super(opts)
             .initData();
 
         ya.collection.$Manager.register(me.getId(), me);

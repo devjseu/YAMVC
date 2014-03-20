@@ -5,183 +5,166 @@
  * @static
  */
 ya.Core.$extend({
-    module : 'ya',
-    singleton : true,
-    alias : 'event.$dispatcher',
-        defaults: {
-            delegates: null
-        },
-        /**
-         * @methods init
-         * @param opts
-         * @returns {Dispatcher}
-         */
-        init: function (opts) {
-            // Standard way of initialization.
-            var me = this;
-
-            me.__super();
-
-            me
-                .initConfig(opts)
-                .initDefaults();
-
-            return me;
-        },
+    module: 'ya',
+    singleton: true,
+    alias: 'event.$dispatcher',
+    defaults: {
+        delegates: null
+    },
     /**
      * @methods initDefaults
      * @returns {*}
      */
     initDefaults: function () {
-            var me = this;
+        var me = this;
 
-            // set defaults.
-            me.setDelegates([]);
+        // set defaults.
+        me.setDelegates([]);
 
-            return me;
-        },
-        /**
-         * @methods add
-         * @param scope
-         * @param e
-         * @returns {Dispatcher}
-         */
-        add: function (scope, e) {
-            var me = this,
-                selector = Object.keys(e).pop();
+        return me;
+    },
+    /**
+     * @methods add
+     * @param scope
+     * @param e
+     * @returns {Dispatcher}
+     */
+    add: function (scope, e) {
+        var me = this,
+            selector = Object.keys(e).pop();
 
-            me.getDelegates().push({
-                selector: selector,
-                scope: scope,
-                events: e[selector]
-            });
+        me.getDelegates().push({
+            selector: selector,
+            scope: scope,
+            events: e[selector]
+        });
 
-            return me;
-        },
-        /**
-         * @methods apply
-         * @methods apply
-         * @param view
-         */
-        apply: function (view) {
-            // Apply delegated events.
-            var me = this,
-            // Get all delegated events.
-                delegates = me.getDelegates(),
-            // Define array in which matched events from delegation array
-            // will be stored.
-                matchPos = [],
-            // Cache new view in other variable.
-                newView = view,
-            // Define array for elements which match to last part
-            // of query from delegated event object
-                els = [],
-            // Function which will be used to match if there are any
-            // delegated events for particular view.
-                matchIdFn = function (r) {
-                    return r.selector.search(regExp) >= 0;
+        return me;
+    },
+    /**
+     * @methods apply
+     * @methods apply
+     * @param view
+     */
+    apply: function (view) {
+        // Apply delegated events.
+        var me = this,
+        // Get all delegated events.
+            delegates = me.getDelegates(),
+        // Define array in which matched events from delegation array
+        // will be stored.
+            matchPos = [],
+        // Cache new view in other variable.
+            newView = view,
+        // Define array for elements which match to last part
+        // of query from delegated event object
+            els = [],
+        // Function which will be used to match if there are any
+        // delegated events for particular view.
+            matchIdFn = function (r) {
+                return r.selector.search(regExp) >= 0;
 
-                },
-                isQueryMatch = ya.mixins.DOM.isQueryMatch,
-                __findAllByFn = ya.mixins.Array.findAllByFn,
-                __each = ya.mixins.Array.each,
-            // Other variables which need to be defined.
-                selector, delegate, regExp, cpSelector, e;
+            },
+            isQueryMatch = ya.mixins.DOM.isQueryMatch,
+            __findAllByFn = ya.mixins.Array.findAllByFn,
+            __each = ya.mixins.Array.each,
+        // Other variables which need to be defined.
+            selector, delegate, regExp, cpSelector, e;
 
 
-            while (view) {
-                // If view is not null define regexp for
-                // searching view id in delegated event
-                // query.
-                regExp = new RegExp('^\\$' + view.getId() + "[\\s]");
-                // Get position for events which were matched.
-                matchPos = __findAllByFn(delegates, matchIdFn);
-                if (matchPos.length) {
-                    /*jshint -W083 */
-                    // If we found any events which need to be delegated,
-                    __each(matchPos, function (r) {
-                        // iterate through all of them.
-                        // As first step clear the array of elements
-                        els.length = 0;
-                        delegate = delegates[r];
-                        //
-                        selector = delegate
-                            .selector
-                            .split(" ");
-                        // Remove item id from selectors array.
-                        selector.shift();
+        while (view) {
+            // If view is not null define regexp for
+            // searching view id in delegated event
+            // query.
+            regExp = new RegExp('^\\$' + view.getId() + "[\\s]");
+            // Get position for events which were matched.
+            matchPos = __findAllByFn(delegates, matchIdFn);
+            if (matchPos.length) {
+                /*jshint -W083 */
+                // If we found any events which need to be delegated,
+                __each(matchPos, function (r) {
+                    // iterate through all of them.
+                    // As first step clear the array of elements
+                    els.length = 0;
+                    delegate = delegates[r];
+                    //
+                    selector = delegate
+                        .selector
+                        .split(" ");
+                    // Remove item id from selectors array.
+                    selector.shift();
 
-                        if (selector.length) {
-                            // If still anything left get last part
-                            // from query and find in new view elements
-                            // which match to the selector.
-                            els = newView.querySelectorAll(selector.pop());
-                            // Copy array with rest of them
-                            cpSelector = selector.slice();
-                            __each(els, function (el) {
-                                // and iterate through all founded elements.
-                                if (cpSelector.length) {
+                    if (selector.length) {
+                        // If still anything left get last part
+                        // from query and find in new view elements
+                        // which match to the selector.
+                        els = newView.querySelectorAll(selector.pop());
+                        // Copy array with rest of them
+                        cpSelector = selector.slice();
+                        __each(els, function (el) {
+                            // and iterate through all founded elements.
+                            if (cpSelector.length) {
 
-                                    var node = el,
-                                        lastSelector = cpSelector.pop();
-                                    while (view.getId() !== node.getAttribute('id')) {
+                                var node = el,
+                                    lastSelector = cpSelector.pop();
+                                while (view.getId() !== node.getAttribute('id')) {
 
-                                        if (isQueryMatch(lastSelector, node)) {
+                                    if (isQueryMatch(lastSelector, node)) {
 
-                                            if (cpSelector.length === 0) {
+                                        if (cpSelector.length === 0) {
 
-                                                me.assignEvents(el, delegate, view);
+                                            me.assignEvents(el, delegate, view);
 
-                                                break;
-                                            }
-                                            lastSelector = cpSelector.pop();
-
+                                            break;
                                         }
-                                        node = node.parentNode;
+                                        lastSelector = cpSelector.pop();
 
                                     }
-
-                                } else {
-
-                                    me.assignEvents(el, delegate, view);
+                                    node = node.parentNode;
 
                                 }
 
-                            });
+                            } else {
 
-                        }
+                                me.assignEvents(el, delegate, view);
 
-                    });
+                            }
 
-                }
+                        });
 
-                view = view.getParent();
+                    }
 
-
-            }
-
-
-        },
-        assignEvents: function (el, delegate, view) {
-            var e = delegate.events,
-                eType;
-
-            for (eType in e) {
-
-                if (e.hasOwnProperty(eType)) {
-
-                    el.addEventListener(eType, e[eType].bind(delegate.scope, view), false);
-
-                }
+                });
 
             }
-        },
-        /**
-         * Clear delegates array
-         * @returns {Dispatcher}
-         */
-        clear: function () {
-            this.getDelegates().length = 0;
-            return this;
+
+            view = view.getParent();
+
+
         }
-    });
+
+
+    },
+    assignEvents: function (el, delegate, view) {
+        var e = delegate.events,
+            eType;
+
+        for (eType in e) {
+
+            if (e.hasOwnProperty(eType)) {
+
+                el.addEventListener(eType, e[eType].bind(delegate.scope, view), false);
+
+            }
+
+        }
+    },
+    /**
+     * Clear delegates array
+     * @returns {Dispatcher}
+     */
+    clear: function () {
+        this.getDelegates().length = 0;
+        return this;
+    }
+});

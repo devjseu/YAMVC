@@ -10,6 +10,7 @@ ya.$set('ya', 'Core', (function () {
      */
     function Core() {
         this.set('listeners', {});
+        this.set('suspendEvents', false);
         this.bindMethods.apply(this, arguments);
         this.init.apply(this, arguments);
     }
@@ -18,14 +19,27 @@ ya.$set('ya', 'Core', (function () {
      @method init
      @abstract
      */
-    Core.prototype.init = function () {
+    Core.prototype.init = function (opts) {
+        return this
+            .initConfig(opts)
+            .initDefaults()
+            .initRequired();
     };
+
 
     /**
      @method initDefaults
-     @abstract
+     */
+    Core.prototype.initConfig = function (opts) {
+        return this;
+    };
+
+
+    /**
+     @method initDefaults
      */
     Core.prototype.initDefaults = function () {
+        return this;
     };
 
     /**
@@ -33,6 +47,7 @@ ya.$set('ya', 'Core', (function () {
      @abstract
      */
     Core.prototype.initRequired = function () {
+        return this;
     };
 
     /**
@@ -148,7 +163,7 @@ ya.$set('ya', 'Core', (function () {
     Core.__mixins__ = [];
 
     // Stores all defaults.
-    Core.__defaults__ = {};
+    Core.__defaults__ = [];
 
     for (var staticCore in ya.mixins.CoreStatic) {
 

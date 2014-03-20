@@ -51,6 +51,8 @@
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
+                <li><a href="../classes/ya.controller.$Manager.html">ya.controller.$Manager</a></li>
+            
                 <li><a href="../classes/ya.Core.html">ya.Core</a></li>
             
                 <li><a href="../classes/ya.data.Action.html">ya.data.Action</a></li>
@@ -146,25 +148,6 @@
 ya.Core.$extend({
     module: &#x27;ya&#x27;,
     alias: &#x27;data.Proxy&#x27;,
-    /**
-     * @methods init
-     * @param opts
-     */
-    init: function (opts) {
-        var me = this, config;
-
-        opts = opts || {};
-
-        me.__super(opts);
-
-        config = ya.$merge(me._config, opts.config);
-
-        me.set(&#x27;initOpts&#x27;, opts);
-        me.set(&#x27;config&#x27;, config);
-
-        me.initConfig();
-
-    },
     /**
      * @methods read
      * @param action

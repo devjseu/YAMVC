@@ -3,27 +3,18 @@
  * ## Basic controller usage
  *
  *     @example
- *     var ctl = new Controller({
+ *     var ctl = ya.Controller.$create({
  *         config: {
  *             name: 'Main',
- *             views: {
- *                 layout: ya.view.$Manager.getItem('view-0')
- *             },
  *             routes: {
- *                 "page/{\\d+}": 'changePage'
+ *                 "page/{\\d+}": 'onPageChange'
  *             },
+ *             events : {
+ *                  '$layout .btn-right' : 'onNextPage',
+ *                  '$layout .btn-eft' : 'onPrevPage'
+ *             }
  *         },
- *         bindElements : function (){
- *             var me = this;
- *             me.set('$arrowRight', document.querySelector('#arrow-right'));
- *             me.set('$arrowLeft', document.querySelector('#arrow-left'));
- *         },
- *         bindEvents: function () {
- *             var me = this;
- *             me.get('$arrowRight').addEventListener('click', this.nextPage.bind(this));
- *             me.get('$arrowLeft').addEventListener('click', this.prevPage.bind(this));
- *         },
- *         changePage: function (id) {
+ *         onPageChange: function (id) {
  *             // changing page mechanism
  *         },
  *         nextPage: function () {
@@ -41,6 +32,7 @@ ya.Core.$extend({
     module: 'ya',
     alias: 'Controller',
     defaults: {
+        id: null,
         routes: null,
         events: null
     },
@@ -56,13 +48,12 @@ ya.Core.$extend({
     init: function (opts) {
         var me = this;
 
-        me.__super(opts);
-
         me
-            .initConfig(opts)
-            .initDefaults()
+            .__super(opts)
             .initEvents()
             .initRoutes();
+
+        ya.controller.$Manager.register(me.getId(), me);
 
         ya.$onReady(function () {
             me.restoreRouter();
@@ -76,6 +67,8 @@ ya.Core.$extend({
      */
     initDefaults: function () {
         var me = this;
+
+        me.setId(me.getId() || 'controller-' + ya.view.$Manager.getCount());
 
         me.set('router', ya.Controller.$getRouter());
         me.set('dispatcher', ya.event.$dispatcher);
@@ -117,7 +110,7 @@ ya.Core.$extend({
                     } else {
 
                         throw ya.Error.$create(
-                            'Event query should begin from id of the view (current query: ' + e + ')', 'CONTROLLER1'
+                            me.__class__ + ': Event query should begin from id of the view (current query: ' + e + ')', 'CTRL1'
                         );
 
                     }

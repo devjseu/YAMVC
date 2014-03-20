@@ -40,7 +40,6 @@ test("bind events to view", function () {
 
     ya.Controller.$create({
         config: {
-            name: 'Main',
             events: {
                 '$controller-test button': {
                     click: function () {

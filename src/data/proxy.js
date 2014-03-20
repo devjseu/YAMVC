@@ -7,25 +7,6 @@ ya.Core.$extend({
     module: 'ya',
     alias: 'data.Proxy',
     /**
-     * @methods init
-     * @param opts
-     */
-    init: function (opts) {
-        var me = this, config;
-
-        opts = opts || {};
-
-        me.__super(opts);
-
-        config = ya.$merge(me._config, opts.config);
-
-        me.set('initOpts', opts);
-        me.set('config', config);
-
-        me.initConfig();
-
-    },
-    /**
      * @methods read
      * @param action
      * @returns {*}

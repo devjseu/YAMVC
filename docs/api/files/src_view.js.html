@@ -51,6 +51,8 @@
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
+                <li><a href="../classes/ya.controller.$Manager.html">ya.controller.$Manager</a></li>
+            
                 <li><a href="../classes/ya.Core.html">ya.Core</a></li>
             
                 <li><a href="../classes/ya.data.Action.html">ya.data.Action</a></li>
@@ -247,7 +249,7 @@
              * @attribute config.collections
              * @type ya.Collection
              */
-            collections : null,
+            collections: null,
             /**
              * @attribute config.autoCreate
              * @type boolean
@@ -261,6 +263,7 @@
             tpl: null
         },
         mixins: [
+            ya.mixins.Array,
             ya.mixins.DOM
         ],
         /**
@@ -275,12 +278,9 @@
             // and save reference to component in View Manager.
             var me = this;
 
-            me.__super();
-
             me
-                .initConfig(opts)
-                .initDefaults()
-                .initRequired()
+                .__super(opts)
+                .initModels()
                 .initTemplate()
                 .initParent();
 
@@ -293,7 +293,7 @@
 
             if (!me.getTpl()) {
 
-                throw ya.Error.$create(&#x27;ya.View: no tpl set for &#x27; + config.getId());
+                throw ya.Error.$create(me.__class__ + &#x27;: no tpl set for &#x27; + me.getId(), &#x27;YV1&#x27;);
 
             }
 
@@ -310,6 +310,39 @@
             me.setChildren(me.getChildren() || []);
             me.setModels(me.getModels() || []);
             me.setCollections(me.getCollections() || []);
+
+            return me;
+        },
+        /**
+         * @method initTemplate
+         * @returns {View}
+         * @chainable
+         */
+        initModels: function () {
+            var me = this;
+
+            me.each(me.getModels(), function (model, i, array) {
+
+                if (!(model instanceof ya.Model)) {
+
+                    if (!model.alias) {
+
+                        model.module = &#x27;ya&#x27;;
+                        model.alias = &#x27;Model&#x27;;
+
+                    }
+
+                    try {
+
+                        array[i] = ya.$factory(model);
+
+                    } catch (e) {
+
+                        throw ya.Error.$create(me.__class__ + &#x27;: Can not create model&#x27;, &#x27;YV2&#x27;);
+
+                    }
+                }
+            });
 
             return me;
         },
@@ -357,6 +390,11 @@
 
             return me;
         },
+        /**
+         * @method initParent
+         * @returns {View}
+         * @chainable
+         */
         initParent: function () {
             var me = this,
                 parent = me.getParent();

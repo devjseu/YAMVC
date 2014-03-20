@@ -3,10 +3,6 @@
  * @class Observable
  */
 ya.$set('ya', 'mixins.Observable', {
-    init: function () {
-        this.set('listeners', {});
-        this.set('suspendEvents', false);
-    },
     /**
      * fire event
      * @returns {boolean}

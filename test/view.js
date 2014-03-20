@@ -159,6 +159,44 @@ test("bind with model", function () {
     equal(view.querySelector('.example').getAttribute('style'), 'display: block;');
 });
 
+test("initialize models if passed as objects", function () {
+    var view;
+
+    view = ya.View.$create({
+        config: {
+            models: [
+                {
+                    namespace : 'example',
+                    data : {
+                        name : 'Seba',
+                        display : 'none'
+                    }
+                }
+            ],
+            tpl: ya.view.Template.$create({
+                config: {
+                    id: 'tpl-example-3b',
+                    tpl: [
+                        '<div>Who are you ?</div>',
+                        '<button style="margin: 10px;">answer</button>',
+                        '<div class="example" ya-css="display: {{example.display}};">Hi {{example.name}}</div>'
+                    ]
+                }
+            })
+        }
+    });
+
+    view.render();
+
+    equal(view.querySelector('.example').innerText, 'Hi Seba');
+
+    equal(view.querySelector('.example').getAttribute('style'), 'display: none;');
+
+    view.getModel('example').data('display', 'block');
+
+    equal(view.querySelector('.example').getAttribute('style'), 'display: block;');
+});
+
 
 test("rendered two times", function () {
     var view, model;

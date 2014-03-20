@@ -28,8 +28,7 @@ ya.Core.$extend({
         var me = this;
 
         me
-            .initConfig(opts)
-            .initRequired()
+            .__super(opts)
             .initTDOM();
 
         return me;

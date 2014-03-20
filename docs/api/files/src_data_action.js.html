@@ -51,6 +51,8 @@
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
+                <li><a href="../classes/ya.controller.$Manager.html">ya.controller.$Manager</a></li>
+            
                 <li><a href="../classes/ya.Core.html">ya.Core</a></li>
             
                 <li><a href="../classes/ya.data.Action.html">ya.data.Action</a></li>
@@ -152,17 +154,6 @@ ya.Core.$extend({
             SUCCESS: 1,
             FAIL: 2
         }
-    },
-    /**
-     * @methods init
-     * @param opts
-     */
-    init: function (opts) {
-        var me = this;
-
-        me
-            .initConfig(opts)
-            .initDefaults();
     },
     initDefaults: function () {
         var me = this;

@@ -16,10 +16,8 @@ ya.Core.$extend({
     init: function (opts) {
         var me = this;
 
-        me.__super();
-
-        me.initConfig(opts)
-            .initDefaults()
+        me
+            .__super(opts)
             .bindEvents();
 
         return me;

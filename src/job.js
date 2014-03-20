@@ -6,27 +6,17 @@ ya.Core.$extend({
     module: 'ya',
     alias: 'Job',
     static: {
-        id: 0
+        id: 0,
+        INFINITY: 'infinity'
     },
     defaults: {
         id: null,
         delay: 0,
         tasks: null,
         repeat: 1,
-        spawn: false
-    },
-    /**
-     * @method init
-     */
-    init: function (opts) {
-        var me = this;
-
-        me
-            .initConfig(opts)
-            .initRequired()
-            .initDefaults();
-
-        return me;
+        spawn: false,
+        results: null,
+        maxTime: null
     },
     /**
      *
@@ -63,6 +53,7 @@ ya.Core.$extend({
 
         me.setId(ya.Job.$id++);
         me.setTasks(tasks);
+        me.setResults([]);
 
         return me;
     },
@@ -71,74 +62,86 @@ ya.Core.$extend({
             deferred = ya.$Promise.deferred(),
             engine, fn;
 
-        engine = me.getRepeat() > 1 || me.getRepeat() === 'infinity' ?
-        {run: function (a, b) {
-            me.set('clear', setInterval(a, b));
-        }, clear: function (success) {
+
+        engine = me.getRepeat() > 1 || me.getRepeat() === ya.Job.$INFINITY ?
+        {terminate: function (code, msg) {
 
             clearInterval(me._clear);
 
-            if (!success) {
-
-                deferred.reject({
-                    id: 'YJ2',
-                    message: 'Task terminated'
-                });
-
-            }
-
-            return me;
+            return deferred.reject({
+                id: code,
+                message: msg
+            });
         }} :
-        {run: function (a, b) {
-            me.set('clear', setTimeout(a, b));
-        }, clear: function (success) {
+        {terminate: function (code, msg) {
 
-            clearTimeout(me._clear);
+            clearInterval(me._clear);
 
-            if (!success) {
-
-                deferred.reject({
-                    id: 'YJ2',
-                    message: 'Task terminated'
-                });
-
-            }
-
-            return me;
+            return deferred.reject({
+                id: code,
+                message: msg
+            });
         }};
 
-        me.set('engine', engine);
+        engine.run = function (a, b) {
+            me.set('clear', setInterval(a, b));
+        };
+
+        engine.finish = function () {
+
+            clearInterval(me._clear);
+
+            return deferred.resolve({
+                success: true,
+                message: 'Task finished',
+                results: me.getResults()
+            });
+
+
+        };
 
         fn = function () {
             var repeat = me.getRepeat(),
                 tasks = me.getTasks(),
+                results = [],
                 i = 0,
                 len;
 
-            if (repeat !== 'infinity') {
+
+            if (
+                me.getMaxTime() &&
+                    (+new Date() - me._start) > me.getMaxTime()
+                ) {
+
+                return engine.terminate('YJ3', 'Timeout');
+
+            }
+            if (repeat !== ya.Job.$INFINITY) {
 
                 me.setRepeat(--repeat);
                 if (repeat < 0) {
 
-                    engine.clear(true);
-                    return deferred.resolve({
-                        success: true,
-                        message: 'Task finished'
-                    });
+                    engine.finish();
 
                 }
 
             }
 
             len = tasks.length;
+
             while (i < len) {
 
-                tasks[i]();
+                results.push(tasks[i].call(engine));
                 i++;
 
             }
 
+            me.getResults().push(results);
+
         };
+
+        me.set('engine', engine);
+        me.set('start', +new Date());
 
         engine.run(fn, me.getDelay());
 
@@ -146,7 +149,7 @@ ya.Core.$extend({
     },
     terminate: function () {
 
-        return this._engine.clear();
+        return this._engine.terminate('YJ2', 'Task terminated after ' + ((+new Date() - this._start) / 1000) + ' seconds of execution');
 
     }
 });
