@@ -93,6 +93,7 @@ ya.Core.$extend({
             me.getTasks().splice(taskIdx, 1);
 
             me._semaphore--;
+
             if (me._semaphore === 0 || me.getRepeat() < 0) {
 
                 clearInterval(me._clear);
@@ -105,6 +106,12 @@ ya.Core.$extend({
 
             }
 
+
+        };
+
+        engine.suspend =function () {
+
+            clearInterval(me._clear);
 
         };
 

@@ -2,7 +2,7 @@ module('Module');
 
 asyncTest("initialize", function () {
 
-   ya.Module.$extend({
+    ya.Module.$extend({
         module: 'search',
         alias: 'Module',
         defaults: {
@@ -134,30 +134,103 @@ asyncTest("Dependency resolving, communication between controllers", function ()
 });
 
 
-asyncTest("Load modules and communicate trough them", function () {
+asyncTest("Load modules, communicate between them", function () {
+    var counter = 0;
+
+    ya.Controller.$extend({
+        module: 'testModule',
+        alias: 'Controller',
+        defaults : {
+            id : 'testModule-controller'
+        }
+    });
+
+    ya.Controller.$extend({
+        module: 'testModule-2',
+        alias: 'Controller',
+        onCtrlEvent: function () {
+
+            counter++;
+
+        }
+    });
 
     ya.Module.$extend({
-        module: 'search',
+        module: 'testModule',
         alias: 'Module',
         defaults: {
-            modules : [],
-            maxLoadingTime: 1000
+            requires: [
+                'Controller -i'
+            ]
         },
         onReady: function () {
 
-            ok(true, 'Module is loaded');
+            ok(true, 'Module-1 is loaded');
+
+        },
+        onError: function (e) {
+
+            console.log('module 1 - error');
+            ok(false, '3: ' + e.message);
+
+        }
+    });
+
+
+    ya.Module.$extend({
+        module: 'testModule-2',
+        alias: 'Module',
+        defaults: {
+            requires: [
+                'Controller -i'
+            ]
+        },
+        onReady: function () {
+
+            ok(true, 'Module-2 is loaded');
+
+        },
+        onError: function (e) {
+
+            ok(false, '2: ' + e.message);
+
+        }
+    });
+
+
+    ya.Module.$extend({
+        module: 'mainTestModule',
+        alias: 'Module',
+        defaults: {
+            modules : [
+                'testModule -i',
+                'testModule-2 -i'
+            ],
+            maxLoadingTime: 1000,
+            bus: {
+                'testModule:Controller:event': 'testModule-2:Controller:onCtrlEvent'
+            }
+        },
+        onReady: function () {
+            var ctrl;
+
+            ctrl = ya.controller.$Manager.getItem('testModule-controller');
+            ctrl.fireEvent('event');
+
+            ok(true, 'Main Module is loaded');
+            equal(counter, 1, "Communication trough different module is working");
             start();
 
         },
         onError: function (e) {
 
-            ok(false, e.message);
+            ok(false, '1: ' + e.message);
             start();
 
         }
     });
 
-    ok(search.Module.$create() instanceof search.Module, 'created module should be instance of ya.Module');
+    ok(mainTestModule.Module.$create() instanceof ya.Module, 'created module should be instance of ya.Module');
 
 });
 

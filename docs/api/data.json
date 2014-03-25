@@ -263,6 +263,13 @@
                 "ya": 1
             }
         },
+        "src\\module.js": {
+            "name": "src\\module.js",
+            "modules": {},
+            "classes": {},
+            "fors": {},
+            "namespaces": {}
+        },
         "src\\promise.js": {
             "name": "src\\promise.js",
             "modules": {},
@@ -2584,6 +2591,59 @@
             "class": "ya.Model"
         },
         {
+            "file": "src\\module.js",
+            "line": 14,
+            "itemtype": "method",
+            "name": "init",
+            "params": [
+                {
+                    "name": "opts",
+                    "description": ""
+                }
+            ],
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ya.$Promise"
+        },
+        {
+            "file": "src\\module.js",
+            "line": 25,
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ya.$Promise"
+        },
+        {
+            "file": "src\\module.js",
+            "line": 37,
+            "return": {
+                "description": "",
+                "type": "*"
+            },
+            "class": "ya.$Promise"
+        },
+        {
+            "file": "src\\module.js",
+            "line": 197,
+            "description": "Callback which tell engine to stop particular task",
+            "class": "ya.$Promise"
+        },
+        {
+            "file": "src\\module.js",
+            "line": 215,
+            "description": "Helper function for resolving parameters.\nInstantiate the module.",
+            "params": [
+                {
+                    "name": "param",
+                    "description": ""
+                }
+            ],
+            "class": "ya.$Promise"
+        },
+        {
             "file": "src\\promise.js",
             "line": 19,
             "description": "Constructs a promise manager.",
@@ -3762,6 +3822,18 @@
             "line": " src\\model.js:336"
         },
         {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\module.js:14"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\module.js:25"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " src\\module.js:37"
+        },
+        {
             "message": "unknown tag: contributed",
             "line": " src\\promise.js:1"
         },
@@ -4104,6 +4176,22 @@
         {
             "message": "Missing item type",
             "line": " src\\manager.js:73"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\module.js:25"
+        },
+        {
+            "message": "Missing item type",
+            "line": " src\\module.js:37"
+        },
+        {
+            "message": "Missing item type\nCallback which tell engine to stop particular task",
+            "line": " src\\module.js:197"
+        },
+        {
+            "message": "Missing item type\nHelper function for resolving parameters.\nInstantiate the module.",
+            "line": " src\\module.js:215"
         },
         {
             "message": "Missing item type\nConstructs a promise manager.",
