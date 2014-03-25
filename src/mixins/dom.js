@@ -2,9 +2,9 @@
  * @namespace ya.mixins
  * @class DOM
  */
-ya.$set('ya', 'mixins.DOM', { // todo: change name to mixins.DOM
+ya.$set('ya', 'mixins.DOM', {
     /**
-     * checks if passed selector match to main DOM element
+     * checks if passed selector match to root DOM element
      * @method isQueryMatch
      * @param selector String with selector
      * @param {HTMLElement} el DOM to match

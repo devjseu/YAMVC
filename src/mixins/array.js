@@ -4,7 +4,9 @@
  */
 ya.$set('ya', 'mixins.Array', {
     /**
-     *
+     * Return an index of the record matched by key (or value)
+     * @method find
+     * @for ya.mixins.Array
      * @param array
      * @param key
      * @returns {Number}
@@ -13,14 +15,22 @@ ya.$set('ya', 'mixins.Array', {
         var len = array.length,
             argsLen = arguments.length,
             val = argsLen > 2 ? arguments[2] : null,
-            rec;
+            tmp, rec;
 
         if (argsLen > 1) {
 
             while (len--) {
 
                 rec = array[len];
-                if (rec[key] === val) {
+                tmp = key.split('.');
+
+                while (tmp.length) {
+
+                    rec = rec[tmp.shift()];
+
+                }
+
+                if (rec === val) {
                     break;
                 }
             }
@@ -41,6 +51,9 @@ ya.$set('ya', 'mixins.Array', {
     },
     /**
      *
+     * return an array of records matched by key (or value)
+     * @method findAll
+     * @for ya.mixins.Array
      * @param array
      * @param key
      * @returns {Array}
@@ -69,6 +82,7 @@ ya.$set('ya', 'mixins.Array', {
         return result;
     },
     /**
+     * use search function to return array of matched elements
      * @param array
      * @param {Function} fn
      * @returns {Array}
@@ -90,6 +104,9 @@ ya.$set('ya', 'mixins.Array', {
         return result;
     },
     /**
+     * iterate trough each record in array
+     * @method each
+     * @for ya.mixins.Array
      * @param array
      * @param fun
      */
@@ -110,6 +127,15 @@ ya.$set('ya', 'mixins.Array', {
                 fun.call(array, t[i], i, t);
         }
     },
+    /**
+     * iterate trough each record in array until some
+     * of iteration returns true
+     * @method each
+     * @for ya.mixins.Array
+     * @param array
+     * @param fun
+     * @return boolean
+     */
     some: Array.prototype.some ? function (array, fun) {
         return Array.prototype.some.call(array, fun);
     } : function (fun /*, thisArg */) {

@@ -13,15 +13,17 @@ ya.$set('ya', 'mixins.Observable', {
             return true;
         var ret = true,
             shift = Array.prototype.shift,
-            evName = shift.call(arguments),
-            scope;
+            evName = shift.call(arguments);
 
-        scope = shift.call(arguments);
         for (var i = 0, li = this._listeners[evName] || [], len = li.length; i < len; i++) {
+
             if (ret) {
-                ret = li[i].apply(scope, arguments);
+
+                ret = li[i].apply(li[i], arguments);
                 ret = typeof ret === 'undefined' ? true : ret;
+
             }
+
         }
         return ret;
     },
@@ -31,12 +33,13 @@ ya.$set('ya', 'mixins.Observable', {
      * @version 0.1.12
      * @param evName
      * @param callback
+     * @param scope
      * @returns {this}
      *
      */
-    addEventListener: function (evName, callback) {
+    addEventListener: function (evName, callback, scope) {
         var listeners = this._listeners[evName] || [];
-        listeners.push(callback);
+        listeners.push(scope ? callback.bind(scope) : callback);
         this._listeners[evName] = listeners;
         return this;
     },
@@ -75,14 +78,20 @@ ya.$set('ya', 'mixins.Observable', {
      * suspend all events
      */
     suspendEvents: function () {
-        this.set('suspendEvents', true);
+        var me = this;
+
+        me.set('suspendEvents', (me._suspendEvents || 0) + 1);
+
         return this;
     },
     /**
      * resume all events
      */
     resumeEvents: function () {
-        this.set('suspendEvents', false);
-        return this;
+        var me = this;
+
+        me.set('suspendEvents', --me._suspendEvents);
+
+        return me;
     }
 });

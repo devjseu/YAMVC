@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>src\controller.js - yamvc</title>
+    <title>src\controller.js - yam</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -15,7 +15,7 @@
     <div id="hd" class="yui3-g header">
         <div class="yui3-u-3-4">
             
-                <h1><img src="../assets/css/logo.png" title="yamvc"></h1>
+                <h1><img src="../assets/css/logo.png" title="yam"></h1>
             
         </div>
         <div class="yui3-u-1-4 version">
@@ -210,7 +210,7 @@ ya.Core.$extend({
     initDefaults: function () {
         var me = this;
 
-        me.setId(me.getId() || &#x27;controller-&#x27; + ya.view.$Manager.getCount());
+        me.setId(me.getId() || &#x27;controller-&#x27; + ya.controller.$Manager.getCount());
 
         me.set(&#x27;router&#x27;, ya.Controller.$getRouter());
         me.set(&#x27;dispatcher&#x27;, ya.event.$dispatcher);
@@ -218,8 +218,9 @@ ya.Core.$extend({
         return me;
     },
     /**
-     *
-     * @returns {*}
+     * @method initEvents
+     * @private
+     * @returns {this}
      */
     initEvents: function () {
         var me = this,
@@ -227,20 +228,34 @@ ya.Core.$extend({
             views = [],
             rx = new RegExp(&#x27;\\$([^\\s]+)&#x27;),
             dispatcher = me._dispatcher,
-            matches, view, l, obj;
+            matches, view, l, obj, current;
 
         if (events) {
 
-            for (var e in events) {
+            for (var query in events) {
 
-                if (events.hasOwnProperty(e)) {
+                if (events.hasOwnProperty(query)) {
 
                     obj = {};
-                    obj[e] = events[e];
+                    obj[query] = current = events[query];
+
+                    for (var e in current) {
+
+                        if (current.hasOwnProperty(e)) {
+
+                            if (typeof current[e] !== &#x27;function&#x27;) {
+
+                                current[e] = me[current[e]];
+
+                            }
+
+                        }
+
+                    }
 
                     dispatcher.add(me, obj);
 
-                    matches = e.match(rx);
+                    matches = query.match(rx);
                     if (matches) {
 
                         if (views.indexOf(matches[1]) &lt; 0) {
@@ -276,7 +291,7 @@ ya.Core.$extend({
 
                     } else {
 
-                        view.addEventListener(&#x27;render&#x27;, me.resolveEvents.bind(me));
+                        view.addEventListener(&#x27;render&#x27;, me.resolveEvents, me);
 
                     }
 
@@ -288,8 +303,9 @@ ya.Core.$extend({
         return me;
     },
     /**
-     *
-     * @returns {*}
+     * @method initRoutes
+     * @private
+     * @returns {this}
      */
     initRoutes: function () {
         var me = this,
@@ -307,6 +323,11 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * @method resolveEvents
+     * @private
+     * @returns {this}
+     */
     resolveEvents: function (view) {
         var events = this.getEvents(),
             newScope = function (func, scope, arg) {
@@ -360,9 +381,44 @@ ya.Core.$extend({
         }
 
     },
+    /**
+     * Returns router object
+     * @method getView
+     * @returns {*}
+     */
     getRouter: function () {
         return router;
     },
+    /**
+     * Returns view by id
+     * @method getView
+     * @returns {*}
+     */
+    getView: function (id) {
+        return ya.view.$Manager.getItem(id);
+    },
+    /**
+     * Returns controller by id
+     * @method getController
+     * @returns {*}
+     */
+    getController: function (id) {
+        return ya.controller.$Manager.getItem(id);
+    },
+    /**
+     * Returns collection by id
+     * @method getCollection
+     * @returns {*}
+     */
+    getCollection: function (id) {
+        return ya.collection.$Manager.getItem(id);
+    },
+    /**
+     * Restores router state
+     * @method restoreRouter
+     * @private
+     * @returns {*}
+     */
     restoreRouter: function () {
         var me = this;
 
@@ -370,6 +426,11 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * Redirect application to passed path
+     * @param path
+     * @returns {*}
+     */
     redirectTo: function (path) {
 
         window.location.hash = path;

@@ -110,7 +110,7 @@ test("remove child", function () {
 
     view.render();
 
-    view.removeChild('child');
+    view.removeChild(ya.view.$Manager.getItem('child'));
 
     equal(view.getChildren().length, 0, 'from parent');
 });

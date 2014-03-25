@@ -41,8 +41,8 @@ ya.Core.$extend({
 
         me
             .__super(opts)
-            .initBindings()
-            .initRegister();
+            .initRegister()
+            .initBindings();
 
     },
     initRequired: function () {
@@ -159,6 +159,10 @@ ya.Core.$extend({
             // and push to array
             nodeAttrs = __slice.call(node.attributes);
 
+            // check if contents of should be scan
+            if (me.isTemplate(node)) {
+                continue;
+            }
             // DOM4 polyfill - attribute no longer inherits from Node
             // so we need to set owner element manually
             if (ya.view.Template.$DOM4) {
@@ -202,6 +206,23 @@ ya.Core.$extend({
         }
 
         return bindings;
+    },
+    isTemplate: function (node) {
+
+        node = node.parentNode;
+        while (node.parentNode) {
+            if (
+                node.attributes.getNamedItem('ya-view') ||
+                    node.attributes.getNamedItem('ya-collection')
+                ) {
+                return true;
+
+            }
+
+            node = node.parentNode;
+        }
+
+        return false;
     },
     findTextBindings: function () {
         var me = this,
@@ -270,6 +291,7 @@ ya.Core.$extend({
                 old: node,
                 doc: doc,
                 models: {},
+                callbacks : [],
                 headers: headers,
                 type: 3,
                 pointer: rId
@@ -376,6 +398,7 @@ ya.Core.$extend({
             original: original,
             fillAttr: false,
             headers: headers,
+            callbacks : [],
             models: {},
             name: 'style',
             type: ya.view.Template.$BindingType.ATTR,
@@ -393,6 +416,7 @@ ya.Core.$extend({
             binding, rId, header;
 
         if (results) {
+
 
             rId = node.getAttribute('ya-id');
             if (!rId) {
@@ -415,6 +439,7 @@ ya.Core.$extend({
                 name: attr.name,
                 original: original,
                 models: {},
+                callbacks : [],
                 headers: headers,
                 type: ya.view.Template.$BindingType.ATTR,
                 pointer: rId

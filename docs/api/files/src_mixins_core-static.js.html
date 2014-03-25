@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>src\mixins\core-static.js - yamvc</title>
+    <title>src\mixins\core-static.js - yam</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -15,7 +15,7 @@
     <div id="hd" class="yui3-g header">
         <div class="yui3-u-3-4">
             
-                <h1><img src="../assets/css/logo.png" title="yamvc"></h1>
+                <h1><img src="../assets/css/logo.png" title="yam"></h1>
             
         </div>
         <div class="yui3-u-1-4 version">
@@ -146,7 +146,10 @@
  */
 ya.$set(&#x27;ya&#x27;, &#x27;mixins.CoreStatic&#x27;, {
     /**
-     *
+     * Creates definition of the new class based on old one
+     * and parameters passed as argument
+     * @method $extends
+     * @for ya.mixins.CoreStatic
      * @param opts
      * @returns {Function}
      */
@@ -267,6 +270,12 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.CoreStatic&#x27;, {
 
         return __Class;
     },
+    /**
+    * Create an instance of class.
+     * @method $create
+     * @for ya.mixins.CoreStatic
+     * @returns {Function}
+     */
     $create: function () {
         /*jshint -W058 */
         var Obj = this,
@@ -274,6 +283,14 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.CoreStatic&#x27;, {
 
         return  new (Function.prototype.bind.apply(Obj, args));
     },
+    /**
+     *
+     * @method $create
+     * @for ya.mixins.CoreStatic
+     * @param obj
+     * @param mixin
+     * @returns {Function}
+     */
     $mixin: function (obj, mixin) {
         var prototype,
             property;

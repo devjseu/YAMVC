@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>src\mixins\array.js - yamvc</title>
+    <title>src\mixins\array.js - yam</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -15,7 +15,7 @@
     <div id="hd" class="yui3-g header">
         <div class="yui3-u-3-4">
             
-                <h1><img src="../assets/css/logo.png" title="yamvc"></h1>
+                <h1><img src="../assets/css/logo.png" title="yam"></h1>
             
         </div>
         <div class="yui3-u-1-4 version">
@@ -146,7 +146,9 @@
  */
 ya.$set(&#x27;ya&#x27;, &#x27;mixins.Array&#x27;, {
     /**
-     *
+     * Return an index of the record matched by key (or value)
+     * @method find
+     * @for ya.mixins.Array
      * @param array
      * @param key
      * @returns {Number}
@@ -155,14 +157,22 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.Array&#x27;, {
         var len = array.length,
             argsLen = arguments.length,
             val = argsLen &gt; 2 ? arguments[2] : null,
-            rec;
+            tmp, rec;
 
         if (argsLen &gt; 1) {
 
             while (len--) {
 
                 rec = array[len];
-                if (rec[key] === val) {
+                tmp = key.split(&#x27;.&#x27;);
+
+                while (tmp.length) {
+
+                    rec = rec[tmp.shift()];
+
+                }
+
+                if (rec === val) {
                     break;
                 }
             }
@@ -183,6 +193,9 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.Array&#x27;, {
     },
     /**
      *
+     * return an array of records matched by key (or value)
+     * @method findAll
+     * @for ya.mixins.Array
      * @param array
      * @param key
      * @returns {Array}
@@ -211,6 +224,7 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.Array&#x27;, {
         return result;
     },
     /**
+     * use search function to return array of matched elements
      * @param array
      * @param {Function} fn
      * @returns {Array}
@@ -232,6 +246,9 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.Array&#x27;, {
         return result;
     },
     /**
+     * iterate trough each record in array
+     * @method each
+     * @for ya.mixins.Array
      * @param array
      * @param fun
      */
@@ -252,6 +269,15 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.Array&#x27;, {
                 fun.call(array, t[i], i, t);
         }
     },
+    /**
+     * iterate trough each record in array until some
+     * of iteration returns true
+     * @method each
+     * @for ya.mixins.Array
+     * @param array
+     * @param fun
+     * @return boolean
+     */
     some: Array.prototype.some ? function (array, fun) {
         return Array.prototype.some.call(array, fun);
     } : function (fun /*, thisArg */) {

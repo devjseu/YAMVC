@@ -1,42 +1,44 @@
 {
-  "name": "yamvc",
-  "version": "0.2.0",
-  "description": "Fast and ease to extend MVC Framework for one page desktop and mobile app",
-  "main": "./distrib/YAMVC-all.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/devjseu/YAMVC"
-  },
-  "keywords": [
-    "MVC",
-    "library",
-    "YAMVC"
-  ],
-  "author": {
-    "name": "Sebastian Widelak",
-    "email": "sebakpl@gmail.com",
-    "url": "http://appieweb.com/"
-  },
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://raw.github.com/LICENSE.txt"
+    "name": "yam",
+    "version": "0.2.0",
+    "description": "Fast and ease to extend MVC Framework for one page desktop and mobile app",
+    "main": "./distrib/YAM-all.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/devjseu/YAMVC"
+    },
+    "keywords": [
+        "MVC",
+        "library",
+        "YAM"
+    ],
+    "author": {
+        "name": "Sebastian Widelak",
+        "email": "sebakpl@gmail.com",
+        "url": "http://appieweb.com/"
+    },
+    "licenses": [
+        {
+            "type": "MIT",
+            "url": "https://raw.github.com/LICENSE.txt"
+        }
+    ],
+    "scripts": {
+        "test": "grunt travis --verbose",
+        "build": "grunt travis"
+    },
+    "devDependencies": {
+        "watch": "~0.8.0",
+        "grunt": "~0.4.1",
+        "grunt-contrib-concat": "~0.3.0",
+        "grunt-contrib-copy": "~0.4.1",
+        "grunt-contrib-watch": "~0.5.3",
+        "grunt-contrib-jshint": "~0.2.0",
+        "grunt-contrib-uglify": "~0.1.2",
+        "grunt-contrib-yuidoc": "~0.5.1",
+        "grunt-contrib-connect": "~0.7.1",
+        "grunt-blanket-qunit": "~0.2.0",
+        "grunt-contrib-qunit": "~0.4.0",
+        "grunt-express-server" : "~0.4.5"
     }
-  ],
-  "scripts": {
-    "test": "grunt travis --verbose"
-  },
-  "devDependencies": {
-    "watch": "~0.8.0",
-    "grunt": "~0.4.1",
-    "grunt-contrib-concat": "~0.3.0",
-    "grunt-contrib-copy": "~0.4.1",
-    "grunt-contrib-watch": "~0.5.3",
-    "grunt-contrib-jshint": "~0.2.0",
-    "grunt-contrib-uglify": "~0.1.2",
-    "grunt-contrib-yuidoc": "~0.5.1",
-    "grunt-contrib-connect": "~0.7.1",
-    "grunt-blanket-qunit": "~0.2.0",
-    "grunt-contrib-qunit": "~0.4.0"
-  }
 }

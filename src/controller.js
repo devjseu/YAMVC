@@ -68,7 +68,7 @@ ya.Core.$extend({
     initDefaults: function () {
         var me = this;
 
-        me.setId(me.getId() || 'controller-' + ya.view.$Manager.getCount());
+        me.setId(me.getId() || 'controller-' + ya.controller.$Manager.getCount());
 
         me.set('router', ya.Controller.$getRouter());
         me.set('dispatcher', ya.event.$dispatcher);
@@ -76,8 +76,9 @@ ya.Core.$extend({
         return me;
     },
     /**
-     *
-     * @returns {*}
+     * @method initEvents
+     * @private
+     * @returns {this}
      */
     initEvents: function () {
         var me = this,
@@ -85,20 +86,34 @@ ya.Core.$extend({
             views = [],
             rx = new RegExp('\\$([^\\s]+)'),
             dispatcher = me._dispatcher,
-            matches, view, l, obj;
+            matches, view, l, obj, current;
 
         if (events) {
 
-            for (var e in events) {
+            for (var query in events) {
 
-                if (events.hasOwnProperty(e)) {
+                if (events.hasOwnProperty(query)) {
 
                     obj = {};
-                    obj[e] = events[e];
+                    obj[query] = current = events[query];
+
+                    for (var e in current) {
+
+                        if (current.hasOwnProperty(e)) {
+
+                            if (typeof current[e] !== 'function') {
+
+                                current[e] = me[current[e]];
+
+                            }
+
+                        }
+
+                    }
 
                     dispatcher.add(me, obj);
 
-                    matches = e.match(rx);
+                    matches = query.match(rx);
                     if (matches) {
 
                         if (views.indexOf(matches[1]) < 0) {
@@ -134,7 +149,7 @@ ya.Core.$extend({
 
                     } else {
 
-                        view.addEventListener('render', me.resolveEvents.bind(me));
+                        view.addEventListener('render', me.resolveEvents, me);
 
                     }
 
@@ -146,8 +161,9 @@ ya.Core.$extend({
         return me;
     },
     /**
-     *
-     * @returns {*}
+     * @method initRoutes
+     * @private
+     * @returns {this}
      */
     initRoutes: function () {
         var me = this,
@@ -165,6 +181,11 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * @method resolveEvents
+     * @private
+     * @returns {this}
+     */
     resolveEvents: function (view) {
         var events = this.getEvents(),
             newScope = function (func, scope, arg) {
@@ -218,9 +239,44 @@ ya.Core.$extend({
         }
 
     },
+    /**
+     * Returns router object
+     * @method getView
+     * @returns {*}
+     */
     getRouter: function () {
         return router;
     },
+    /**
+     * Returns view by id
+     * @method getView
+     * @returns {*}
+     */
+    getView: function (id) {
+        return ya.view.$Manager.getItem(id);
+    },
+    /**
+     * Returns controller by id
+     * @method getController
+     * @returns {*}
+     */
+    getController: function (id) {
+        return ya.controller.$Manager.getItem(id);
+    },
+    /**
+     * Returns collection by id
+     * @method getCollection
+     * @returns {*}
+     */
+    getCollection: function (id) {
+        return ya.collection.$Manager.getItem(id);
+    },
+    /**
+     * Restores router state
+     * @method restoreRouter
+     * @private
+     * @returns {*}
+     */
     restoreRouter: function () {
         var me = this;
 
@@ -228,6 +284,11 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * Redirect application to passed path
+     * @param path
+     * @returns {*}
+     */
     redirectTo: function (path) {
 
         window.location.hash = path;

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>src\mixins\observable.js - yamvc</title>
+    <title>src\mixins\observable.js - yam</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -15,7 +15,7 @@
     <div id="hd" class="yui3-g header">
         <div class="yui3-u-3-4">
             
-                <h1><img src="../assets/css/logo.png" title="yamvc"></h1>
+                <h1><img src="../assets/css/logo.png" title="yam"></h1>
             
         </div>
         <div class="yui3-u-1-4 version">
@@ -155,15 +155,17 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.Observable&#x27;, {
             return true;
         var ret = true,
             shift = Array.prototype.shift,
-            evName = shift.call(arguments),
-            scope;
+            evName = shift.call(arguments);
 
-        scope = shift.call(arguments);
         for (var i = 0, li = this._listeners[evName] || [], len = li.length; i &lt; len; i++) {
+
             if (ret) {
-                ret = li[i].apply(scope, arguments);
+
+                ret = li[i].apply(li[i], arguments);
                 ret = typeof ret === &#x27;undefined&#x27; ? true : ret;
+
             }
+
         }
         return ret;
     },
@@ -173,12 +175,13 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.Observable&#x27;, {
      * @version 0.1.12
      * @param evName
      * @param callback
+     * @param scope
      * @returns {this}
      *
      */
-    addEventListener: function (evName, callback) {
+    addEventListener: function (evName, callback, scope) {
         var listeners = this._listeners[evName] || [];
-        listeners.push(callback);
+        listeners.push(scope ? callback.bind(scope) : callback);
         this._listeners[evName] = listeners;
         return this;
     },
@@ -217,15 +220,21 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.Observable&#x27;, {
      * suspend all events
      */
     suspendEvents: function () {
-        this.set(&#x27;suspendEvents&#x27;, true);
+        var me = this;
+
+        me.set(&#x27;suspendEvents&#x27;, (me._suspendEvents || 0) + 1);
+
         return this;
     },
     /**
      * resume all events
      */
     resumeEvents: function () {
-        this.set(&#x27;suspendEvents&#x27;, false);
-        return this;
+        var me = this;
+
+        me.set(&#x27;suspendEvents&#x27;, --me._suspendEvents);
+
+        return me;
     }
 });
 

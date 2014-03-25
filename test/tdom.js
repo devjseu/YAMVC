@@ -16,21 +16,21 @@
 
             bindingsMock = [
                 {"pointer": 0, "type": 4, "view": {"class": "app.view.Todos", "id": "todos"}},
-                {"pointer": 1, "type": 1, "collection": {"view": "ya.View", "class": "ya.Collection", "tpl": "template-0"}},
-                {"fillAttr": false, "name": "class", "original": "{{options.classes}}", "headers": [
+                {"pointer": 1, "type": 1, "collection": {"view": "ya.View", "class": "ya.Collection", "tpl": "collection-test-0"}},
+                {"fillAttr": false, callbacks: [], "name": "class", "original": "{{options.classes}}", "models": {}, "headers": [
                     ["options", "classes"]
                 ], "type": 2, "pointer": 3},
-                {"fillAttr": true, "name": "disabled", "original": "{{options.disabled}}", "headers": [
+                {"fillAttr": true, callbacks: [], "name": "disabled", "original": "{{options.disabled}}", "models": {}, "headers": [
                     ["options", "disabled"]
                 ], "type": 2, "pointer": 4},
-                {"original": "background: red", "fillAttr": false, "headers": [], "name": "style", "type": 2, "pointer": 5},
-                {"original": "{{example.value}} ", "models": [], "headers": [
+                {"original": "background: red", "fillAttr": false, callbacks: [], "headers": [], "name": "style", "models": {}, "type": 2, "pointer": 5},
+                {"original": "{{example.value}} ", callbacks: [], "models": {}, "headers": [
                     ["example", "value"]
                 ], "type": 3, "pointer": 6},
-                {"original": "{{text.value}}", "models": [], "headers": [
+                {"original": "{{text.value}}", callbacks: [], "models": {}, "headers": [
                     ["text", "value"]
                 ], "type": 3, "pointer": 7},
-                {"original": "{{text.node}} sialalala {{text.node2}}", "models": [], "headers": [
+                {"original": "{{text.node}} sialalala {{text.node2}}", callbacks: [], "models": {}, "headers": [
                     ["text", "node"],
                     ["text", "node2"]
                 ], "type": 3, "pointer": 8}
@@ -75,7 +75,6 @@
 
     test("prepare bindings", function () {
         var view, tdom, bindings, dom;
-
 
         view = ya.View.$create({
             config: {
@@ -128,6 +127,85 @@
 
         ok(pointer);
         ok(dom instanceof DocumentFragment);
+
+    });
+
+
+    test("update DOM bind with collection", function () {
+        var view, collection;
+
+        collection = ya.$factory({
+            id: 'list-2',
+            module: 'ya',
+            alias: 'Collection',
+            namespace: 'list',
+            data: [
+                {
+                    id: 0,
+                    value: 'new value'
+                },
+                {
+                    id: 1,
+                    value: 'new value 2'
+                }
+            ]
+        });
+
+        view = ya.View.$create({
+            config: {
+                renderTo: '#test-11',
+                tpl: [
+
+                    '<ul></ul>',
+                    '<ul class="two" ya-collection="id:list-2">',
+                    '<li>',
+                    '{{list.value}}',
+                    '</li>',
+                    '</ul>'
+                ],
+                collections: [
+                    collection
+                ]
+            }
+        });
+
+        view.render();
+
+        equal(view.querySelectorAll('.two li span')[0].innerHTML, 'new value');
+
+        collection.push({
+            id: 2,
+            value: 'new value 3'
+        });
+
+        equal(view.getChildren().length, 3);
+
+        collection.filter(function (record) {
+
+            return record.data('id') > 1;
+
+
+        });
+
+        equal(view.querySelectorAll('.two li span').length, 1);
+        equal(view.querySelectorAll('.two li span')[0].innerHTML, 'new value 3');
+
+
+        collection.clearFilters();
+//
+        equal(view.querySelectorAll('.two li span')[0].innerHTML, 'new value');
+        equal(view.querySelectorAll('.two li span')[2].innerHTML, 'new value 3');
+
+        collection.sort([
+            ['id', 'DESC']
+        ]);
+
+
+        equal(view.querySelectorAll('.two li span')[2].innerHTML, 'new value');
+
+        collection.remove(collection.getAt(1));
+//
+        equal(view.querySelectorAll('.two li span')[2], undefined);
 
     });
 

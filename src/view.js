@@ -8,7 +8,6 @@
     var ya = window.ya,
         style = document.createElement('style'),
         __slice = Array.prototype.slice,
-        VM,
         View,
         resize = 0,
         iv = 0;
@@ -219,7 +218,7 @@
 
                 if (
                     tpl instanceof Array || typeof tpl === 'array' ||
-                        typeof tpl == 'string' || tpl instanceof String
+                    typeof tpl == 'string' || tpl instanceof String
                     ) {
                     // if its an array with html def
                     // prepare configuration object and
@@ -395,20 +394,22 @@
                 config = me._config,
                 parent = config.parent,
                 selector = config.renderTo,
-                parentEl, el;
+                parentEl, tdom, el;
 
-            parentEl = me.getParentEl(selector, true);
+            parentEl = selector instanceof HTMLElement ? selector : me.getParentEl(selector, true);
 
             if (me.isInDOM()) {
 
-                me.removeRendered();
+                me.clear();
 
             }
 
-            el = me.getTpl()
-                .getTDOMInstance(me)
-                .getEDOM();
+            tdom = me.getTpl()
+                .getTDOMInstance(me);
 
+            el = tdom.getEDOM();
+
+            me.set('tdom', tdom);
             me.set('el', el);
 
             if (me.getHidden())
@@ -430,68 +431,20 @@
 
                 me.set('isInDOM', true);
                 me.reAppendChildren();
-                me.fireEvent('render', null, me);
+                me.fireEvent('render', me, parent);
             }
 
             return el;
         },
         /**
-         * @version 0.1.11
-         * @param binding
-         */
-        partialRender: function (binding) {
-            var me = this,
-                element = binding.type === 3,
-                org = element ? binding.original : (binding.fillAttr ? true : binding.original),
-                headers = binding.headers,
-                len = headers.length,
-                header;
-
-            while (len--) {
-
-                header = headers[len];
-
-                if (element || !binding.fillAttr) {
-
-                    org = org.replace("{{" + header.join(".") + "}}", me.getModel(header[0]).data(header[1]));
-
-                } else {
-
-                    org = org && me.getModel(header[0]).data(header[1]);
-
-                }
-            }
-
-            if (element) {
-
-                binding.pointer.textContent = org;
-
-
-            } else {
-
-                if (binding.fillAttr && !org) {
-
-                    binding.pointer.removeAttribute(binding.attrName);
-
-                } else {
-
-                    binding.pointer.setAttribute(binding.attrName, org);
-
-                }
-
-            }
-
-            return me;
-        },
-        /**
          * @version 0.1.12
          */
-        removeRendered: function () {
+        clear: function () {
             var me = this;
 
-            me._el.parentNode.removeChild(me._el);
+            me.removeFromDOM();
+            me._tdom.clear();
             me.set('el', null);
-            me.set('isInDOM', false);
 
             return me;
         },
@@ -525,9 +478,17 @@
          */
         addChild: function (view, selector) {
             var me = this;
+
             view.appendTo(me, selector);
-            ya.event.$dispatcher.apply(view);
-            me.fireEvent('elementAdded', me, view);
+
+            if (me.isInDOM()) {
+
+                ya.event.$dispatcher.apply(view);
+
+            }
+
+            me.fireEvent('childAdded', me, view);
+
             return me;
         },
         /**
@@ -563,21 +524,21 @@
          * @param id
          * @returns {*|null}
          */
-        removeChild: function (id) {
+        removeChild: function (view) {
             var views = this.getChildren(),
                 l = views.length,
-                view = [];
+                removed = [];
 
             while (l--) {
-                if (views[l].getId() === id) {
+                if (views[l].getId() === view.getId()) {
 
-                    view = views.splice(l, 1);
-                    view[0].clear();
+                    removed = views.splice(l, 1);
+                    removed[0].removeFromDOM();
 
                 }
             }
 
-            return view[0] || null;
+            return removed[0] || null;
         },
         /**
          * @returns {Array}
@@ -588,7 +549,7 @@
                 removed = [];
 
             while (l--) {
-                removed.push(views[l].clear());
+                removed.push(views[l].removeFromDOM());
             }
 
 
@@ -597,7 +558,7 @@
         /**
          * @returns {View}
          */
-        clear: function () {
+        removeFromDOM: function () {
             var me = this,
                 el = me._el;
 
@@ -647,19 +608,24 @@
          */
         appendTo: function (parent, selector) {
             var me = this,
-                config = me.get('config'),
+                config = me._config,
                 id = me.getId(),
                 views = parent.getChildren(),
                 oldParent = config.parent,
                 parentEl;
 
-            parentEl = me.getParentEl(selector, false);
+            selector = selector || config.renderTo;
+
+            parentEl = selector instanceof HTMLElement ? selector : me.getParentEl(selector, false);
+
 
             config.renderTo = parentEl;
 
             if (!oldParent) {
 
                 config.parent = parent;
+
+                views.push(me);
 
             }
             else if (oldParent && oldParent.getId() !== parent.getId()) {
@@ -669,17 +635,16 @@
                     oldParent
                         .getChildren()
                         .splice(
-                            oldParent.findChild(id), 1
-                        );
+                        oldParent.findChild(id), 1
+                    );
 
                 }
 
+                views.push(me);
+
             }
 
-
-            views.push(me);
             config.parent = parent;
-            me.fireEvent('append', null, me, parent);
 
 
             if (!me.isInDOM() && parent.isInDOM()) {
@@ -687,18 +652,20 @@
                 if (!me._el) {
 
                     me.render();
-                    ya.event.$dispatcher.apply(me);
 
                 } else {
 
                     parentEl.appendChild(me._el);
                     me.set('isInDOM', true);
                     me.reAppendChildren();
-                    me.fireEvent('render', null, me);
+                    me.fireEvent('render', me, parent);
 
                 }
 
             }
+
+            me.fireEvent('append', me, parent);
+
             return me;
         },
         /**

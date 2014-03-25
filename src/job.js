@@ -52,15 +52,16 @@ ya.Core.$extend({
         }
 
         me.setId(ya.Job.$id++);
-        me.setTasks(tasks);
+        me.setTasks(tasks.reverse());
         me.setResults([]);
+        me.set('semaphore', tasks.length);
 
         return me;
     },
     doit: function () {
         var me = this,
             deferred = ya.$Promise.deferred(),
-            engine, fn;
+            engine, fn, taskIdx;
 
 
         engine = me.getRepeat() > 1 || me.getRepeat() === ya.Job.$INFINITY ?
@@ -89,13 +90,20 @@ ya.Core.$extend({
 
         engine.finish = function () {
 
-            clearInterval(me._clear);
+            me.getTasks().splice(taskIdx, 1);
 
-            return deferred.resolve({
-                success: true,
-                message: 'Task finished',
-                results: me.getResults()
-            });
+            me._semaphore--;
+            if (me._semaphore === 0 || me.getRepeat() < 0) {
+
+                clearInterval(me._clear);
+
+                return deferred.resolve({
+                    success: true,
+                    message: 'Task finished',
+                    results: me.getResults()
+                });
+
+            }
 
 
         };
@@ -103,14 +111,14 @@ ya.Core.$extend({
         fn = function () {
             var repeat = me.getRepeat(),
                 tasks = me.getTasks(),
+                maxTime = me.getMaxTime(),
                 results = [],
-                i = 0,
-                len;
+                i;
 
 
             if (
-                me.getMaxTime() &&
-                    (+new Date() - me._start) > me.getMaxTime()
+                maxTime &&
+                (+new Date() - me._start) > maxTime
                 ) {
 
                 return engine.terminate('YJ3', 'Timeout');
@@ -127,12 +135,11 @@ ya.Core.$extend({
 
             }
 
-            len = tasks.length;
+            i = tasks.length;
+            while (i--) {
 
-            while (i < len) {
-
+                taskIdx = i;
                 results.push(tasks[i].call(engine));
-                i++;
 
             }
 

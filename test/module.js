@@ -2,6 +2,32 @@ module('Module');
 
 asyncTest("initialize", function () {
 
+   ya.Module.$extend({
+        module: 'search',
+        alias: 'Module',
+        defaults: {
+            maxLoadingTime: 1000
+        },
+        onReady: function () {
+
+            ok(true, 'Module is loaded');
+            start();
+
+        },
+        onError: function (e) {
+
+            ok(false, e.message);
+            start();
+
+        }
+    });
+
+    ok(search.Module.$create() instanceof search.Module, 'created module should be instance of ya.Module');
+
+});
+
+asyncTest("Dependency resolving, communication between controllers", function () {
+
     var counter = 0;
 
     ya.view.Template.$extend({
@@ -71,31 +97,62 @@ asyncTest("initialize", function () {
         alias: 'Module',
         defaults: {
             requires: [
-                'TplMock',
-                'ModelMock',
-                'ViewMock:->',
-                'ControllerMock:->',
-                'ControllerMock2'
+                'TplMock -i',
+                'ModelMock -p',
+                'ViewMock -ip',
+                'ControllerMock -ip',
+                'ControllerMock2 -i'
             ],
             bus: {
                 'ControllerMock:event': 'ControllerMock2:onEvent'
             },
             maxLoadingTime: 1000
         },
-        onReady: function (view, ctr1) {
+        onReady: function (modelDefinition, view, ctr1) {
+
+            ok(true, 'Module is loaded');
 
             view.render();
             ctr1.fireEvent('event');
 
-            start();
             equal(counter, 1, 'events should be emitted through different controllers');
+            start();
 
         },
         onError: function (e) {
 
             console.log('Error:', e.message, e.stack);
 
-            throw ya.Error.$create('Test failed');
+            ok(false, e.message);
+            start();
+
+        }
+    });
+
+    ok(search.Module.$create() instanceof search.Module, 'created module should be instance of ya.Module');
+
+});
+
+
+asyncTest("Load modules and communicate trough them", function () {
+
+    ya.Module.$extend({
+        module: 'search',
+        alias: 'Module',
+        defaults: {
+            modules : [],
+            maxLoadingTime: 1000
+        },
+        onReady: function () {
+
+            ok(true, 'Module is loaded');
+            start();
+
+        },
+        onError: function (e) {
+
+            ok(false, e.message);
+            start();
 
         }
     });

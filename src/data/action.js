@@ -1,4 +1,6 @@
 /**
+ *
+ *
  * @namespace ya.data
  * @class Action
  * @extends ya.Core

@@ -1,4 +1,6 @@
 /**
+ * Dispatcher class allow you to delegates events across
+ * newly generated views
  * @namespace ya.event
  * @class $dispatcher
  * @extends ya.Core
@@ -62,6 +64,7 @@ ya.Core.$extend({
         // Function which will be used to match if there are any
         // delegated events for particular view.
             matchIdFn = function (r) {
+
                 return r.selector.search(regExp) >= 0;
 
             },

@@ -57,6 +57,7 @@ ya.Core.$extend({
         me.set('cache', []);
         me.set('removed', []);
         me.set('filters', []);
+        me.set('sorters', []);
         me.set('raw', me.getData() || []);
 
         return me;
@@ -104,7 +105,8 @@ ya.Core.$extend({
         var me = this,
             record,
             ModelDefinition = me.getModel(),
-            namespace = me.getNamespace();
+            namespace = me.getNamespace(),
+            newRecords = [];
 
         if (!Array.isArray(records)) {
             records = [records];
@@ -112,7 +114,7 @@ ya.Core.$extend({
 
         while (records.length) {
 
-            record = records.pop();
+            record = records.shift();
 
             if (!(record instanceof ModelDefinition)) {
                 record = new ModelDefinition(
@@ -125,24 +127,88 @@ ya.Core.$extend({
                 );
             }
 
-            if(record.getNamespace() !== me.getNamespace()) {
+            if (record.getNamespace() !== me.getNamespace()) {
 
                 throw ya.Error.$create('Model should have same namespace as collection', 'COL2');
 
             }
 
             me._cache.push(record);
-
-            me.fireEvent('pushed', me, record);
+            newRecords.push(record);
 
         }
 
+        me.suspendEvents();
         me.filter();
+        me.sort();
+        me.resumeEvents();
+        me.fireEvent('push', me, newRecords);
 
         return me;
     },
-    // return number of records in collection
     /**
+     *
+     * @param records
+     * @returns {*}
+     */
+    remove: function (records) {
+        var me = this,
+            __some = ya.mixins.Array.some,
+            removed = [],
+            someFn, rec, idx;
+
+        someFn = function (r, i) {
+
+            if (r._clientId === rec._clientId) {
+                idx = i;
+                return true;
+            }
+
+        };
+
+        if (!Array.isArray(records)) {
+            records = [records];
+        }
+
+        while (records.length) {
+
+            rec = records.pop();
+            idx = -1;
+            __some(me._cache, someFn);
+
+            if (idx >= 0) {
+
+                removed.push(me._cache.splice(idx, 1).pop());
+
+            }
+
+        }
+
+        me.suspendEvents();
+        me.filter();
+        me.resumeEvents();
+
+        me.fireEvent('remove', me, removed);
+
+        return me;
+    },
+    /**
+     *
+     * @returns {Array}
+     */
+    removeAll: function () {
+        var me = this,
+            removed = me._cache.slice();
+
+        me.set('set', []);
+        me.set('cache', []);
+        me.fireEvent('remove', me, removed);
+
+        return me;
+    },
+    /**
+     * return number of records in collection
+     *
      * @method count
      * @chainable
      * @returns {Number}
@@ -162,50 +228,7 @@ ya.Core.$extend({
         me.set('cache', []);
         me.set('removed', []);
 
-        return me;
-    },
-    /**
-     * @method clearFilters
-     * @returns {*}
-     * @chainable
-     */
-    clearFilters: function () {
-        var me = this;
-
-        //TODO: clear by multiple filters id
-        me.set('filters', []);
-        me.filter();
-
-        return me;
-    },
-    /**
-     *
-     * @method clearFilter
-     * @param id
-     * @returns {*}
-     * @chainable
-     */
-    clearFilter: function (id) {
-        var me = this,
-            filters = me._filters,
-            filLength,
-            filter;
-
-        filLength = filters.length;
-        while (filLength--) {
-
-            filter = filters[filLength];
-            if (typeof filter !== 'function' && filter.id === id) {
-
-                filters.splice(filLength, 1);
-
-                break;
-
-            }
-
-        }
-
-        me.filter();
+        me.fireEvent('clear', me);
 
         return me;
     },
@@ -223,7 +246,7 @@ ya.Core.$extend({
             passed = true,
             filtered = [],
             records = me._cache,
-            filLength = 0,
+            len = 0,
             id = null;
 
         if (arguments.length > 1) {
@@ -254,10 +277,10 @@ ya.Core.$extend({
         for (var i = 0, l = records.length; i < l; i++) {
 
             passed = true;
-            filLength = filters.length;
-            while (filLength--) {
+            len = filters.length;
+            while (len--) {
 
-                filterFn = typeof filters[filLength] === 'function' ? filters[filLength] : filters[filLength].fn;
+                filterFn = typeof filters[len] === 'function' ? filters[len] : filters[len].fn;
                 passed = passed && filterFn(records[i]);
 
             }
@@ -271,7 +294,97 @@ ya.Core.$extend({
         }
 
         me.set('set', filtered);
-        me.fireEvent('afterFilter', me, filters);
+        me.set('total', filtered.length);
+        me.fireEvent('filter', me, filters);
+
+        return me;
+    },
+    /**
+     * @method clearFilters
+     * @returns {*}
+     * @chainable
+     */
+    clearFilters: function () {
+        var me = this;
+
+        //TODO: clear by multiple filters id
+        me.set('filters', []);
+        me.filter();
+
+        return me;
+    },
+    /**
+     *
+     * @method clearFilter
+     * @param id
+     * @returns {*}
+     * @chainable
+     */
+    clearFilter: function (id) {
+        var me = this,
+            filters = me._filters,
+            len,
+            filter;
+
+        len = filters.length;
+        while (len--) {
+
+            filter = filters[len];
+            if (typeof filter !== 'function' && filter.id === id) {
+
+                filters.splice(len, 1);
+
+                break;
+
+            }
+
+        }
+
+        me.filter();
+
+        return me;
+    },
+    /**
+     *
+     * @param sorters
+     */
+    sort: function (sorters) {
+        var me = this,
+            records = me._set,
+            sorterFn, len, sorter, property, order;
+
+        sorters = sorters ? me._sorters.concat(sorters) : me._sorters;
+        me._sorters = me._sorters.concat(sorters);
+
+        sorterFn = function (a, b) {
+            var va = "" + a.data(property),
+                vb = "" + b.data(property),
+                alc = va.toLowerCase(),
+                blc = vb.toLowerCase();
+
+            return (alc > blc ? 1 : alc < blc ? -1 : va > vb ? 1 : va < vb ? -1 : 0) * (order.toLowerCase() === 'desc' ? -1 : 1);
+        };
+
+        len = sorters.length;
+        while (len--) {
+            sorter = sorters[len];
+            property = sorter[0];
+            order = sorter[1] || 'ASC';
+            records.sort(sorterFn);
+        }
+
+        me.fireEvent('sort', me, sorters);
+    },
+    /**
+     *
+     * @returns {*}
+     */
+    clearSorters: function () {
+        var me = this;
+
+        //TODO: clear by multiple filters id
+        me.set('sorters', []);
+        me.sort();
 
         return me;
     },
@@ -306,18 +419,20 @@ ya.Core.$extend({
         return filtered;
     },
     /**
+     * Return index of first matched record.
      * @param fn
-     * @returns {}
+     * @returns {Number}
      */
-    findOneBy: function (fn) { // Return index of first matched record.
+    findOneBy: function (fn) { //
         var me = this,
             records = me._set,
-            len = records.length;
+            i = 0, len = records.length;
 
-        while (len--) {
+        while (i < len) {
 
-            if (fn(records[len])) break;
+            if (fn(records[i])) break;
 
+            i++;
         }
 
         return len;
@@ -330,16 +445,17 @@ ya.Core.$extend({
         var me = this,
             records = me._set,
             record,
-            len = records.length;
+            i = 0, len = records.length;
 
-        while (len--) {
+        while (i<len) {
 
-            if (fn(records[len])) {
-                record = records[len];
+            if (fn(records[i])) {
+                record = records[i];
                 break;
 
             }
 
+            i++;
         }
 
         return record;
@@ -358,8 +474,6 @@ ya.Core.$extend({
      */
     load: function (params) {
         var me = this,
-            data = me.get('data'),
-            idProperty = me.get('idProperty'),
             deferred = ya.$Promise.deferred(),
             namespace = me.getNamespace(),
             action = ya.data.Action.$create(),
@@ -371,17 +485,18 @@ ya.Core.$extend({
         if (
             i === 0
             )
-            throw ya.Error.$create('You need to pass at least one condition to load model collection', 'COLLECTION2');
+            throw ya.Error.$create('You need to pass at least one condition to load model collection', 'COL3');
 
         if (!me.getProxy())
-            throw ya.Error.$create('To load collection you need to set proxy', 'COLLECTION3');
+            throw ya.Error.$create('To load collection you need to set proxy', 'COL4');
 
 
         callback = function () {
 
             if (me.getProxy().getStatus() === 'success') {
 
-                me.fireEvent('loaded', me, action.getResponse(), 'read');
+                me.fireEvent('load', me, action.getResponse(), 'read');
+                me.setData(action.getData());
 
             } else {
 
@@ -401,6 +516,10 @@ ya.Core.$extend({
 
         return deferred.promise;
     },
+    /**
+     *
+     * @returns {promise|*|promise|Function|Promise|promise}
+     */
     save: function () {
         var me = this,
             deferred = ya.$Promise.deferred(),
@@ -458,7 +577,7 @@ ya.Core.$extend({
                 len = data.length;
 
                 // If record has __clientId__ property it's create process
-                // or if it has id it's update.
+                // or if it has id it's an update.
                 if (record && (record.__clientId__ || record.id)) {
 
                     while (len--) {
@@ -494,7 +613,7 @@ ya.Core.$extend({
 
                 } else {
 
-                    me.fireEvent('success', me);
+                    me.fireEvent('save', me);
 
                     deferred.resolve({scope: me});
 
@@ -559,17 +678,14 @@ ya.Core.$extend({
      * Prepare data
      * @private
      * @param data
-     * @param {Number||null} total
      * @returns {Collection}
      */
-    prepareData: function (data, total) {
+    prepareData: function (data) {
         var me = this,
             ModelInstance = me.getModel(),
             modelConfig = { namespace: me.getNamespace()},
             l = data.length,
             models = [];
-
-        total = total || l;
 
         for (var i = 0; i < l; i++) {
 
@@ -581,9 +697,13 @@ ya.Core.$extend({
         }
 
         me.set('cache', models);
-        me.set('total', total);
 
+        me.suspendEvents(true);
         me.filter();
+        me.sort()
+        ;
+        me.resumeEvents();
+        me.fireEvent('prepare');
 
         return me;
     },

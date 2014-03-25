@@ -8,7 +8,7 @@ test("initialize", function () {
 });
 
 test("bind events to view", function () {
-    var alerted = 0;
+    var alerted = 0, alerted2 = 0;
 
     var v = ya.View.$create({
         config: {
@@ -45,11 +45,17 @@ test("bind events to view", function () {
                     click: function () {
                         MockPrompt();
                     }
+                },
+                '$controller-test .example' : {
+                    click : 'onExampleClick'
                 }
             },
             routes: {
 
             }
+        },
+        onExampleClick : function () {
+            alerted2++;
         }
     });
 
@@ -62,5 +68,9 @@ test("bind events to view", function () {
     click(ya.view.$Manager.getItem('controller-test').querySelector('button'));
 
     equal(alerted, 1, "Event fired!");
+
+    click(ya.view.$Manager.getItem('controller-test').querySelector('.example'));
+
+    equal(alerted2, 1, "Event fired!");
 
 });

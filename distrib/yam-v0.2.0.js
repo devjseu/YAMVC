@@ -1,4 +1,4 @@
-/*! yamvc v0.2.0 - 2014-03-20 
+/*! yam v0.2.0 - 2014-03-25 
  *  License:  */
 /**
  Main framework object...
@@ -56,9 +56,16 @@
         var property;
 
         for (property in obj2) {
+
             if (obj2.hasOwnProperty(property)) {
-                obj1[property] = obj2[property];
+
+                if(typeof obj2[property] !== 'undefined') {
+
+                    obj1[property] = obj2[property];
+
+                }
             }
+
         }
 
         return obj1;
@@ -168,6 +175,7 @@
 
         }
 
+
         Class = ya.$get(config.module || appNamespace, config.alias);
         opts = config.methods || {};
 
@@ -207,7 +215,9 @@
  */
 ya.$set('ya', 'mixins.Array', {
     /**
-     *
+     * Return an index of the record matched by key (or value)
+     * @method find
+     * @for ya.mixins.Array
      * @param array
      * @param key
      * @returns {Number}
@@ -216,14 +226,22 @@ ya.$set('ya', 'mixins.Array', {
         var len = array.length,
             argsLen = arguments.length,
             val = argsLen > 2 ? arguments[2] : null,
-            rec;
+            tmp, rec;
 
         if (argsLen > 1) {
 
             while (len--) {
 
                 rec = array[len];
-                if (rec[key] === val) {
+                tmp = key.split('.');
+
+                while (tmp.length) {
+
+                    rec = rec[tmp.shift()];
+
+                }
+
+                if (rec === val) {
                     break;
                 }
             }
@@ -244,6 +262,9 @@ ya.$set('ya', 'mixins.Array', {
     },
     /**
      *
+     * return an array of records matched by key (or value)
+     * @method findAll
+     * @for ya.mixins.Array
      * @param array
      * @param key
      * @returns {Array}
@@ -272,6 +293,7 @@ ya.$set('ya', 'mixins.Array', {
         return result;
     },
     /**
+     * use search function to return array of matched elements
      * @param array
      * @param {Function} fn
      * @returns {Array}
@@ -293,6 +315,9 @@ ya.$set('ya', 'mixins.Array', {
         return result;
     },
     /**
+     * iterate trough each record in array
+     * @method each
+     * @for ya.mixins.Array
      * @param array
      * @param fun
      */
@@ -313,6 +338,15 @@ ya.$set('ya', 'mixins.Array', {
                 fun.call(array, t[i], i, t);
         }
     },
+    /**
+     * iterate trough each record in array until some
+     * of iteration returns true
+     * @method each
+     * @for ya.mixins.Array
+     * @param array
+     * @param fun
+     * @return boolean
+     */
     some: Array.prototype.some ? function (array, fun) {
         return Array.prototype.some.call(array, fun);
     } : function (fun /*, thisArg */) {
@@ -341,7 +375,10 @@ ya.$set('ya', 'mixins.Array', {
  */
 ya.$set('ya', 'mixins.CoreStatic', {
     /**
-     *
+     * Creates definition of the new class based on old one
+     * and parameters passed as argument
+     * @method $extends
+     * @for ya.mixins.CoreStatic
      * @param opts
      * @returns {Function}
      */
@@ -462,6 +499,12 @@ ya.$set('ya', 'mixins.CoreStatic', {
 
         return __Class;
     },
+    /**
+    * Create an instance of class.
+     * @method $create
+     * @for ya.mixins.CoreStatic
+     * @returns {Function}
+     */
     $create: function () {
         /*jshint -W058 */
         var Obj = this,
@@ -469,6 +512,14 @@ ya.$set('ya', 'mixins.CoreStatic', {
 
         return  new (Function.prototype.bind.apply(Obj, args));
     },
+    /**
+     *
+     * @method $create
+     * @for ya.mixins.CoreStatic
+     * @param obj
+     * @param mixin
+     * @returns {Function}
+     */
     $mixin: function (obj, mixin) {
         var prototype,
             property;
@@ -524,9 +575,9 @@ ya.$set('ya', 'mixins.CoreStatic', {
  * @namespace ya.mixins
  * @class DOM
  */
-ya.$set('ya', 'mixins.DOM', { // todo: change name to mixins.DOM
+ya.$set('ya', 'mixins.DOM', {
     /**
-     * checks if passed selector match to main DOM element
+     * checks if passed selector match to root DOM element
      * @method isQueryMatch
      * @param selector String with selector
      * @param {HTMLElement} el DOM to match
@@ -713,15 +764,17 @@ ya.$set('ya', 'mixins.Observable', {
             return true;
         var ret = true,
             shift = Array.prototype.shift,
-            evName = shift.call(arguments),
-            scope;
+            evName = shift.call(arguments);
 
-        scope = shift.call(arguments);
         for (var i = 0, li = this._listeners[evName] || [], len = li.length; i < len; i++) {
+
             if (ret) {
-                ret = li[i].apply(scope, arguments);
+
+                ret = li[i].apply(li[i], arguments);
                 ret = typeof ret === 'undefined' ? true : ret;
+
             }
+
         }
         return ret;
     },
@@ -731,12 +784,13 @@ ya.$set('ya', 'mixins.Observable', {
      * @version 0.1.12
      * @param evName
      * @param callback
+     * @param scope
      * @returns {this}
      *
      */
-    addEventListener: function (evName, callback) {
+    addEventListener: function (evName, callback, scope) {
         var listeners = this._listeners[evName] || [];
-        listeners.push(callback);
+        listeners.push(scope ? callback.bind(scope) : callback);
         this._listeners[evName] = listeners;
         return this;
     },
@@ -775,15 +829,21 @@ ya.$set('ya', 'mixins.Observable', {
      * suspend all events
      */
     suspendEvents: function () {
-        this.set('suspendEvents', true);
+        var me = this;
+
+        me.set('suspendEvents', (me._suspendEvents || 0) + 1);
+
         return this;
     },
     /**
      * resume all events
      */
     resumeEvents: function () {
-        this.set('suspendEvents', false);
-        return this;
+        var me = this;
+
+        me.set('suspendEvents', --me._suspendEvents);
+
+        return me;
     }
 });
 
@@ -1125,6 +1185,7 @@ ya.Core.$extend({
     }
 });
 /**
+ * Static objects which store all of the initialized collections
  * @namespace ya
  * @class collection.$Manager
  * @extends ya.Manager
@@ -1135,6 +1196,7 @@ ya.Manager.$extend({
     singleton: true
 });
 /**
+ * Static objects which store all of the initialized controllers
  * @namespace ya
  * @class controller.$Manager
  * @extends ya.Manager
@@ -1223,6 +1285,7 @@ ya.Core.$extend({
         me.set('cache', []);
         me.set('removed', []);
         me.set('filters', []);
+        me.set('sorters', []);
         me.set('raw', me.getData() || []);
 
         return me;
@@ -1270,7 +1333,8 @@ ya.Core.$extend({
         var me = this,
             record,
             ModelDefinition = me.getModel(),
-            namespace = me.getNamespace();
+            namespace = me.getNamespace(),
+            newRecords = [];
 
         if (!Array.isArray(records)) {
             records = [records];
@@ -1278,7 +1342,7 @@ ya.Core.$extend({
 
         while (records.length) {
 
-            record = records.pop();
+            record = records.shift();
 
             if (!(record instanceof ModelDefinition)) {
                 record = new ModelDefinition(
@@ -1291,24 +1355,88 @@ ya.Core.$extend({
                 );
             }
 
-            if(record.getNamespace() !== me.getNamespace()) {
+            if (record.getNamespace() !== me.getNamespace()) {
 
                 throw ya.Error.$create('Model should have same namespace as collection', 'COL2');
 
             }
 
             me._cache.push(record);
-
-            me.fireEvent('pushed', me, record);
+            newRecords.push(record);
 
         }
 
+        me.suspendEvents();
         me.filter();
+        me.sort();
+        me.resumeEvents();
+        me.fireEvent('push', me, newRecords);
 
         return me;
     },
-    // return number of records in collection
     /**
+     *
+     * @param records
+     * @returns {*}
+     */
+    remove: function (records) {
+        var me = this,
+            __some = ya.mixins.Array.some,
+            removed = [],
+            someFn, rec, idx;
+
+        someFn = function (r, i) {
+
+            if (r._clientId === rec._clientId) {
+                idx = i;
+                return true;
+            }
+
+        };
+
+        if (!Array.isArray(records)) {
+            records = [records];
+        }
+
+        while (records.length) {
+
+            rec = records.pop();
+            idx = -1;
+            __some(me._cache, someFn);
+
+            if (idx >= 0) {
+
+                removed.push(me._cache.splice(idx, 1).pop());
+
+            }
+
+        }
+
+        me.suspendEvents();
+        me.filter();
+        me.resumeEvents();
+
+        me.fireEvent('remove', me, removed);
+
+        return me;
+    },
+    /**
+     *
+     * @returns {Array}
+     */
+    removeAll: function () {
+        var me = this,
+            removed = me._cache.slice();
+
+        me.set('set', []);
+        me.set('cache', []);
+        me.fireEvent('remove', me, removed);
+
+        return me;
+    },
+    /**
+     * return number of records in collection
+     *
      * @method count
      * @chainable
      * @returns {Number}
@@ -1328,50 +1456,7 @@ ya.Core.$extend({
         me.set('cache', []);
         me.set('removed', []);
 
-        return me;
-    },
-    /**
-     * @method clearFilters
-     * @returns {*}
-     * @chainable
-     */
-    clearFilters: function () {
-        var me = this;
-
-        //TODO: clear by multiple filters id
-        me.set('filters', []);
-        me.filter();
-
-        return me;
-    },
-    /**
-     *
-     * @method clearFilter
-     * @param id
-     * @returns {*}
-     * @chainable
-     */
-    clearFilter: function (id) {
-        var me = this,
-            filters = me._filters,
-            filLength,
-            filter;
-
-        filLength = filters.length;
-        while (filLength--) {
-
-            filter = filters[filLength];
-            if (typeof filter !== 'function' && filter.id === id) {
-
-                filters.splice(filLength, 1);
-
-                break;
-
-            }
-
-        }
-
-        me.filter();
+        me.fireEvent('clear', me);
 
         return me;
     },
@@ -1389,7 +1474,7 @@ ya.Core.$extend({
             passed = true,
             filtered = [],
             records = me._cache,
-            filLength = 0,
+            len = 0,
             id = null;
 
         if (arguments.length > 1) {
@@ -1420,10 +1505,10 @@ ya.Core.$extend({
         for (var i = 0, l = records.length; i < l; i++) {
 
             passed = true;
-            filLength = filters.length;
-            while (filLength--) {
+            len = filters.length;
+            while (len--) {
 
-                filterFn = typeof filters[filLength] === 'function' ? filters[filLength] : filters[filLength].fn;
+                filterFn = typeof filters[len] === 'function' ? filters[len] : filters[len].fn;
                 passed = passed && filterFn(records[i]);
 
             }
@@ -1437,7 +1522,97 @@ ya.Core.$extend({
         }
 
         me.set('set', filtered);
-        me.fireEvent('afterFilter', me, filters);
+        me.set('total', filtered.length);
+        me.fireEvent('filter', me, filters);
+
+        return me;
+    },
+    /**
+     * @method clearFilters
+     * @returns {*}
+     * @chainable
+     */
+    clearFilters: function () {
+        var me = this;
+
+        //TODO: clear by multiple filters id
+        me.set('filters', []);
+        me.filter();
+
+        return me;
+    },
+    /**
+     *
+     * @method clearFilter
+     * @param id
+     * @returns {*}
+     * @chainable
+     */
+    clearFilter: function (id) {
+        var me = this,
+            filters = me._filters,
+            len,
+            filter;
+
+        len = filters.length;
+        while (len--) {
+
+            filter = filters[len];
+            if (typeof filter !== 'function' && filter.id === id) {
+
+                filters.splice(len, 1);
+
+                break;
+
+            }
+
+        }
+
+        me.filter();
+
+        return me;
+    },
+    /**
+     *
+     * @param sorters
+     */
+    sort: function (sorters) {
+        var me = this,
+            records = me._set,
+            sorterFn, len, sorter, property, order;
+
+        sorters = sorters ? me._sorters.concat(sorters) : me._sorters;
+        me._sorters = me._sorters.concat(sorters);
+
+        sorterFn = function (a, b) {
+            var va = "" + a.data(property),
+                vb = "" + b.data(property),
+                alc = va.toLowerCase(),
+                blc = vb.toLowerCase();
+
+            return (alc > blc ? 1 : alc < blc ? -1 : va > vb ? 1 : va < vb ? -1 : 0) * (order.toLowerCase() === 'desc' ? -1 : 1);
+        };
+
+        len = sorters.length;
+        while (len--) {
+            sorter = sorters[len];
+            property = sorter[0];
+            order = sorter[1] || 'ASC';
+            records.sort(sorterFn);
+        }
+
+        me.fireEvent('sort', me, sorters);
+    },
+    /**
+     *
+     * @returns {*}
+     */
+    clearSorters: function () {
+        var me = this;
+
+        //TODO: clear by multiple filters id
+        me.set('sorters', []);
+        me.sort();
 
         return me;
     },
@@ -1472,18 +1647,20 @@ ya.Core.$extend({
         return filtered;
     },
     /**
+     * Return index of first matched record.
      * @param fn
-     * @returns {}
+     * @returns {Number}
      */
-    findOneBy: function (fn) { // Return index of first matched record.
+    findOneBy: function (fn) { //
         var me = this,
             records = me._set,
-            len = records.length;
+            i = 0, len = records.length;
 
-        while (len--) {
+        while (i < len) {
 
-            if (fn(records[len])) break;
+            if (fn(records[i])) break;
 
+            i++;
         }
 
         return len;
@@ -1496,16 +1673,17 @@ ya.Core.$extend({
         var me = this,
             records = me._set,
             record,
-            len = records.length;
+            i = 0, len = records.length;
 
-        while (len--) {
+        while (i<len) {
 
-            if (fn(records[len])) {
-                record = records[len];
+            if (fn(records[i])) {
+                record = records[i];
                 break;
 
             }
 
+            i++;
         }
 
         return record;
@@ -1524,8 +1702,6 @@ ya.Core.$extend({
      */
     load: function (params) {
         var me = this,
-            data = me.get('data'),
-            idProperty = me.get('idProperty'),
             deferred = ya.$Promise.deferred(),
             namespace = me.getNamespace(),
             action = ya.data.Action.$create(),
@@ -1537,17 +1713,18 @@ ya.Core.$extend({
         if (
             i === 0
             )
-            throw ya.Error.$create('You need to pass at least one condition to load model collection', 'COLLECTION2');
+            throw ya.Error.$create('You need to pass at least one condition to load model collection', 'COL3');
 
         if (!me.getProxy())
-            throw ya.Error.$create('To load collection you need to set proxy', 'COLLECTION3');
+            throw ya.Error.$create('To load collection you need to set proxy', 'COL4');
 
 
         callback = function () {
 
             if (me.getProxy().getStatus() === 'success') {
 
-                me.fireEvent('loaded', me, action.getResponse(), 'read');
+                me.fireEvent('load', me, action.getResponse(), 'read');
+                me.setData(action.getData());
 
             } else {
 
@@ -1567,6 +1744,10 @@ ya.Core.$extend({
 
         return deferred.promise;
     },
+    /**
+     *
+     * @returns {promise|*|promise|Function|Promise|promise}
+     */
     save: function () {
         var me = this,
             deferred = ya.$Promise.deferred(),
@@ -1624,7 +1805,7 @@ ya.Core.$extend({
                 len = data.length;
 
                 // If record has __clientId__ property it's create process
-                // or if it has id it's update.
+                // or if it has id it's an update.
                 if (record && (record.__clientId__ || record.id)) {
 
                     while (len--) {
@@ -1660,7 +1841,7 @@ ya.Core.$extend({
 
                 } else {
 
-                    me.fireEvent('success', me);
+                    me.fireEvent('save', me);
 
                     deferred.resolve({scope: me});
 
@@ -1725,17 +1906,14 @@ ya.Core.$extend({
      * Prepare data
      * @private
      * @param data
-     * @param {Number||null} total
      * @returns {Collection}
      */
-    prepareData: function (data, total) {
+    prepareData: function (data) {
         var me = this,
             ModelInstance = me.getModel(),
             modelConfig = { namespace: me.getNamespace()},
             l = data.length,
             models = [];
-
-        total = total || l;
 
         for (var i = 0; i < l; i++) {
 
@@ -1747,9 +1925,13 @@ ya.Core.$extend({
         }
 
         me.set('cache', models);
-        me.set('total', total);
 
+        me.suspendEvents(true);
         me.filter();
+        me.sort()
+        ;
+        me.resumeEvents();
+        me.fireEvent('prepare');
 
         return me;
     },
@@ -1862,7 +2044,7 @@ ya.Core.$extend({
     initDefaults: function () {
         var me = this;
 
-        me.setId(me.getId() || 'controller-' + ya.view.$Manager.getCount());
+        me.setId(me.getId() || 'controller-' + ya.controller.$Manager.getCount());
 
         me.set('router', ya.Controller.$getRouter());
         me.set('dispatcher', ya.event.$dispatcher);
@@ -1870,8 +2052,9 @@ ya.Core.$extend({
         return me;
     },
     /**
-     *
-     * @returns {*}
+     * @method initEvents
+     * @private
+     * @returns {this}
      */
     initEvents: function () {
         var me = this,
@@ -1879,20 +2062,34 @@ ya.Core.$extend({
             views = [],
             rx = new RegExp('\\$([^\\s]+)'),
             dispatcher = me._dispatcher,
-            matches, view, l, obj;
+            matches, view, l, obj, current;
 
         if (events) {
 
-            for (var e in events) {
+            for (var query in events) {
 
-                if (events.hasOwnProperty(e)) {
+                if (events.hasOwnProperty(query)) {
 
                     obj = {};
-                    obj[e] = events[e];
+                    obj[query] = current = events[query];
+
+                    for (var e in current) {
+
+                        if (current.hasOwnProperty(e)) {
+
+                            if (typeof current[e] !== 'function') {
+
+                                current[e] = me[current[e]];
+
+                            }
+
+                        }
+
+                    }
 
                     dispatcher.add(me, obj);
 
-                    matches = e.match(rx);
+                    matches = query.match(rx);
                     if (matches) {
 
                         if (views.indexOf(matches[1]) < 0) {
@@ -1928,7 +2125,7 @@ ya.Core.$extend({
 
                     } else {
 
-                        view.addEventListener('render', me.resolveEvents.bind(me));
+                        view.addEventListener('render', me.resolveEvents, me);
 
                     }
 
@@ -1940,8 +2137,9 @@ ya.Core.$extend({
         return me;
     },
     /**
-     *
-     * @returns {*}
+     * @method initRoutes
+     * @private
+     * @returns {this}
      */
     initRoutes: function () {
         var me = this,
@@ -1959,6 +2157,11 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * @method resolveEvents
+     * @private
+     * @returns {this}
+     */
     resolveEvents: function (view) {
         var events = this.getEvents(),
             newScope = function (func, scope, arg) {
@@ -2012,9 +2215,44 @@ ya.Core.$extend({
         }
 
     },
+    /**
+     * Returns router object
+     * @method getView
+     * @returns {*}
+     */
     getRouter: function () {
         return router;
     },
+    /**
+     * Returns view by id
+     * @method getView
+     * @returns {*}
+     */
+    getView: function (id) {
+        return ya.view.$Manager.getItem(id);
+    },
+    /**
+     * Returns controller by id
+     * @method getController
+     * @returns {*}
+     */
+    getController: function (id) {
+        return ya.controller.$Manager.getItem(id);
+    },
+    /**
+     * Returns collection by id
+     * @method getCollection
+     * @returns {*}
+     */
+    getCollection: function (id) {
+        return ya.collection.$Manager.getItem(id);
+    },
+    /**
+     * Restores router state
+     * @method restoreRouter
+     * @private
+     * @returns {*}
+     */
     restoreRouter: function () {
         var me = this;
 
@@ -2022,6 +2260,11 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * Redirect application to passed path
+     * @param path
+     * @returns {*}
+     */
     redirectTo: function (path) {
 
         window.location.hash = path;
@@ -2030,6 +2273,8 @@ ya.Core.$extend({
     }
 });
 /**
+ *
+ *
  * @namespace ya.data
  * @class Action
  * @extends ya.Core
@@ -2136,6 +2381,9 @@ ya.Core.$extend({
 });
 
 /**
+ * Proxy (which follow crud principles) allow you to retrieve the data from
+ * different sources. Basic proxy class provides only some abstraction and need to be
+ * extend.
  * @namespace ya.data
  * @class Proxy
  * @extends ya.Core
@@ -2740,6 +2988,8 @@ ya.data.Proxy.$extend({
 });
 
 /**
+ * Dispatcher class allow you to delegates events across
+ * newly generated views
  * @namespace ya.event
  * @class $dispatcher
  * @extends ya.Core
@@ -2803,6 +3053,7 @@ ya.Core.$extend({
         // Function which will be used to match if there are any
         // delegated events for particular view.
             matchIdFn = function (r) {
+
                 return r.selector.search(regExp) >= 0;
 
             },
@@ -2964,15 +3215,16 @@ ya.Core.$extend({
         }
 
         me.setId(ya.Job.$id++);
-        me.setTasks(tasks);
+        me.setTasks(tasks.reverse());
         me.setResults([]);
+        me.set('semaphore', tasks.length);
 
         return me;
     },
     doit: function () {
         var me = this,
             deferred = ya.$Promise.deferred(),
-            engine, fn;
+            engine, fn, taskIdx;
 
 
         engine = me.getRepeat() > 1 || me.getRepeat() === ya.Job.$INFINITY ?
@@ -3001,13 +3253,20 @@ ya.Core.$extend({
 
         engine.finish = function () {
 
-            clearInterval(me._clear);
+            me.getTasks().splice(taskIdx, 1);
 
-            return deferred.resolve({
-                success: true,
-                message: 'Task finished',
-                results: me.getResults()
-            });
+            me._semaphore--;
+            if (me._semaphore === 0 || me.getRepeat() < 0) {
+
+                clearInterval(me._clear);
+
+                return deferred.resolve({
+                    success: true,
+                    message: 'Task finished',
+                    results: me.getResults()
+                });
+
+            }
 
 
         };
@@ -3015,14 +3274,14 @@ ya.Core.$extend({
         fn = function () {
             var repeat = me.getRepeat(),
                 tasks = me.getTasks(),
+                maxTime = me.getMaxTime(),
                 results = [],
-                i = 0,
-                len;
+                i;
 
 
             if (
-                me.getMaxTime() &&
-                    (+new Date() - me._start) > me.getMaxTime()
+                maxTime &&
+                (+new Date() - me._start) > maxTime
                 ) {
 
                 return engine.terminate('YJ3', 'Timeout');
@@ -3039,12 +3298,11 @@ ya.Core.$extend({
 
             }
 
-            len = tasks.length;
+            i = tasks.length;
+            while (i--) {
 
-            while (i < len) {
-
+                taskIdx = i;
                 results.push(tasks[i].call(engine));
-                i++;
 
             }
 
@@ -3424,7 +3682,7 @@ ya.Core.$extend({
     init: function (opts) {
         return this
             .__super(opts)
-            .initRequires();
+            .initDependencies();
     },
     initDefaults: function () {
         var me = this;
@@ -3442,70 +3700,20 @@ ya.Core.$extend({
 
         return me;
     },
-    initRequires: function () {
-        var me = this;
+    initDependencies : function () {
+        var me = this,
+            tasks = [];
+
+        tasks.push(function () {
+            me.initRequires(this);
+        });
+        tasks.push(function () {
+            me.initModules(this);
+        });
 
         ya.Job.$create({
             config: {
-                task: function () {
-                    var requires = me.getRequires(),
-                        len = requires.length,
-                        isReady = true, i = 0, initialized = [],
-                        re, args, require;
-
-                    while (i < len) {
-
-                        require = requires[i];
-                        require = ya.$get(
-                            me.getModule() + '.' + require.replace(":->", "")
-                        );
-
-                        if (require === null) {
-                            isReady = false;
-                        }
-
-                        i++;
-                    }
-
-                    if (isReady) {
-
-                        re = /:->/;
-                        args = [];
-                        i = 0;
-                        while (i < len) {
-
-                            require = requires[i];
-                            if (re.test(require)) {
-
-                                require = ya.$get(
-                                    me.getModule() + '.' + require.replace(":->", "")
-                                );
-                                require = require.$create();
-                                args.push(
-                                    require
-                                );
-
-                            } else {
-
-                                require = ya.$get(
-                                    me.getModule() + '.' + require.replace(":->", "")
-                                );
-                                require = require.$create();
-
-                            }
-
-                            initialized.push(require);
-
-                            i++;
-                        }
-                        me.set('initialized', initialized);
-                        me.set('args', args);
-
-                        this.finish();
-
-                    }
-
-                },
+                tasks: tasks,
                 delay: 16,
                 repeat: ya.Job.$INFINITY,
                 maxTime: me.getMaxLoadingTime()
@@ -3513,7 +3721,7 @@ ya.Core.$extend({
         })
             .doit()
             .then(function () {
-                me.continueInit.apply(me, arguments);
+                me.continueInit();
             })
             ["catch"](function () {
             me.onError.apply(me, arguments);
@@ -3521,19 +3729,95 @@ ya.Core.$extend({
 
         return me;
     },
+    initRequires: function (engine) {
+        var me = this,
+            __each = ya.mixins.Array.each,
+            requires = me.getRequires(),
+            len = requires.length,
+            isReady = true, i = 0, initialized = [],
+            resolveParams, args, require, className, params, instance;
+
+        resolveParams = function (param) {
+            switch (param) {
+                case '-i' :
+
+                    initialized.push(require.$create());
+
+                    break;
+                case '-p' :
+
+                    args.push(require);
+
+                    break;
+                case '-ip' :
+
+                    instance = require.$create();
+
+                    args.push(instance);
+                    initialized.push(instance);
+
+                    break;
+
+            }
+        };
+
+        while (i < len) {
+
+            require = ya.$get(
+                    me.getModule() + '.' + requires[i].split(" ").shift()
+            );
+
+            if (require === null) {
+                isReady = false;
+            }
+
+            i++;
+        }
+
+        if (isReady) {
+
+            args = [];
+            i = 0;
+            while (i < len) {
+
+                require = requires[i].split(" ");
+                className = require.shift();
+                params = require.join("").match(/-(\w+)/g);
+
+                require = ya.$get(
+                        me.getModule() + '.' + className
+                );
+
+                if (params) {
+
+                    __each(params, resolveParams);
+
+                }
+
+                i++;
+            }
+            me.set('initialized', initialized);
+            me.set('args', args);
+
+            engine.finish();
+
+        }
+
+    },
+    initModules: function (engine) {
+        var me = this;
+
+        engine.finish();
+
+        return me;
+    },
     continueInit: function () {
         var me = this;
 
         me
-            .initModule()
             .initBus()
             .onReady
             .apply(me, me._args);
-
-        return me;
-    },
-    initModule: function () {
-        var me = this;
 
         return me;
     },
@@ -3559,8 +3843,6 @@ ya.Core.$extend({
                 right = me._initialized[rightIdx];
 
                 left.addEventListener(event, right[callback]);
-
-                console.log('bind');
 
             }
 
@@ -3771,6 +4053,129 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
     }(self));
 
 }
+if(!window.matchMedia) {
+    window.matchMedia = (function() {
+        "use strict";
+
+        // For browsers that support matchMedium api such as IE 9 and webkit
+        var styleMedia = (window.styleMedia || window.media);
+
+        // For those that don't support matchMedium
+        if (!styleMedia) {
+            var style       = document.createElement('style'),
+                script      = document.getElementsByTagName('script')[0],
+                info        = null;
+
+            style.type  = 'text/css';
+            style.id    = 'matchmediajs-test';
+
+            script.parentNode.insertBefore(style, script);
+
+            // 'style.currentStyle' is used by IE <= 8 and 'window.getComputedStyle' for all other browsers
+            info = ('getComputedStyle' in window) && window.getComputedStyle(style, null) || style.currentStyle;
+
+            styleMedia = {
+                matchMedium: function(media) {
+                    var text = '@media ' + media + '{ #matchmediajs-test { width: 1px; } }';
+
+                    // 'style.styleSheet' is used by IE <= 8 and 'style.textContent' for all other browsers
+                    if (style.styleSheet) {
+                        style.styleSheet.cssText = text;
+                    } else {
+                        style.textContent = text;
+                    }
+
+                    // Test if media query is true or false
+                    return info.width === '1px';
+                }
+            };
+        }
+
+        return function(media) {
+            return {
+                matches: styleMedia.matchMedium(media || 'all'),
+                media: media || 'all'
+            };
+        };
+    })();
+}
+
+/*! matchMedia() polyfill addListener/removeListener extension. Author & copyright (c) 2012: Scott Jehl. Dual MIT/BSD license */
+(function(){
+    "use strict";
+    // Bail out for browsers that have addListener support
+    if (window.matchMedia && window.matchMedia('all').addListener) {
+        return false;
+    }
+
+    var localMatchMedia = window.matchMedia,
+        hasMediaQueries = localMatchMedia('only all').matches,
+        isListening     = false,
+        timeoutID       = 0,    // setTimeout for debouncing 'handleChange'
+        queries         = [],   // Contains each 'mql' and associated 'listeners' if 'addListener' is used
+        handleChange    = function(evt) {
+            // Debounce
+            clearTimeout(timeoutID);
+
+            timeoutID = setTimeout(function() {
+                for (var i = 0, il = queries.length; i < il; i++) {
+                    var mql         = queries[i].mql,
+                        listeners   = queries[i].listeners || [],
+                        matches     = localMatchMedia(mql.media).matches;
+
+                    // Update mql.matches value and call listeners
+                    // Fire listeners only if transitioning to or from matched state
+                    if (matches !== mql.matches) {
+                        mql.matches = matches;
+
+                        for (var j = 0, jl = listeners.length; j < jl; j++) {
+                            listeners[j].call(window, mql);
+                        }
+                    }
+                }
+            }, 30);
+        };
+
+    window.matchMedia = function(media) {
+        var mql         = localMatchMedia(media),
+            listeners   = [],
+            index       = 0;
+
+        mql.addListener = function(listener) {
+            // Changes would not occur to css media type so return now (Affects IE <= 8)
+            if (!hasMediaQueries) {
+                return;
+            }
+
+            // Set up 'resize' listener for browsers that support CSS3 media queries (Not for IE <= 8)
+            // There should only ever be 1 resize listener running for performance
+            if (!isListening) {
+                isListening = true;
+                window.addEventListener('resize', handleChange, true);
+            }
+
+            // Push object only if it has not been pushed already
+            if (index === 0) {
+                index = queries.push({
+                    mql         : mql,
+                    listeners   : listeners
+                });
+            }
+
+            listeners.push(listener);
+        };
+
+        mql.removeListener = function(listener) {
+            for (var i = 0, il = listeners.length; i < il; i++){
+                if (listeners[i] === listener){
+                    listeners.splice(i, 1);
+                }
+            }
+        };
+
+        return mql;
+    };
+}());
 /**
  * @author angularjs
  * @contributed mkalafior
@@ -4242,7 +4647,6 @@ ya.Core.$extend({
     var ya = window.ya,
         style = document.createElement('style'),
         __slice = Array.prototype.slice,
-        VM,
         View,
         resize = 0,
         iv = 0;
@@ -4453,7 +4857,7 @@ ya.Core.$extend({
 
                 if (
                     tpl instanceof Array || typeof tpl === 'array' ||
-                        typeof tpl == 'string' || tpl instanceof String
+                    typeof tpl == 'string' || tpl instanceof String
                     ) {
                     // if its an array with html def
                     // prepare configuration object and
@@ -4629,20 +5033,22 @@ ya.Core.$extend({
                 config = me._config,
                 parent = config.parent,
                 selector = config.renderTo,
-                parentEl, el;
+                parentEl, tdom, el;
 
-            parentEl = me.getParentEl(selector, true);
+            parentEl = selector instanceof HTMLElement ? selector : me.getParentEl(selector, true);
 
             if (me.isInDOM()) {
 
-                me.removeRendered();
+                me.clear();
 
             }
 
-            el = me.getTpl()
-                .getTDOMInstance(me)
-                .getEDOM();
+            tdom = me.getTpl()
+                .getTDOMInstance(me);
 
+            el = tdom.getEDOM();
+
+            me.set('tdom', tdom);
             me.set('el', el);
 
             if (me.getHidden())
@@ -4664,68 +5070,20 @@ ya.Core.$extend({
 
                 me.set('isInDOM', true);
                 me.reAppendChildren();
-                me.fireEvent('render', null, me);
+                me.fireEvent('render', me, parent);
             }
 
             return el;
         },
         /**
-         * @version 0.1.11
-         * @param binding
-         */
-        partialRender: function (binding) {
-            var me = this,
-                element = binding.type === 3,
-                org = element ? binding.original : (binding.fillAttr ? true : binding.original),
-                headers = binding.headers,
-                len = headers.length,
-                header;
-
-            while (len--) {
-
-                header = headers[len];
-
-                if (element || !binding.fillAttr) {
-
-                    org = org.replace("{{" + header.join(".") + "}}", me.getModel(header[0]).data(header[1]));
-
-                } else {
-
-                    org = org && me.getModel(header[0]).data(header[1]);
-
-                }
-            }
-
-            if (element) {
-
-                binding.pointer.textContent = org;
-
-
-            } else {
-
-                if (binding.fillAttr && !org) {
-
-                    binding.pointer.removeAttribute(binding.attrName);
-
-                } else {
-
-                    binding.pointer.setAttribute(binding.attrName, org);
-
-                }
-
-            }
-
-            return me;
-        },
-        /**
          * @version 0.1.12
          */
-        removeRendered: function () {
+        clear: function () {
             var me = this;
 
-            me._el.parentNode.removeChild(me._el);
+            me.removeFromDOM();
+            me._tdom.clear();
             me.set('el', null);
-            me.set('isInDOM', false);
 
             return me;
         },
@@ -4759,9 +5117,17 @@ ya.Core.$extend({
          */
         addChild: function (view, selector) {
             var me = this;
+
             view.appendTo(me, selector);
-            ya.event.$dispatcher.apply(view);
-            me.fireEvent('elementAdded', me, view);
+
+            if (me.isInDOM()) {
+
+                ya.event.$dispatcher.apply(view);
+
+            }
+
+            me.fireEvent('childAdded', me, view);
+
             return me;
         },
         /**
@@ -4797,21 +5163,21 @@ ya.Core.$extend({
          * @param id
          * @returns {*|null}
          */
-        removeChild: function (id) {
+        removeChild: function (view) {
             var views = this.getChildren(),
                 l = views.length,
-                view = [];
+                removed = [];
 
             while (l--) {
-                if (views[l].getId() === id) {
+                if (views[l].getId() === view.getId()) {
 
-                    view = views.splice(l, 1);
-                    view[0].clear();
+                    removed = views.splice(l, 1);
+                    removed[0].removeFromDOM();
 
                 }
             }
 
-            return view[0] || null;
+            return removed[0] || null;
         },
         /**
          * @returns {Array}
@@ -4822,7 +5188,7 @@ ya.Core.$extend({
                 removed = [];
 
             while (l--) {
-                removed.push(views[l].clear());
+                removed.push(views[l].removeFromDOM());
             }
 
 
@@ -4831,7 +5197,7 @@ ya.Core.$extend({
         /**
          * @returns {View}
          */
-        clear: function () {
+        removeFromDOM: function () {
             var me = this,
                 el = me._el;
 
@@ -4881,19 +5247,24 @@ ya.Core.$extend({
          */
         appendTo: function (parent, selector) {
             var me = this,
-                config = me.get('config'),
+                config = me._config,
                 id = me.getId(),
                 views = parent.getChildren(),
                 oldParent = config.parent,
                 parentEl;
 
-            parentEl = me.getParentEl(selector, false);
+            selector = selector || config.renderTo;
+
+            parentEl = selector instanceof HTMLElement ? selector : me.getParentEl(selector, false);
+
 
             config.renderTo = parentEl;
 
             if (!oldParent) {
 
                 config.parent = parent;
+
+                views.push(me);
 
             }
             else if (oldParent && oldParent.getId() !== parent.getId()) {
@@ -4903,17 +5274,16 @@ ya.Core.$extend({
                     oldParent
                         .getChildren()
                         .splice(
-                            oldParent.findChild(id), 1
-                        );
+                        oldParent.findChild(id), 1
+                    );
 
                 }
 
+                views.push(me);
+
             }
 
-
-            views.push(me);
             config.parent = parent;
-            me.fireEvent('append', null, me, parent);
 
 
             if (!me.isInDOM() && parent.isInDOM()) {
@@ -4921,18 +5291,20 @@ ya.Core.$extend({
                 if (!me._el) {
 
                     me.render();
-                    ya.event.$dispatcher.apply(me);
 
                 } else {
 
                     parentEl.appendChild(me._el);
                     me.set('isInDOM', true);
                     me.reAppendChildren();
-                    me.fireEvent('render', null, me);
+                    me.fireEvent('render', me, parent);
 
                 }
 
             }
+
+            me.fireEvent('append', me, parent);
+
             return me;
         },
         /**
@@ -5031,6 +5403,12 @@ ya.Core.$extend({
     mixins: [
         ya.mixins.Array
     ],
+    /**
+     * @method init
+     * @param opts
+     * @private
+     * @returns {*}
+     */
     init: function (opts) {
         var me = this;
 
@@ -5040,6 +5418,11 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * @method initRequired
+     * @private
+     * @returns {*}
+     */
     initRequired: function () {
         var me = this;
 
@@ -5057,13 +5440,18 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * @method initTDOM
+     * @private
+     * @returns {*}
+     */
     initTDOM: function () {
         var me = this,
             view = me.getView(),
             bindings = me.getBindings(),
             dom = me.getDOM(),
             $B = ya.view.Template.$BindingType,
-            namespace;
+            namespace, callback, event;
 
         me.each(bindings, function (binding) {
 
@@ -5075,20 +5463,42 @@ ya.Core.$extend({
                         .attributes
                         .getNamedItem(binding.name);
 
+                    // iterate trough each header
                     me.each(binding.headers, function (header) {
 
                         namespace = header[0];
+                        // search for model
                         model = view.getModel(namespace);
                         if (model) {
 
                             binding.models[namespace] = model;
+
+                            // put callback in variable
+                            callback = (function (binding) {
+                                return function () {
+                                    me.updateAttr(binding);
+                                };
+                            }(binding));
+
+                            event = 'data' + header[1].charAt(0).toUpperCase() + header[1].slice(1) + 'Change';
+
+                            // and push it to callbacks array
+                            // which will be useful when the view
+                            // will be destroyed (for remove
+                            // unnecessary listeners)
+                            binding.callbacks.push({
+                                namespace: model.getNamespace(),
+                                event: event,
+                                callback: callback
+                            });
+
+                            // add callback to the model
                             model.addEventListener(
-                                'data' + header[1].charAt(0).toUpperCase() + header[1].slice(1) + 'Change',
-                                (function (binding) {
-                                    return function () {
-                                        me.updateAttr(binding);
-                                    };
-                                }(binding)));
+                                event,
+                                callback
+                            );
+
+
                             me.updateAttr(binding);
                         }
 
@@ -5110,13 +5520,31 @@ ya.Core.$extend({
                         if (model) {
 
                             binding.models[namespace] = model;
+
+                            // put callback in variable
+                            callback = (function (binding) {
+                                return function () {
+                                    me.updateTxt(binding);
+                                };
+                            }(binding));
+
+                            event = 'data' + header[1].charAt(0).toUpperCase() + header[1].slice(1) + 'Change';
+
+                            // and push it to callbacks array
+                            // which will be useful when the view
+                            // will be destroyed (for remove
+                            // unnecessary listeners)
+                            binding.callbacks.push({
+                                namespace: model.getNamespace(),
+                                event: event,
+                                callback: callback
+                            });
+
                             model.addEventListener(
-                                'data' + header[1].charAt(0).toUpperCase() + header[1].slice(1) + 'Change',
-                                (function (binding) {
-                                    return function () {
-                                        me.updateTxt(binding);
-                                    };
-                                }(binding)));
+                                event,
+                                callback
+                            );
+
                             me.updateTxt(binding);
                         }
 
@@ -5176,6 +5604,8 @@ ya.Core.$extend({
                     }
 
 
+                    me.setupCollection(binding);
+
                     break;
                 default:
 
@@ -5190,6 +5620,179 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * setup all connection between collection and view
+     * and generate new elements for all records from it
+     * @param binding
+     */
+    setupCollection: function (binding) {
+
+        var me = this,
+            bindCol = binding.collection,
+            collection = bindCol.pointer,
+            callback, remCallback;
+
+        callback = (function (binding) {
+            return function () {
+                me.updateCollection(binding);
+            };
+        }(binding));
+
+        remCallback = (function (binding) {
+            return function (col, records) {
+                me.removeFromCollection(binding, records);
+            };
+        }(binding));
+
+        binding.collection.connections = [];
+
+        // generates new view
+        collection.each(function (record) {
+
+            me.generateView(binding, record);
+
+        });
+
+        me.updateCollection(binding);
+
+        collection.addEventListener('prepare', callback, me);
+        collection.addEventListener('filter', callback, me);
+        collection.addEventListener('sort', callback, me);
+        collection.addEventListener('push', callback, me);
+        collection.addEventListener('remove', remCallback, me);
+
+    },
+    generateView: function (binding, record) {
+        var me = this,
+            collection = binding.collection,
+            tpl = ya.view.template.$Manager.getItem(collection.tpl),
+            viewInstance;
+
+        viewInstance = ya.$factory({
+            alias: collection.view,
+            renderTo: binding.pointer,
+            tpl: tpl || undefined,
+            models: [
+                record
+            ]
+        });
+
+
+        me
+            .getView()
+            .addChild(
+            viewInstance,
+            binding.pointer
+        );
+
+        collection.connections.push({
+            view: viewInstance,
+            model: record
+        });
+
+        return me;
+    },
+    /**
+     * Update DOM connected with collection
+     * @param binding
+     * @returns {*}
+     */
+    updateCollection: function (binding) {
+        var me = this,
+            __indexOf = Array.prototype.indexOf,
+            __find = ya.mixins.Array.find,
+            collection = binding.collection.pointer,
+            parent = binding.pointer,
+            childNodes = parent.childNodes,
+            connections = binding.collection.connections,
+            len, conn, idx, viewIdx;
+
+
+        collection.each(function (record, index) {
+
+            idx = __find(connections, 'model._clientId', record._clientId);
+
+            if (idx >= 0) {
+
+                conn = connections[idx];
+                if (me.getView().isInDOM()) {
+
+                    viewIdx = __indexOf.call(childNodes, conn.view._el);
+                    if (viewIdx > -1 && viewIdx !== index) {
+
+                        if (childNodes.length - 1 > index) {
+
+                            parent.insertBefore(childNodes[index], childNodes[viewIdx]);
+
+
+                        } else {
+
+                            parent.appendChild(childNodes[viewIdx]);
+
+                        }
+
+                    }
+
+                }
+
+            } else {
+                me.generateView(binding, record);
+
+            }
+
+        });
+
+        len = connections.length;
+        while (len--) {
+
+            conn = connections[len];
+            idx = __find(collection._set, '_clientId', conn.model._clientId);
+            if (idx < 0) {
+
+                connections.splice(len, 1).pop();
+                conn.view.clear();
+
+            }
+
+        }
+
+        return me;
+    },
+    removeFromCollection: function (binding, records) {
+        var me = this,
+            __find = ya.mixins.Array.find,
+            connections, idx, conn, record, view;
+
+        // get array of connections between collection
+        // and generated child views
+        connections = binding.collection.connections;
+
+        while (records.length) {
+            // iterate trough all removed records
+            // get one
+            record = records.pop();
+            // find same model in connections array
+            idx = __find(connections, 'model._clientId', record._clientId);
+
+            // put connection object into variable
+            conn = connections[idx];
+
+            // remove from connections array founded one
+            connections.splice(idx, 1).pop();
+
+            conn.view.clear();
+
+            conn.view = null;
+
+        }
+
+        return me;
+    },
+    /**
+     * @method updateTxt
+     * @private
+     * @returns {*}
+     */
     updateTxt: function (binding) {
         var me = this,
             txt = binding.original,
@@ -5198,7 +5801,7 @@ ya.Core.$extend({
         me.each(binding.headers, function (header) {
 
             value = binding.models[header[0]].data(header[1]);
-            if(typeof value === 'undefined') {
+            if (typeof value === 'undefined') {
                 value = "";
             }
 
@@ -5208,6 +5811,11 @@ ya.Core.$extend({
         binding.pointer.innerHTML = txt;
 
     },
+    /**
+     * @method updateAttr
+     * @private
+     * @returns {*}
+     */
     updateAttr: function (binding) {
         var me = this,
             txt = binding.original,
@@ -5217,7 +5825,7 @@ ya.Core.$extend({
         me.each(binding.headers, function (header) {
 
             value = binding.models[header[0]].data(header[1]);
-            if(typeof value === 'undefined') {
+            if (typeof value === 'undefined') {
                 value = "";
             }
 
@@ -5228,6 +5836,47 @@ ya.Core.$extend({
         binding.pointer.value = txt;
 
     },
+    /**
+     * @method removeBindings
+     * @private
+     */
+    clear: function () {
+        var __each = ya.mixins.Array.each,
+            me = this,
+            bindings = me.getBindings(),
+            model,
+            callbacks;
+
+        __each(bindings, function (binding) {
+
+            callbacks = binding.callbacks;
+            if(callbacks) {
+
+                __each(binding.callbacks, function (options) {
+
+                    model = binding.models[options.namespace];
+
+                    model.removeEventListener(options.event, options.callback);
+
+                });
+
+            }
+
+            binding.pointer = null;
+            binding.callbacks.length = 0;
+            binding.models = null;
+
+        });
+
+        bindings.length = 0;
+
+        return me;
+    },
+    /**
+     * Returns
+     * @method getEDOM
+     * @returns {Function|Node|TestNode|firstChild|*|firstChild}
+     */
     getEDOM: function () {
         var me = this,
             dom = me.getDOM(),
@@ -5235,7 +5884,7 @@ ya.Core.$extend({
 
         if (
             dom.childNodes.length > 1 ||
-                dom.firstChild.nodeType === 3
+            dom.firstChild.nodeType === 3
             ) {
 
             div = document.createElement('div');
@@ -5246,9 +5895,9 @@ ya.Core.$extend({
 
             div
                 .setAttribute(
-                    'class',
-                    'ya inline'
-                );
+                'class',
+                'ya inline'
+            );
 
             dom
                 .appendChild(div);
@@ -5310,8 +5959,8 @@ ya.Core.$extend({
 
         me
             .__super(opts)
-            .initBindings()
-            .initRegister();
+            .initRegister()
+            .initBindings();
 
     },
     initRequired: function () {
@@ -5428,6 +6077,10 @@ ya.Core.$extend({
             // and push to array
             nodeAttrs = __slice.call(node.attributes);
 
+            // check if contents of should be scan
+            if (me.isTemplate(node)) {
+                continue;
+            }
             // DOM4 polyfill - attribute no longer inherits from Node
             // so we need to set owner element manually
             if (ya.view.Template.$DOM4) {
@@ -5471,6 +6124,23 @@ ya.Core.$extend({
         }
 
         return bindings;
+    },
+    isTemplate: function (node) {
+
+        node = node.parentNode;
+        while (node.parentNode) {
+            if (
+                node.attributes.getNamedItem('ya-view') ||
+                    node.attributes.getNamedItem('ya-collection')
+                ) {
+                return true;
+
+            }
+
+            node = node.parentNode;
+        }
+
+        return false;
     },
     findTextBindings: function () {
         var me = this,
@@ -5539,6 +6209,7 @@ ya.Core.$extend({
                 old: node,
                 doc: doc,
                 models: {},
+                callbacks : [],
                 headers: headers,
                 type: 3,
                 pointer: rId
@@ -5645,6 +6316,7 @@ ya.Core.$extend({
             original: original,
             fillAttr: false,
             headers: headers,
+            callbacks : [],
             models: {},
             name: 'style',
             type: ya.view.Template.$BindingType.ATTR,
@@ -5662,6 +6334,7 @@ ya.Core.$extend({
             binding, rId, header;
 
         if (results) {
+
 
             rId = node.getAttribute('ya-id');
             if (!rId) {
@@ -5684,6 +6357,7 @@ ya.Core.$extend({
                 name: attr.name,
                 original: original,
                 models: {},
+                callbacks : [],
                 headers: headers,
                 type: ya.view.Template.$BindingType.ATTR,
                 pointer: rId

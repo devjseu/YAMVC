@@ -13,7 +13,7 @@ ya.Core.$extend({
     init: function (opts) {
         return this
             .__super(opts)
-            .initRequires();
+            .initDependencies();
     },
     initDefaults: function () {
         var me = this;
@@ -31,70 +31,20 @@ ya.Core.$extend({
 
         return me;
     },
-    initRequires: function () {
-        var me = this;
+    initDependencies : function () {
+        var me = this,
+            tasks = [];
+
+        tasks.push(function () {
+            me.initRequires(this);
+        });
+        tasks.push(function () {
+            me.initModules(this);
+        });
 
         ya.Job.$create({
             config: {
-                task: function () {
-                    var requires = me.getRequires(),
-                        len = requires.length,
-                        isReady = true, i = 0, initialized = [],
-                        re, args, require;
-
-                    while (i < len) {
-
-                        require = requires[i];
-                        require = ya.$get(
-                            me.getModule() + '.' + require.replace(":->", "")
-                        );
-
-                        if (require === null) {
-                            isReady = false;
-                        }
-
-                        i++;
-                    }
-
-                    if (isReady) {
-
-                        re = /:->/;
-                        args = [];
-                        i = 0;
-                        while (i < len) {
-
-                            require = requires[i];
-                            if (re.test(require)) {
-
-                                require = ya.$get(
-                                    me.getModule() + '.' + require.replace(":->", "")
-                                );
-                                require = require.$create();
-                                args.push(
-                                    require
-                                );
-
-                            } else {
-
-                                require = ya.$get(
-                                    me.getModule() + '.' + require.replace(":->", "")
-                                );
-                                require = require.$create();
-
-                            }
-
-                            initialized.push(require);
-
-                            i++;
-                        }
-                        me.set('initialized', initialized);
-                        me.set('args', args);
-
-                        this.finish();
-
-                    }
-
-                },
+                tasks: tasks,
                 delay: 16,
                 repeat: ya.Job.$INFINITY,
                 maxTime: me.getMaxLoadingTime()
@@ -102,7 +52,7 @@ ya.Core.$extend({
         })
             .doit()
             .then(function () {
-                me.continueInit.apply(me, arguments);
+                me.continueInit();
             })
             ["catch"](function () {
             me.onError.apply(me, arguments);
@@ -110,19 +60,95 @@ ya.Core.$extend({
 
         return me;
     },
+    initRequires: function (engine) {
+        var me = this,
+            __each = ya.mixins.Array.each,
+            requires = me.getRequires(),
+            len = requires.length,
+            isReady = true, i = 0, initialized = [],
+            resolveParams, args, require, className, params, instance;
+
+        resolveParams = function (param) {
+            switch (param) {
+                case '-i' :
+
+                    initialized.push(require.$create());
+
+                    break;
+                case '-p' :
+
+                    args.push(require);
+
+                    break;
+                case '-ip' :
+
+                    instance = require.$create();
+
+                    args.push(instance);
+                    initialized.push(instance);
+
+                    break;
+
+            }
+        };
+
+        while (i < len) {
+
+            require = ya.$get(
+                    me.getModule() + '.' + requires[i].split(" ").shift()
+            );
+
+            if (require === null) {
+                isReady = false;
+            }
+
+            i++;
+        }
+
+        if (isReady) {
+
+            args = [];
+            i = 0;
+            while (i < len) {
+
+                require = requires[i].split(" ");
+                className = require.shift();
+                params = require.join("").match(/-(\w+)/g);
+
+                require = ya.$get(
+                        me.getModule() + '.' + className
+                );
+
+                if (params) {
+
+                    __each(params, resolveParams);
+
+                }
+
+                i++;
+            }
+            me.set('initialized', initialized);
+            me.set('args', args);
+
+            engine.finish();
+
+        }
+
+    },
+    initModules: function (engine) {
+        var me = this;
+
+        engine.finish();
+
+        return me;
+    },
     continueInit: function () {
         var me = this;
 
         me
-            .initModule()
             .initBus()
             .onReady
             .apply(me, me._args);
-
-        return me;
-    },
-    initModule: function () {
-        var me = this;
 
         return me;
     },
@@ -148,8 +174,6 @@ ya.Core.$extend({
                 right = me._initialized[rightIdx];
 
                 left.addEventListener(event, right[callback]);
-
-                console.log('bind');
 
             }
 

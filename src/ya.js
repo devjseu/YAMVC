@@ -54,9 +54,16 @@
         var property;
 
         for (property in obj2) {
+
             if (obj2.hasOwnProperty(property)) {
-                obj1[property] = obj2[property];
+
+                if(typeof obj2[property] !== 'undefined') {
+
+                    obj1[property] = obj2[property];
+
+                }
             }
+
         }
 
         return obj1;
@@ -165,6 +172,7 @@
             throw ya.Error.$create('Factory method needs alias property', 'YA1');
 
         }
+
 
         Class = ya.$get(config.module || appNamespace, config.alias);
         opts = config.methods || {};

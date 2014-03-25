@@ -1,4 +1,7 @@
 /**
+ * Proxy (which follow crud principles) allow you to retrieve the data from
+ * different sources. Basic proxy class provides only some abstraction and need to be
+ * extend.
  * @namespace ya.data
  * @class Proxy
  * @extends ya.Core

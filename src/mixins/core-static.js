@@ -4,7 +4,10 @@
  */
 ya.$set('ya', 'mixins.CoreStatic', {
     /**
-     *
+     * Creates definition of the new class based on old one
+     * and parameters passed as argument
+     * @method $extends
+     * @for ya.mixins.CoreStatic
      * @param opts
      * @returns {Function}
      */
@@ -125,6 +128,12 @@ ya.$set('ya', 'mixins.CoreStatic', {
 
         return __Class;
     },
+    /**
+    * Create an instance of class.
+     * @method $create
+     * @for ya.mixins.CoreStatic
+     * @returns {Function}
+     */
     $create: function () {
         /*jshint -W058 */
         var Obj = this,
@@ -132,6 +141,14 @@ ya.$set('ya', 'mixins.CoreStatic', {
 
         return  new (Function.prototype.bind.apply(Obj, args));
     },
+    /**
+     *
+     * @method $create
+     * @for ya.mixins.CoreStatic
+     * @param obj
+     * @param mixin
+     * @returns {Function}
+     */
     $mixin: function (obj, mixin) {
         var prototype,
             property;

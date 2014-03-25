@@ -11,7 +11,13 @@
                     '<button disabled="{{options.disabled}}">Disabled!</button>' +
                     '{{example.value}} <p class="{{options.classes}}">{{text.value}}</p>' +
                     '<ul ya-collection="$examples list">' +
-                    '<li>{{list.value}}</li>' +
+                    '<div ya-view="class:app.view.Todos3">' +
+                    '<div ya-view="class:app.view.Todos4">' +
+                    '</div>' +
+                    '</div>' +
+                    '<li class="{{list.class}}">{{list.value}} <p class="{{list.b}}"><span class="{list.a}}"></span></p></li>' +
+                    '<div ya-view="class:app.view.Todos2">' +
+                    '</div>' +
                     '</ul>' +
                     '{{text.node}} sialalala {{text.node2}}' +
                     '<div ya-view="id:todos class:app.view.Todos">' +
@@ -226,7 +232,6 @@
 
 
         instance = template.getTDOMInstance(view);
-
 
         ok(instance.getDOM() instanceof DocumentFragment);
         ok(instance.getBindings() instanceof Array);
