@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>src\model.js - yam</title>
+    <title>src/model.js - yam</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -19,7 +19,7 @@
             
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.2.0</em>
+            <em>API Docs for: 0.3.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -43,15 +43,19 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
+                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+            
+                <li><a href="../classes/ya.Ajax.html">ya.Ajax</a></li>
+            
+                <li><a href="../classes/ya.ajax.JSON.html">ya.ajax.JSON</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
             
-                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
+                <li><a href="../classes/ya.collection.$manager.html">ya.collection.$manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
-                <li><a href="../classes/ya.controller.$Manager.html">ya.controller.$Manager</a></li>
+                <li><a href="../classes/ya.controller.$manager.html">ya.controller.$manager</a></li>
             
                 <li><a href="../classes/ya.Core.html">ya.Core</a></li>
             
@@ -59,7 +63,7 @@
             
                 <li><a href="../classes/ya.data.Proxy.html">ya.data.Proxy</a></li>
             
-                <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
+                <li><a href="../classes/ya.data.proxy.LocalStorage.html">ya.data.proxy.LocalStorage</a></li>
             
                 <li><a href="../classes/ya.Error.html">ya.Error</a></li>
             
@@ -83,17 +87,23 @@
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
+                <li><a href="../classes/ya.Module.html">ya.Module</a></li>
+            
                 <li><a href="../classes/ya.Router.html">ya.Router</a></li>
+            
+                <li><a href="../classes/ya.util.$detection.html">ya.util.$detection</a></li>
+            
+                <li><a href="../classes/ya.util.Parallel.html">ya.util.Parallel</a></li>
             
                 <li><a href="../classes/ya.View.html">ya.View</a></li>
             
-                <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
+                <li><a href="../classes/ya.view.$manager.html">ya.view.$manager</a></li>
             
                 <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
             
-                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
+                <li><a href="../classes/ya.view.template.$manager.html">ya.view.template.$manager</a></li>
             
             </ul>
 
@@ -136,7 +146,7 @@
             <div class="apidocs">
                 <div id="docs-main">
                     <div class="content">
-                        <h1 class="file-heading">File: src\model.js</h1>
+                        <h1 class="file-heading">File: src/model.js</h1>
 
 <div class="file">
     <pre class="code prettyprint linenums">
@@ -195,9 +205,9 @@ ya.Core.$extend({
     initRequired: function () {
         var me = this;
 
-        if (!me.getNamespace()){
+        if (!me.getNamespace()) {
 
-            throw ya.Error.$create(&quot;Model need to have namespace&quot;);
+            throw ya.Error.$create(&quot;Model need to has a namespace&quot;);
 
         }
 
@@ -232,6 +242,7 @@ ya.Core.$extend({
 
             me.set(&#x27;isDirty&#x27;, true);
             me.fireEvent(&#x27;data&#x27; + property.charAt(0).toUpperCase() + property.slice(1) + &#x27;Change&#x27;, me, value, oldVal);
+            me.fireEvent(&#x27;dataChange&#x27;, me, data);
 
         }
     },
@@ -241,7 +252,13 @@ ya.Core.$extend({
      * @returns {*}
      */
     getDataProperty: function (property) {
-        return this.get(&#x27;data&#x27;)[property];
+        var value = this.get(&#x27;data&#x27;)[property];
+
+        if (typeof value === &quot;undefined&quot;) {
+            value = &quot;&quot;;
+        }
+
+        return value;
     },
     /**
      * @method data
@@ -297,7 +314,6 @@ ya.Core.$extend({
                 me.data(key, null);
             }
         }
-        me.set(&#x27;data&#x27;, {});
         me.fireEvent(&#x27;dataChange&#x27;, me, data);
     },
     /**
@@ -308,14 +324,15 @@ ya.Core.$extend({
         var me = this,
             data = me.get(&#x27;data&#x27;),
             idProperty = me.getIdProperty(),
-            deferred = ya.$Promise.deferred(),
+            deferred = ya.$promise.deferred(),
             action = new ya.data.Action(),
             opts = {},
             response;
 
         if (
-            typeof params[idProperty] === &#x27;undefined&#x27; &amp;&amp; typeof data[idProperty] === &#x27;undefined&#x27;
-            )
+            typeof params[idProperty] === &#x27;undefined&#x27; &amp;&amp;
+            typeof data[idProperty] === &#x27;undefined&#x27;
+        )
             throw ya.Error.$create(&#x27;You need to pass id to load model&#x27;);
 
         params[idProperty] = data[idProperty];
@@ -324,20 +341,62 @@ ya.Core.$extend({
         opts.params = params;
         opts.callback = function () {
 
-            response = me.getProxy().getResponse();
+            response = action
+                .getResponse();
 
-            if (me.getProxy().getStatus() === &#x27;success&#x27;) {
+            if (
+                action
+                    .getStatus() === ya
+                    .data
+                    .Action
+                    .$status
+                    .SUCCESS
+            ) {
 
-                me.set(&#x27;isDirty&#x27;, false);
-                me.set(&#x27;data&#x27;, response);
+                me
+                    .set(
+                    &#x27;isDirty&#x27;,
+                    false
+                );
 
-                deferred.resolve({scope: me, response: response, action: &#x27;read&#x27;});
-                me.fireEvent(&#x27;loaded&#x27;, me, response, &#x27;read&#x27;);
+                me
+                    .set(
+                    &#x27;data&#x27;,
+                    response
+                        .result
+                );
+
+                deferred
+                    .resolve({
+                        scope: me,
+                        response: response,
+                        action: &#x27;read&#x27;
+                    });
+
+                me
+                    .fireEvent(
+                    &#x27;loaded&#x27;,
+                    me,
+                    response,
+                    &#x27;read&#x27;
+                );
 
             } else {
 
-                deferred.reject({scope: me, response: response, action: &#x27;read&#x27;});
-                me.fireEvent(&#x27;error&#x27;, me, response, &#x27;read&#x27;);
+                deferred
+                    .reject({
+                        scope: me,
+                        response: response,
+                        action: &#x27;read&#x27;
+                    });
+
+                me
+                    .fireEvent(
+                    &#x27;error&#x27;,
+                    me,
+                    response,
+                    &#x27;read&#x27;
+                );
 
             }
 
@@ -357,7 +416,7 @@ ya.Core.$extend({
         var me = this,
             data = me.get(&#x27;data&#x27;),
             idProperty = me.getIdProperty(),
-            deferred = ya.$Promise.deferred(),
+            deferred = ya.$promise.deferred(),
             action = new ya.data.Action(),
             proxy = me.getProxy(),
             opts = {},
@@ -397,7 +456,6 @@ ya.Core.$extend({
             .setOptions(opts)
             .setData(data);
 
-
         if (typeof data[idProperty] === &#x27;undefined&#x27;) {
 
             type = &#x27;create&#x27;;
@@ -419,7 +477,7 @@ ya.Core.$extend({
         var me = this,
             data = me.get(&#x27;data&#x27;),
             idProperty = me.getIdProperty(),
-            deferred = ya.$Promise.deferred(),
+            deferred = ya.$promise.deferred(),
             action = new ya.data.Action(),
             proxy = me.getProxy(),
             opts = {},
@@ -483,7 +541,6 @@ ya.Core.$extend({
         return this._isDirty;
     }
 });
-
     </pre>
 </div>
 

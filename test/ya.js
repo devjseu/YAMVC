@@ -16,20 +16,27 @@ test("set object", function () {
 
 test("get object", function () {
 
-    ya.$set('foo2.bar', 4);
+    var err;
+    ya.$set('foo2', 'bar', 4);
+
+    try {
+        ya.$get('foo23.bar');
+    } catch (e) {
+        err = e;
+    }
 
     equal(ya.$get('foo2.bar'), 4);
+    equal(err.getId(), 'GEN1');
 
-    equal(ya.$get('foo23.bar'), null);
 
 });
 
 test("get lazy object if namespace is not defined", function () {
 
-    equal(typeof ya.$get('foo3.bar'), 'object');
 
-    ya.$set('foo3.bar', 4);
+    ya.$set('foo3', 'bar', 4);
 
+    equal(typeof ya.$get('foo3'), 'object');
     equal(ya.$get('foo3.bar'), 4);
 
 });
@@ -62,8 +69,8 @@ test("return instance of class from factory", function () {
     instance = ya.$factory({
         module: 'test1',
         alias: 'Test',
-        methods : {
-            testMethod : function (a) {
+        methods: {
+            testMethod: function (a) {
                 return a + 2;
             }
         }

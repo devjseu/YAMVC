@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>src\collection.js - yam</title>
+    <title>src/collection.js - yam</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -19,7 +19,7 @@
             
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.2.0</em>
+            <em>API Docs for: 0.3.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -43,15 +43,19 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
+                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+            
+                <li><a href="../classes/ya.Ajax.html">ya.Ajax</a></li>
+            
+                <li><a href="../classes/ya.ajax.JSON.html">ya.ajax.JSON</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
             
-                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
+                <li><a href="../classes/ya.collection.$manager.html">ya.collection.$manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
-                <li><a href="../classes/ya.controller.$Manager.html">ya.controller.$Manager</a></li>
+                <li><a href="../classes/ya.controller.$manager.html">ya.controller.$manager</a></li>
             
                 <li><a href="../classes/ya.Core.html">ya.Core</a></li>
             
@@ -59,7 +63,7 @@
             
                 <li><a href="../classes/ya.data.Proxy.html">ya.data.Proxy</a></li>
             
-                <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
+                <li><a href="../classes/ya.data.proxy.LocalStorage.html">ya.data.proxy.LocalStorage</a></li>
             
                 <li><a href="../classes/ya.Error.html">ya.Error</a></li>
             
@@ -83,17 +87,23 @@
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
+                <li><a href="../classes/ya.Module.html">ya.Module</a></li>
+            
                 <li><a href="../classes/ya.Router.html">ya.Router</a></li>
+            
+                <li><a href="../classes/ya.util.$detection.html">ya.util.$detection</a></li>
+            
+                <li><a href="../classes/ya.util.Parallel.html">ya.util.Parallel</a></li>
             
                 <li><a href="../classes/ya.View.html">ya.View</a></li>
             
-                <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
+                <li><a href="../classes/ya.view.$manager.html">ya.view.$manager</a></li>
             
                 <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
             
-                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
+                <li><a href="../classes/ya.view.template.$manager.html">ya.view.template.$manager</a></li>
             
             </ul>
 
@@ -136,7 +146,7 @@
             <div class="apidocs">
                 <div id="docs-main">
                     <div class="content">
-                        <h1 class="file-heading">File: src\collection.js</h1>
+                        <h1 class="file-heading">File: src/collection.js</h1>
 
 <div class="file">
     <pre class="code prettyprint linenums">
@@ -167,7 +177,12 @@ ya.Core.$extend({
          * @type ya.data.Proxy Instance of proxy for transferring data
          * @required
          */
-        proxy: null
+        proxy: null,
+        /**
+         * @attribute config.remote
+         * @type boolean if true search will be perform
+         */
+        remote: false
     },
     /**
      * initialize collection
@@ -181,7 +196,12 @@ ya.Core.$extend({
             .__super(opts)
             .initData();
 
-        ya.collection.$Manager.register(me.getId(), me);
+        ya.collection
+            .$manager
+            .register(
+            me.getId(),
+            me
+        );
 
         return me;
     },
@@ -190,10 +210,17 @@ ya.Core.$extend({
      * @returns {*}
      */
     initDefaults: function () {
-        var me = this;
+        var me = this,
+            model = me.getModel();
 
-        me.setId(me.getId() || &#x27;collection-&#x27; + ya.collection.$Manager.getCount());
-        me.setModel(me.getModel() || ya.$get(&#x27;ya.Model&#x27;));
+        me.setId(me.getId() || &#x27;collection-&#x27; + ya.collection.$manager.getCount());
+
+        if (typeof model === &#x27;string&#x27;) {
+            model = ya.$get(model);
+        }
+
+
+        me.setModel(model || ya.$get(&#x27;ya.Model&#x27;));
 
         me.set(&#x27;set&#x27;, []);
         me.set(&#x27;cache&#x27;, []);
@@ -245,7 +272,7 @@ ya.Core.$extend({
      */
     push: function (records) {
         var me = this,
-            record,
+            record, raw,
             ModelDefinition = me.getModel(),
             namespace = me.getNamespace(),
             newRecords = [];
@@ -256,27 +283,48 @@ ya.Core.$extend({
 
         while (records.length) {
 
-            record = records.shift();
+            raw = record = records.shift();
 
-            if (!(record instanceof ModelDefinition)) {
-                record = new ModelDefinition(
-                    {
-                        config: {
-                            namespace: namespace,
-                            data: record
+            if (record) {
+
+                if (!(record instanceof ModelDefinition)) {
+                    record = new ModelDefinition(
+                        {
+                            config: {
+                                namespace: namespace,
+                                data: record
+                            }
                         }
-                    }
-                );
+                    );
+                }
+
+                if (
+                    record
+                        .getNamespace() !==
+                    me
+                        .getNamespace()
+                ) {
+
+                    throw ya
+                        .Error
+                        .$create(
+                        &#x27;Model should have same namespace as collection&#x27;,
+                        &#x27;COL2&#x27;
+                    );
+
+                }
+
+                me
+                    ._raw
+                    .push(raw);
+
+                me
+                    ._cache
+                    .push(record);
+
+                newRecords
+                    .push(record);
             }
-
-            if (record.getNamespace() !== me.getNamespace()) {
-
-                throw ya.Error.$create(&#x27;Model should have same namespace as collection&#x27;, &#x27;COL2&#x27;);
-
-            }
-
-            me._cache.push(record);
-            newRecords.push(record);
 
         }
 
@@ -306,6 +354,16 @@ ya.Core.$extend({
                 return true;
             }
 
+            if (
+                (
+                r.data(r.getIdProperty()) &amp;&amp; r.data(rec.getIdProperty())
+                ) &amp;&amp;
+                r.data(r.getIdProperty()) === r.data(rec.getIdProperty())
+            ) {
+                idx = i;
+                return true;
+            }
+
         };
 
         if (!Array.isArray(records)) {
@@ -320,6 +378,7 @@ ya.Core.$extend({
 
             if (idx &gt;= 0) {
 
+                me._raw.splice(idx, 1);
                 removed.push(me._cache.splice(idx, 1).pop());
 
             }
@@ -334,6 +393,18 @@ ya.Core.$extend({
 
         return me;
     },
+    removeByField: function (field, record) {
+        var me = this,
+            records = me
+                .getBy(function (r) {
+                    return r.data(field) === record.data(key)
+                });
+
+        me
+            .remove(records);
+
+        return me;
+    },
     /**
      *
      * @returns {Array}
@@ -344,6 +415,7 @@ ya.Core.$extend({
 
         me.set(&#x27;set&#x27;, []);
         me.set(&#x27;cache&#x27;, []);
+        me.set(&#x27;raw&#x27;, []);
         me.fireEvent(&#x27;remove&#x27;, me, removed);
 
         return me;
@@ -368,6 +440,7 @@ ya.Core.$extend({
 
         me.set(&#x27;set&#x27;, []);
         me.set(&#x27;cache&#x27;, []);
+        me.set(&#x27;raw&#x27;, []);
         me.set(&#x27;removed&#x27;, []);
 
         me.fireEvent(&#x27;clear&#x27;, me);
@@ -451,7 +524,8 @@ ya.Core.$extend({
 
         //TODO: clear by multiple filters id
         me.set(&#x27;filters&#x27;, []);
-        me.filter();
+        me.set(&#x27;set&#x27;, me._cache);
+        me.fireEvent(&#x27;filter&#x27;, me, []);
 
         return me;
     },
@@ -568,16 +642,37 @@ ya.Core.$extend({
     findOneBy: function (fn) { //
         var me = this,
             records = me._set,
-            i = 0, len = records.length;
+            len = records.length,
+            i = 0,
+            founded = -1;
 
         while (i &lt; len) {
 
-            if (fn(records[i])) break;
+            if (fn(records[i])) {
+                founded = i;
+                break;
+            }
 
             i++;
-        }
+        } //todo: need to be changed in library
 
-        return len;
+        return founded;
+    },
+    /**
+     *
+     * @returns {boolean}
+     */
+    contains: function (field, value) {
+        var me = this,
+            contains = false;
+
+        me.each(function (r) {
+            if (r.data(field) === value) {
+                contains = true;
+            }
+        });
+
+        return contains;
     },
     /**
      * @param fn
@@ -589,7 +684,7 @@ ya.Core.$extend({
             record,
             i = 0, len = records.length;
 
-        while (i&lt;len) {
+        while (i &lt; len) {
 
             if (fn(records[i])) {
                 record = records[i];
@@ -616,7 +711,7 @@ ya.Core.$extend({
      */
     load: function (params) {
         var me = this,
-            deferred = ya.$Promise.deferred(),
+            deferred = ya.$promise.deferred(),
             namespace = me.getNamespace(),
             action = ya.data.Action.$create(),
             callback,
@@ -626,7 +721,7 @@ ya.Core.$extend({
 
         if (
             i === 0
-            )
+        )
             throw ya.Error.$create(&#x27;You need to pass at least one condition to load model collection&#x27;, &#x27;COL3&#x27;);
 
         if (!me.getProxy())
@@ -635,7 +730,7 @@ ya.Core.$extend({
 
         callback = function () {
 
-            if (me.getProxy().getStatus() === &#x27;success&#x27;) {
+            if (action.getStatus() === &#x27;success&#x27;) {
 
                 me.fireEvent(&#x27;load&#x27;, me, action.getResponse(), &#x27;read&#x27;);
                 me.setData(action.getData());
@@ -654,7 +749,9 @@ ya.Core.$extend({
                 namespace: namespace
             });
 
-        me.getProxy().read(action);
+        me
+            .getProxy()
+            .read(action);
 
         return deferred.promise;
     },
@@ -664,7 +761,7 @@ ya.Core.$extend({
      */
     save: function () {
         var me = this,
-            deferred = ya.$Promise.deferred(),
+            deferred = ya.$promise.deferred(),
             action,
             toCreate = [],
             toUpdate = [],
@@ -700,8 +797,8 @@ ya.Core.$extend({
         byIdFn = function (record) {
             return function (_record) {
                 return record.__clientId__ ?
-                    _record.data(&#x27;__clientId__&#x27;) === record.__clientId__ :
-                    _record.data(&#x27;id&#x27;) === record.id;
+                _record.data(&#x27;__clientId__&#x27;) === record.__clientId__ :
+                _record.data(&#x27;id&#x27;) === record.id;
             };
         };
 
@@ -825,7 +922,7 @@ ya.Core.$extend({
     prepareData: function (data) {
         var me = this,
             ModelInstance = me.getModel(),
-            modelConfig = { namespace: me.getNamespace()},
+            modelConfig = {namespace: me.getNamespace()},
             l = data.length,
             models = [];
 
@@ -842,8 +939,7 @@ ya.Core.$extend({
 
         me.suspendEvents(true);
         me.filter();
-        me.sort()
-        ;
+        me.sort();
         me.resumeEvents();
         me.fireEvent(&#x27;prepare&#x27;);
 
@@ -887,7 +983,6 @@ ya.Core.$extend({
         return isDirty;
     }
 });
-
     </pre>
 </div>
 

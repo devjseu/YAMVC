@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>src\controller.js - yam</title>
+    <title>src/controller.js - yam</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -19,7 +19,7 @@
             
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.2.0</em>
+            <em>API Docs for: 0.3.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -43,15 +43,19 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
+                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+            
+                <li><a href="../classes/ya.Ajax.html">ya.Ajax</a></li>
+            
+                <li><a href="../classes/ya.ajax.JSON.html">ya.ajax.JSON</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
             
-                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
+                <li><a href="../classes/ya.collection.$manager.html">ya.collection.$manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
-                <li><a href="../classes/ya.controller.$Manager.html">ya.controller.$Manager</a></li>
+                <li><a href="../classes/ya.controller.$manager.html">ya.controller.$manager</a></li>
             
                 <li><a href="../classes/ya.Core.html">ya.Core</a></li>
             
@@ -59,7 +63,7 @@
             
                 <li><a href="../classes/ya.data.Proxy.html">ya.data.Proxy</a></li>
             
-                <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
+                <li><a href="../classes/ya.data.proxy.LocalStorage.html">ya.data.proxy.LocalStorage</a></li>
             
                 <li><a href="../classes/ya.Error.html">ya.Error</a></li>
             
@@ -83,17 +87,23 @@
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
+                <li><a href="../classes/ya.Module.html">ya.Module</a></li>
+            
                 <li><a href="../classes/ya.Router.html">ya.Router</a></li>
+            
+                <li><a href="../classes/ya.util.$detection.html">ya.util.$detection</a></li>
+            
+                <li><a href="../classes/ya.util.Parallel.html">ya.util.Parallel</a></li>
             
                 <li><a href="../classes/ya.View.html">ya.View</a></li>
             
-                <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
+                <li><a href="../classes/ya.view.$manager.html">ya.view.$manager</a></li>
             
                 <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
             
-                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
+                <li><a href="../classes/ya.view.template.$manager.html">ya.view.template.$manager</a></li>
             
             </ul>
 
@@ -136,7 +146,7 @@
             <div class="apidocs">
                 <div id="docs-main">
                     <div class="content">
-                        <h1 class="file-heading">File: src\controller.js</h1>
+                        <h1 class="file-heading">File: src/controller.js</h1>
 
 <div class="file">
     <pre class="code prettyprint linenums">
@@ -181,10 +191,7 @@ ya.Core.$extend({
     static: {
         router: null,
         getRouter: function () {
-
-            ya.Controller.$router = ya.Controller.$router || new ya.Router();
-
-            return ya.Controller.$router;
+            return ya.Controller.$router = ya.Controller.$router || new ya.Router();
         }
     },
     init: function (opts) {
@@ -195,11 +202,20 @@ ya.Core.$extend({
             .initEvents()
             .initRoutes();
 
-        ya.controller.$Manager.register(me.getId(), me);
+        ya
+            .controller
+            .$manager
+            .register(
+            me.getId(),
+            me
+        );
 
-        ya.$onReady(function () {
-            me.restoreRouter();
-        });
+        ya
+            .$onReady(
+            function () {
+                me.restoreRouter();
+            }
+        );
 
         return me;
     },
@@ -210,10 +226,25 @@ ya.Core.$extend({
     initDefaults: function () {
         var me = this;
 
-        me.setId(me.getId() || &#x27;controller-&#x27; + ya.controller.$Manager.getCount());
+        me.setId(
+            me.getId() ||
+            &#x27;controller-&#x27; + ya
+                .controller
+                .$manager
+                .getCount()
+        );
 
-        me.set(&#x27;router&#x27;, ya.Controller.$getRouter());
-        me.set(&#x27;dispatcher&#x27;, ya.event.$dispatcher);
+        me
+            .set(
+            &#x27;router&#x27;,
+            ya.Controller.$getRouter()
+        );
+
+        me
+            .set(
+            &#x27;dispatcher&#x27;,
+            ya.event.$dispatcher
+        );
 
         return me;
     },
@@ -227,6 +258,7 @@ ya.Core.$extend({
             events = me.getEvents(),
             views = [],
             rx = new RegExp(&#x27;\\$([^\\s]+)&#x27;),
+            rx2 = new RegExp(&#x27;[id|class]+:([^\\s]+)&#x27;),
             dispatcher = me._dispatcher,
             matches, view, l, obj, current;
 
@@ -255,7 +287,7 @@ ya.Core.$extend({
 
                     dispatcher.add(me, obj);
 
-                    matches = query.match(rx);
+                    matches = query.match(rx) || query.match(rx2);
                     if (matches) {
 
                         if (views.indexOf(matches[1]) &lt; 0) {
@@ -267,7 +299,7 @@ ya.Core.$extend({
                     } else {
 
                         throw ya.Error.$create(
-                            me.__class__ + &#x27;: Event query should begin from id of the view (current query: &#x27; + e + &#x27;)&#x27;, &#x27;CTRL1&#x27;
+                            me.__class__ + &#x27;: Event query should begin from id or class name of the view (current query: &#x27; + query + &#x27;)&#x27;, &#x27;CTRL1&#x27;
                         );
 
                     }
@@ -280,7 +312,7 @@ ya.Core.$extend({
             while (l--) {
 
                 view = ya
-                    .view.$Manager
+                    .view.$manager
                     .getItem(views[l]);
 
                 if (view) {
@@ -289,11 +321,12 @@ ya.Core.$extend({
 
                         me.resolveEvents(view);
 
-                    } else {
-
-                        view.addEventListener(&#x27;render&#x27;, me.resolveEvents, me);
-
                     }
+//                    else {
+//
+//                        view.addEventListener(&#x27;render&#x27;, me.resolveEvents, me);
+//
+//                    }
 
                 }
             }
@@ -330,8 +363,8 @@ ya.Core.$extend({
      */
     resolveEvents: function (view) {
         var events = this.getEvents(),
-            newScope = function (func, scope, arg) {
-                return func.bind(scope, arg);
+            newScope = function (func, scope, arg, arg2) {
+                return func.bind(scope, arg, arg2);
             },
             rx = new RegExp(&#x27;\\$([^\\s]+)&#x27;),
             matches,
@@ -339,6 +372,7 @@ ya.Core.$extend({
             elements,
             selector,
             scope;
+
 
         for (var query in events) {
             if (events.hasOwnProperty(query)) {
@@ -364,7 +398,7 @@ ya.Core.$extend({
 
                             if (viewEvents.hasOwnProperty(event)) {
 
-                                scope = newScope(viewEvents[event], this, view);
+                                scope = newScope(viewEvents[event], this, view, elements[i]);
 
                                 elements[i].addEventListener(event, scope);
 
@@ -387,7 +421,7 @@ ya.Core.$extend({
      * @returns {*}
      */
     getRouter: function () {
-        return router;
+        return this._router;
     },
     /**
      * Returns view by id
@@ -395,7 +429,7 @@ ya.Core.$extend({
      * @returns {*}
      */
     getView: function (id) {
-        return ya.view.$Manager.getItem(id);
+        return ya.view.$manager.getItem(id);
     },
     /**
      * Returns controller by id
@@ -403,7 +437,7 @@ ya.Core.$extend({
      * @returns {*}
      */
     getController: function (id) {
-        return ya.controller.$Manager.getItem(id);
+        return ya.controller.$manager.getItem(id);
     },
     /**
      * Returns collection by id
@@ -411,7 +445,7 @@ ya.Core.$extend({
      * @returns {*}
      */
     getCollection: function (id) {
-        return ya.collection.$Manager.getItem(id);
+        return ya.collection.$manager.getItem(id);
     },
     /**
      * Restores router state

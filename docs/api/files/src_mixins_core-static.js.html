@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>src\mixins\core-static.js - yam</title>
+    <title>src/mixins/core-static.js - yam</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -19,7 +19,7 @@
             
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.2.0</em>
+            <em>API Docs for: 0.3.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -43,15 +43,19 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
+                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+            
+                <li><a href="../classes/ya.Ajax.html">ya.Ajax</a></li>
+            
+                <li><a href="../classes/ya.ajax.JSON.html">ya.ajax.JSON</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
             
-                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
+                <li><a href="../classes/ya.collection.$manager.html">ya.collection.$manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
-                <li><a href="../classes/ya.controller.$Manager.html">ya.controller.$Manager</a></li>
+                <li><a href="../classes/ya.controller.$manager.html">ya.controller.$manager</a></li>
             
                 <li><a href="../classes/ya.Core.html">ya.Core</a></li>
             
@@ -59,7 +63,7 @@
             
                 <li><a href="../classes/ya.data.Proxy.html">ya.data.Proxy</a></li>
             
-                <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
+                <li><a href="../classes/ya.data.proxy.LocalStorage.html">ya.data.proxy.LocalStorage</a></li>
             
                 <li><a href="../classes/ya.Error.html">ya.Error</a></li>
             
@@ -83,17 +87,23 @@
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
+                <li><a href="../classes/ya.Module.html">ya.Module</a></li>
+            
                 <li><a href="../classes/ya.Router.html">ya.Router</a></li>
+            
+                <li><a href="../classes/ya.util.$detection.html">ya.util.$detection</a></li>
+            
+                <li><a href="../classes/ya.util.Parallel.html">ya.util.Parallel</a></li>
             
                 <li><a href="../classes/ya.View.html">ya.View</a></li>
             
-                <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
+                <li><a href="../classes/ya.view.$manager.html">ya.view.$manager</a></li>
             
                 <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
             
-                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
+                <li><a href="../classes/ya.view.template.$manager.html">ya.view.template.$manager</a></li>
             
             </ul>
 
@@ -136,10 +146,11 @@
             <div class="apidocs">
                 <div id="docs-main">
                     <div class="content">
-                        <h1 class="file-heading">File: src\mixins\core-static.js</h1>
+                        <h1 class="file-heading">File: src/mixins/core-static.js</h1>
 
 <div class="file">
     <pre class="code prettyprint linenums">
+
 /**
  * @namespace ya.mixins
  * @class CoreStatic
@@ -175,11 +186,11 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.CoreStatic&#x27;, {
                 };
             },
             __hasProp = {}.hasOwnProperty,
-            __Class,
+            __Object,
             __extends;
 
-        __Class = function () {
-            var defsArr = __Class.__defaults__,
+        __Object = function () {
+            var defsArr = __Object.__defaults__,
                 len = defsArr.length,
                 i = 0, defs = {},
                 def, key;
@@ -191,7 +202,7 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.CoreStatic&#x27;, {
 
                 def = defsArr[i];
                 if (typeof def === &#x27;function&#x27;) {
-                    def = def();
+                    def = def.call(this);
                 }
 
                 ya.$merge(defs, def);
@@ -222,7 +233,12 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.CoreStatic&#x27;, {
 
             for (var staticCore in ya.mixins.CoreStatic) {
 
-                if (ya.mixins.CoreStatic.hasOwnProperty(staticCore)) {
+                if (
+                    ya
+                        .mixins
+                        .CoreStatic
+                        .hasOwnProperty(staticCore)
+                ) {
                     child[staticCore] = ya.mixins.CoreStatic[staticCore];
                 }
 
@@ -231,7 +247,7 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.CoreStatic&#x27;, {
             for (var name in opts) {
                 // Check if we&#x27;re overwriting an existing function
                 child.prototype[name] = typeof opts[name] == &quot;function&quot; &amp;&amp;
-                    typeof _super[name] == &quot;function&quot; &amp;&amp; fnTest.test(opts[name]) ?
+                typeof _super[name] == &quot;function&quot; &amp;&amp; fnTest.test(opts[name]) ?
                     makeSuper(name, opts[name]) :
                     opts[name];
             }
@@ -260,18 +276,18 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.CoreStatic&#x27;, {
             return child;
         };
 
-        __extends(__Class, Parent);
+        __extends(__Object, Parent);
 
         if (opts.alias) {
 
-            ya.$set(opts.module || ya.$module(), opts.alias, opts.singleton ? new __Class() : __Class);
+            ya.$set(opts.module || ya.$module(), opts.alias, opts.singleton ? __Object.$create() : __Object);
 
         }
 
-        return __Class;
+        return __Object;
     },
     /**
-    * Create an instance of class.
+     * Create an instance of class.
      * @method $create
      * @for ya.mixins.CoreStatic
      * @returns {Function}
@@ -281,7 +297,7 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.CoreStatic&#x27;, {
         var Obj = this,
             args = Array.prototype.concat.apply([Obj], arguments);
 
-        return  new (Function.prototype.bind.apply(Obj, args));
+        return new (Function.prototype.bind.apply(Obj, args));
     },
     /**
      *
@@ -310,7 +326,6 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.CoreStatic&#x27;, {
         }
     }
 });
-
     </pre>
 </div>
 

@@ -2,10 +2,10 @@
  * @author angularjs
  * @contributed mkalafior
  * @namespace ya
- * @class $Promise
+ * @class $promise
  * @static
  */
-ya.$set('ya', '$Promise', function (undefined) {
+ya.$set('ya', '$promise', function (undefined) {
     "use strict";
 
     var ya = window.ya || {},
@@ -53,6 +53,9 @@ ya.$set('ya', '$Promise', function (undefined) {
                     }
                 },
                 reject: function (reason) {
+                    if (reason instanceof Error || reason instanceof ya.Error) {
+                        console.log('%cError: ', 'background: red; color: white;', reason, reason.stack || reason.getStack());
+                    }
                     deferred.resolve(createInternalRejectedPromise(reason));
                 },
                 notify: function (progress) {

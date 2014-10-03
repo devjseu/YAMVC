@@ -113,28 +113,6 @@ test("assign listeners for new view", function () {
 test("assign listeners only for appended view", function () {
     var view, view2;
 
-    ya.event.$dispatcher.add(this, {
-        '$test2 span': {
-            click: function (view, e) {
-                var el = e.target || e.srcElement;
-
-                el.innerHTML = '1';
-
-            },
-            mouseenter: function () {
-
-            }
-        }
-    });
-
-    ya.event.$dispatcher.add(this, {
-        '$test2': {
-            click: function () {
-
-            }
-        }
-    });
-
     view = ya.View.$create({
         config: {
             id: 'test2',
@@ -159,6 +137,16 @@ test("assign listeners only for appended view", function () {
 
     view.render();
 
+    ya.event.$dispatcher.add(this, {
+        '$test2 span': {
+            click: function (view, el, e) {
+                console.log(arguments);
+                el.innerHTML = '1';
+
+            }
+        }
+    });
+
     view2 = ya.View.$create({
         config: {
             id: 'test2b',
@@ -178,10 +166,10 @@ test("assign listeners only for appended view", function () {
 
     view2.render();
 
-    ya.event.$dispatcher.apply(view2);
-
     click(view.querySelectorAll('span')[0]);
     click(view.querySelectorAll('span')[1]);
+
+    console.log(view.querySelectorAll('span'));
 
     equal(view.querySelectorAll('span')[0].innerHTML, '');
     equal(view.querySelectorAll('span')[1].innerHTML, '1');
@@ -192,9 +180,7 @@ test("assign listeners for multiple views", function () {
 
     ya.event.$dispatcher.add(this, {
         '$test3b li': {
-            click: function (view, e) {
-                var el = e.target || e.srcElement;
-
+            click: function (view, el) {
                 el.innerHTML = '1';
 
             }
@@ -203,11 +189,8 @@ test("assign listeners for multiple views", function () {
 
     ya.event.$dispatcher.add(this, {
         '$test3 div li': {
-            click: function (view, e) {
-                var el = e.target || e.srcElement;
-
+            click: function (view, el) {
                 el.setAttribute('passed', '1');
-
             }
         }
     });
@@ -231,7 +214,7 @@ test("assign listeners for multiple views", function () {
     ya.View.$create({
         config: {
             id: 'test3a',
-            parent: ya.view.$Manager.getItem('test3'),
+            parent: ya.view.$manager.getItem('test3'),
             renderTo: 'div',
             tpl: ya.view.Template.$create({
                 config: {
@@ -248,7 +231,7 @@ test("assign listeners for multiple views", function () {
     ya.View.$create({
         config: {
             id: 'test3b',
-            parent: ya.view.$Manager.getItem('test3'),
+            parent: ya.view.$manager.getItem('test3'),
             renderTo: 'div',
             tpl: ya.view.Template.$create({
                 config: {
@@ -265,7 +248,7 @@ test("assign listeners for multiple views", function () {
     ya.View.$create({
         config: {
             id: 'test3c',
-            parent: ya.view.$Manager.getItem('test3'),
+            parent: ya.view.$manager.getItem('test3'),
             renderTo: 'div',
             tpl: ya.view.Template.$create({
                 config: {
@@ -282,7 +265,7 @@ test("assign listeners for multiple views", function () {
     ya.View.$create({
         config: {
             id: 'test3ba',
-            parent: ya.view.$Manager.getItem('test3b'),
+            parent: ya.view.$manager.getItem('test3b'),
             renderTo: '.content',
             tpl: ya.view.Template.$create({
                 config: {
@@ -297,14 +280,13 @@ test("assign listeners for multiple views", function () {
     });
 
 
-    ya.view.$Manager.getItem('test3').render();
+    ya.view.$manager.getItem('test3').render();
 
     var li1, li2;
 
     li1 = ya.View.$create({
         config: {
             id: 'test3baa',
-            renderTo: '.content',
             tpl: ya.view.Template.$create({
                 config: {
                     id: 'tpl-test3ba-2',
@@ -332,8 +314,8 @@ test("assign listeners for multiple views", function () {
         }
     });
 
-    ya.view.$Manager.getItem('test3ba').addChild(li1, 'ul');
-    li2.render();
+    ya.view.$manager.getItem('test3ba').addChild(li1, 'ul');
+    ya.view.$manager.getItem('test3ba').addChild(li2, 'ul');
 
     click(li1.get('el'));
     click(li2.get('el'));
@@ -341,10 +323,10 @@ test("assign listeners for multiple views", function () {
     equal(li1.get('el').innerHTML, '1');
     equal(li1.get('el').getAttribute('passed'), '1');
 
-    equal(li2.get('el').innerHTML, '');
-    equal(li2.get('el').getAttribute('passed'), null);
+    equal(li2.get('el').innerHTML, '1');
+    equal(li2.get('el').getAttribute('passed'), '1');
 
-//    ya.experimental.event.$dispatcher.apply(view2);
+//    ya.event.$dispatcher.apply(view2);
 
 });
 

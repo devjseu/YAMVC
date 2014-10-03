@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>src\mixins\dom.js - yam</title>
+    <title>src/mixins/dom.js - yam</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -19,7 +19,7 @@
             
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.2.0</em>
+            <em>API Docs for: 0.3.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -43,15 +43,19 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
+                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+            
+                <li><a href="../classes/ya.Ajax.html">ya.Ajax</a></li>
+            
+                <li><a href="../classes/ya.ajax.JSON.html">ya.ajax.JSON</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
             
-                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
+                <li><a href="../classes/ya.collection.$manager.html">ya.collection.$manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
-                <li><a href="../classes/ya.controller.$Manager.html">ya.controller.$Manager</a></li>
+                <li><a href="../classes/ya.controller.$manager.html">ya.controller.$manager</a></li>
             
                 <li><a href="../classes/ya.Core.html">ya.Core</a></li>
             
@@ -59,7 +63,7 @@
             
                 <li><a href="../classes/ya.data.Proxy.html">ya.data.Proxy</a></li>
             
-                <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
+                <li><a href="../classes/ya.data.proxy.LocalStorage.html">ya.data.proxy.LocalStorage</a></li>
             
                 <li><a href="../classes/ya.Error.html">ya.Error</a></li>
             
@@ -83,17 +87,23 @@
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
+                <li><a href="../classes/ya.Module.html">ya.Module</a></li>
+            
                 <li><a href="../classes/ya.Router.html">ya.Router</a></li>
+            
+                <li><a href="../classes/ya.util.$detection.html">ya.util.$detection</a></li>
+            
+                <li><a href="../classes/ya.util.Parallel.html">ya.util.Parallel</a></li>
             
                 <li><a href="../classes/ya.View.html">ya.View</a></li>
             
-                <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
+                <li><a href="../classes/ya.view.$manager.html">ya.view.$manager</a></li>
             
                 <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
             
-                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
+                <li><a href="../classes/ya.view.template.$manager.html">ya.view.template.$manager</a></li>
             
             </ul>
 
@@ -136,7 +146,7 @@
             <div class="apidocs">
                 <div id="docs-main">
                     <div class="content">
-                        <h1 class="file-heading">File: src\mixins\dom.js</h1>
+                        <h1 class="file-heading">File: src/mixins/dom.js</h1>
 
 <div class="file">
     <pre class="code prettyprint linenums">
@@ -145,6 +155,50 @@
  * @class DOM
  */
 ya.$set(&#x27;ya&#x27;, &#x27;mixins.DOM&#x27;, {
+    findParent: function (el, selector) {
+        var queryMatch = ya.mixins.DOM.isQueryMatch,
+            parent = null;
+
+        if (typeof selector !== &#x27;string&#x27;) {
+            return null;
+        }
+
+        while (el.parentNode) {
+            el = el.parentNode;
+            if (queryMatch(selector, el)) {
+                parent = el;
+                break;
+            }
+        }
+
+
+        return parent;
+    },
+    //todo: new function
+    isChild: function (parent, child) {
+        var isChild = false,
+            walker, node;
+
+        walker = document.createTreeWalker( // Create walker object and
+            parent,
+            NodeFilter.SHOW_ELEMENT,
+            null,
+            false
+        );
+
+        while (walker.nextNode()) {
+            // walk through all nodes
+
+            node = walker.currentNode;
+            if (node === child) {
+                isChild = true;
+            }
+
+        }
+
+
+        return isChild;
+    },
     /**
      * checks if passed selector match to root DOM element
      * @method isQueryMatch
@@ -152,11 +206,13 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.DOM&#x27;, {
      * @param {HTMLElement} el DOM to match
      */
     isQueryMatch: function (selector, el) {
-        var match = true, tag, id, classes;
+        var isElement = ya.mixins.DOM.isElement, match = true, tag, id, classes, _class;
 
-        el = this._el || el;
+        if (!isElement(el)) {
+            match = false;
+        }
 
-        if (selector.search(&quot; &quot;) === -1) {
+        if (match &amp;&amp; selector.search(&quot; &quot;) === -1) {
             // If selector is only for one lvl element
             // (ex. div.class and not div .class),
             // find tag,
@@ -178,10 +234,24 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.DOM&#x27;, {
                 // If any classes were founded
                 while (classes.length) {
 
+                    _class = classes
+                        .pop()
+                        .substring(1);
+
                     // check if the element have all of them.
-                    if (!el.classList.contains(classes.pop().substring(1))) {
+                    if (
+                        el
+                            .classList &amp;&amp; !el
+                            .classList
+                            .contains(
+                            _class
+                        )
+                    ) {
+
                         match = false;
+
                         break;
+
                     }
 
                 }
@@ -220,8 +290,8 @@ ya.$set(&#x27;ya&#x27;, &#x27;mixins.DOM&#x27;, {
             //an exception is thrown and we end up here. Testing some
             //properties that all elements have. (works on IE7)
             return (typeof obj === &quot;object&quot;) &amp;&amp;
-                (obj.nodeType === 1) &amp;&amp; (typeof obj.style === &quot;object&quot;) &amp;&amp;
-                (typeof obj.ownerDocument === &quot;object&quot;);
+            (obj.nodeType === 1) &amp;&amp; (typeof obj.style === &quot;object&quot;) &amp;&amp;
+            (typeof obj.ownerDocument === &quot;object&quot;);
         }
     },
     /**

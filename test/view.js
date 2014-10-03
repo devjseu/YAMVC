@@ -43,7 +43,7 @@ test("render with children", function () {
         config: {
             tpl: ya.view.Template.$create({
                 config: {
-                    id: 'tpl-test-1b',
+                    id: 'tpl-test-a',
                     tpl: [
                         '<div class="multilevel"></div>'
                     ]
@@ -56,11 +56,27 @@ test("render with children", function () {
                             config: {
                                 id: 'tpl-child-c',
                                 tpl: [
-                                    'Hello World!'
+                                    '<div>Hello World! <p></p></div>'
                                 ]
                             }
                         }),
-                        renderTo: '.multilevel'
+                        renderTo: '.multilevel',
+                        children: [
+                            ya.View.$create({
+                                config: {
+                                    id: 'last',
+                                    tpl: ya.view.Template.$create({
+                                        config: {
+                                            id: 'tpl-child-d',
+                                            tpl: [
+                                                'Hello World!'
+                                            ]
+                                        }
+                                    }),
+                                    renderTo: 'p'
+                                }
+                            })
+                        ]
                     }
                 })
             ],
@@ -70,7 +86,7 @@ test("render with children", function () {
 
     view.render();
 
-    el = document.querySelector('#' + view.getId());
+    el = document.querySelector('#last');
 
     equal(el.innerText, 'Hello World!');
 });
@@ -110,7 +126,7 @@ test("remove child", function () {
 
     view.render();
 
-    view.removeChild(ya.view.$Manager.getItem('child'));
+    view.removeChild(ya.view.$manager.getItem('child'));
 
     equal(view.getChildren().length, 0, 'from parent');
 });
@@ -166,10 +182,10 @@ test("initialize models if passed as objects", function () {
         config: {
             models: [
                 {
-                    namespace : 'example',
-                    data : {
-                        name : 'Seba',
-                        display : 'none'
+                    namespace: 'example',
+                    data: {
+                        name: 'Seba',
+                        display: 'none'
                     }
                 }
             ],
@@ -198,7 +214,7 @@ test("initialize models if passed as objects", function () {
 });
 
 
-test("rendered two times", function () {
+test("render view two times", function () {
     var view, model;
 
     model = ya.Model.$create({
@@ -220,9 +236,11 @@ test("rendered two times", function () {
                 config: {
                     id: 'tpl-example-4',
                     tpl: [
+                        '<div>',
                         '<div>Who are you ?</div>',
                         '<button style="margin: 10px;">answer</button>',
-                        '<div class="example" ya-css="display: {{example.display}};">Hi {{example.name}}</div>'
+                        '<div class="example" ya-css="display: {{example.display}};">Hi {{example.name}}</div>',
+                        '</div>'
                     ]
                 }
             }),
@@ -238,6 +256,8 @@ test("rendered two times", function () {
 
     view.render();
 
+    console.log(view);
+
     model.data('display', 'block');
 
     equal(view.querySelector('.example').getAttribute('style'), 'display: block;');
@@ -247,6 +267,7 @@ test("check if query match", function () {
 
     var v = ya.View.$create({
         config: {
+            renderTo : '#test-13',
             id: 'selector-test',
             tpl: ya.view.Template.$create({
                 config: {
@@ -273,18 +294,17 @@ test("check if query match", function () {
                         renderTo: 'p'
                     }
                 })
-            ],
-            renderTo: '#test-2'
+            ]
         }
     });
 
     v.render();
 
-    ok(ya.view.$Manager.getItem('selector-test').isQueryMatch('div#selector-test.employee.senior'), 'selector should match');
+    ok(ya.view.$manager.getItem('selector-test').isQueryMatch('div#selector-test.employee.senior', ya.view.$manager.getItem('selector-test').get('el')), 'selector should match');
 
-    ok(!ya.view.$Manager.getItem('selector-test').isQueryMatch('span'), 'selector shouldn\'t match');
+    ok(!ya.view.$manager.getItem('selector-test').isQueryMatch('span', ya.view.$manager.getItem('selector-test').get('el')), 'selector shouldn\'t match');
 
-    ok(ya.view.$Manager.getItem('selector-test').isQueryMatch('#selector-test.senior'), 'selector should match');
+    ok(ya.view.$manager.getItem('selector-test').isQueryMatch('#selector-test.senior', ya.view.$manager.getItem('selector-test').get('el')), 'selector should match');
 });
 
 test("initialize template in shorter way", function () {
@@ -332,7 +352,7 @@ test("fires an event when new model is appended", function () {
         modelChange++;
     });
 
-    view.setModel({ namespace: 'test' });
+    view.setModel({namespace: 'test'});
 
     ok(true);
 

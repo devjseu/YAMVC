@@ -24,7 +24,8 @@ asyncTest("basic", function () {
             }
         });
 
-    job.doit()
+
+    job.doIt()
         ['catch'](function () {
         onFinish();
     });

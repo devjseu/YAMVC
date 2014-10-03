@@ -1,3 +1,4 @@
+
 /**
  * @namespace ya.mixins
  * @class CoreStatic
@@ -33,11 +34,11 @@ ya.$set('ya', 'mixins.CoreStatic', {
                 };
             },
             __hasProp = {}.hasOwnProperty,
-            __Class,
+            __Object,
             __extends;
 
-        __Class = function () {
-            var defsArr = __Class.__defaults__,
+        __Object = function () {
+            var defsArr = __Object.__defaults__,
                 len = defsArr.length,
                 i = 0, defs = {},
                 def, key;
@@ -49,7 +50,7 @@ ya.$set('ya', 'mixins.CoreStatic', {
 
                 def = defsArr[i];
                 if (typeof def === 'function') {
-                    def = def();
+                    def = def.call(this);
                 }
 
                 ya.$merge(defs, def);
@@ -80,7 +81,12 @@ ya.$set('ya', 'mixins.CoreStatic', {
 
             for (var staticCore in ya.mixins.CoreStatic) {
 
-                if (ya.mixins.CoreStatic.hasOwnProperty(staticCore)) {
+                if (
+                    ya
+                        .mixins
+                        .CoreStatic
+                        .hasOwnProperty(staticCore)
+                ) {
                     child[staticCore] = ya.mixins.CoreStatic[staticCore];
                 }
 
@@ -89,7 +95,7 @@ ya.$set('ya', 'mixins.CoreStatic', {
             for (var name in opts) {
                 // Check if we're overwriting an existing function
                 child.prototype[name] = typeof opts[name] == "function" &&
-                    typeof _super[name] == "function" && fnTest.test(opts[name]) ?
+                typeof _super[name] == "function" && fnTest.test(opts[name]) ?
                     makeSuper(name, opts[name]) :
                     opts[name];
             }
@@ -118,18 +124,18 @@ ya.$set('ya', 'mixins.CoreStatic', {
             return child;
         };
 
-        __extends(__Class, Parent);
+        __extends(__Object, Parent);
 
         if (opts.alias) {
 
-            ya.$set(opts.module || ya.$module(), opts.alias, opts.singleton ? new __Class() : __Class);
+            ya.$set(opts.module || ya.$module(), opts.alias, opts.singleton ? __Object.$create() : __Object);
 
         }
 
-        return __Class;
+        return __Object;
     },
     /**
-    * Create an instance of class.
+     * Create an instance of class.
      * @method $create
      * @for ya.mixins.CoreStatic
      * @returns {Function}
@@ -139,7 +145,7 @@ ya.$set('ya', 'mixins.CoreStatic', {
         var Obj = this,
             args = Array.prototype.concat.apply([Obj], arguments);
 
-        return  new (Function.prototype.bind.apply(Obj, args));
+        return new (Function.prototype.bind.apply(Obj, args));
     },
     /**
      *

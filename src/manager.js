@@ -6,7 +6,8 @@ ya.Core.$extend({
     module: 'ya',
     alias: 'Manager',
     defaults: {
-        items: null
+        items: null,
+        id: null
     },
     mixins: [
         ya.mixins.Array
@@ -20,6 +21,7 @@ ya.Core.$extend({
         var me = this;
 
         me.setItems([]);
+        me.setId(0);
 
         return me;
     },
@@ -33,15 +35,18 @@ ya.Core.$extend({
 
         return find > -1 ? items[find].item : null;
     },
-    getCount : function () {
+    getCount: function () {
         return this.getItems().length;
+    },
+    getUniqueId: function () {
+        return this._config.id++;
     },
     register: function (id, item) {
         var me = this;
 
         if (
             !me.isRegistered(id)
-            ) {
+        ) {
 
             me.getItems().push({id: id, item: item});
             me.fireEvent('registered', item);
@@ -62,9 +67,11 @@ ya.Core.$extend({
 
         find = me.find(items, 'id', id);
 
+        //todo bug
+
         if (find > -1) {
 
-            me.fireEvent('unregistered', items.slice(find, 1));
+            me.fireEvent('unregistered', items.splice(find, 1));
 
         }
 
@@ -76,6 +83,6 @@ ya.Core.$extend({
      * @returns {boolean}
      */
     isRegistered: function (id) {
-        return this.find(this.getItems(), 'id', id) > -1 ? true : false;
+        return this.find(this.getItems(), 'id', id) > -1;
     }
 });

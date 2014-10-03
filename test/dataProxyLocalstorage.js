@@ -3,9 +3,9 @@ module('Local proxy');
 test("initialize", function () {
     var proxy;
 
-    proxy = new ya.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.LocalStorage();
 
-    ok(proxy instanceof  ya.data.proxy.Localstorage);
+    ok(proxy instanceof  ya.data.proxy.LocalStorage);
 });
 
 asyncTest("clear database", function () {
@@ -32,9 +32,9 @@ asyncTest("clear database", function () {
     action.setOptions(opts);
 
 
-    ya.data.proxy.Localstorage.$clear(n);
+    ya.data.proxy.LocalStorage.$clear(n);
 
-    proxy = new ya.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.LocalStorage();
 
     proxy.read(action);
 });
@@ -42,7 +42,7 @@ asyncTest("clear database", function () {
 test("execute passed conditions", function () {
     var proxy, record;
 
-    proxy = new ya.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.LocalStorage();
 
     record = {
         name: "Sebastian",
@@ -65,7 +65,7 @@ asyncTest("CRUD: proxy read data by id", function () {
     /**
      * clear storage
      */
-    ya.data.proxy.Localstorage.$clear(n);
+    ya.data.proxy.LocalStorage.$clear(n);
 
     record = {
         name: 'Anonymous',
@@ -73,7 +73,7 @@ asyncTest("CRUD: proxy read data by id", function () {
         age: 23
     };
 
-    proxy = new ya.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.LocalStorage();
 
     callback = function (proxy, action) {
 
@@ -121,7 +121,7 @@ asyncTest("CRUD: proxy read data sorted by name", function () {
 
     expect(2);
 
-    ya.data.proxy.Localstorage.$clear(n);
+    ya.data.proxy.LocalStorage.$clear(n);
 
     records = [
         {
@@ -146,7 +146,7 @@ asyncTest("CRUD: proxy read data sorted by name", function () {
         }
     ];
 
-    proxy = new ya.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.LocalStorage();
 
     callback = function () {
 
@@ -195,7 +195,7 @@ asyncTest("CRUD: proxy read data sorted by age", function () {
 
     expect(1);
 
-    ya.data.proxy.Localstorage.$clear(n);
+    ya.data.proxy.LocalStorage.$clear(n);
 
     records = [
         {
@@ -220,7 +220,7 @@ asyncTest("CRUD: proxy read data sorted by age", function () {
         }
     ];
 
-    proxy = new ya.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.LocalStorage();
 
     callback = function (proxy, action) {
 
@@ -266,7 +266,7 @@ asyncTest("CRUD: proxy read data filtered by passed conditions", function () {
 
     expect(2);
 
-    ya.data.proxy.Localstorage.$clear(n);
+    ya.data.proxy.LocalStorage.$clear(n);
 
     records = [
         {
@@ -291,7 +291,7 @@ asyncTest("CRUD: proxy read data filtered by passed conditions", function () {
         }
     ];
 
-    proxy = new ya.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.LocalStorage();
 
     callback = function (proxy, action) {
 
@@ -342,9 +342,9 @@ asyncTest("CRUD: proxy create records", function () {
 
     expect(2);
 
-    ya.data.proxy.Localstorage.$clear(n);
+    ya.data.proxy.LocalStorage.$clear(n);
 
-    proxy = new ya.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.LocalStorage();
 
     record = {
         name: 'Anonymous',
@@ -384,9 +384,9 @@ asyncTest("CRUD: proxy create batch of records", function () {
 
     expect(4);
 
-    ya.data.proxy.Localstorage.$clear(n);
+    ya.data.proxy.LocalStorage.$clear(n);
 
-    proxy = new ya.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.LocalStorage();
 
     records = [
         {
@@ -435,9 +435,9 @@ asyncTest("CRUD: proxy update data", function () {
 
     expect(2);
 
-    ya.data.proxy.Localstorage.$clear(n);
+    ya.data.proxy.LocalStorage.$clear(n);
 
-    proxy = new ya.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.LocalStorage();
 
     records = [
         {
@@ -501,9 +501,9 @@ asyncTest("CRUD: proxy destroy data", function () {
 
     expect(1);
 
-    ya.data.proxy.Localstorage.$clear('test6');
+    ya.data.proxy.LocalStorage.$clear('test6');
 
-    proxy = new ya.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.LocalStorage();
 
     records = [
         {
@@ -563,9 +563,9 @@ asyncTest("CRUD: proxy batch destroy data", function () {
 
     expect(1);
 
-    ya.data.proxy.Localstorage.$clear('test7');
+    ya.data.proxy.LocalStorage.$clear('test7');
 
-    proxy = new ya.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.LocalStorage();
 
     records = [
         {

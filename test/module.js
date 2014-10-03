@@ -61,7 +61,7 @@ asyncTest("Dependency resolving, communication between controllers", function ()
         defaults: function () {
             return {
                 renderTo: '#search-module-test',
-                tpl: ya.view.template.$Manager.getItem('search-module-tpl'),
+                tpl: ya.view.template.$manager.getItem('search-module-tpl'),
                 models: [
                     ya.$factory({
                         module: 'search',
@@ -135,7 +135,7 @@ asyncTest("Dependency resolving, communication between controllers", function ()
 
 
 asyncTest("Load modules, communicate between them", function () {
-    var counter = 0;
+    var counter = 0, counter2 = 0;
 
     ya.Controller.$extend({
         module: 'testModule',
@@ -170,7 +170,6 @@ asyncTest("Load modules, communicate between them", function () {
         },
         onError: function (e) {
 
-            console.log('module 1 - error');
             ok(false, '3: ' + e.message);
 
         }
@@ -184,6 +183,11 @@ asyncTest("Load modules, communicate between them", function () {
             requires: [
                 'Controller -i'
             ]
+        },
+        onParentReady : function () {
+
+            ok(true, 'Parent ready function was executed');
+
         },
         onReady: function () {
 
@@ -214,7 +218,7 @@ asyncTest("Load modules, communicate between them", function () {
         onReady: function () {
             var ctrl;
 
-            ctrl = ya.controller.$Manager.getItem('testModule-controller');
+            ctrl = ya.controller.$manager.getItem('testModule-controller');
             ctrl.fireEvent('event');
 
             ok(true, 'Main Module is loaded');

@@ -1,5 +1,6 @@
-if(!window.matchMedia) {
-    window.matchMedia = (function() {
+
+if (!window.matchMedia) {
+    window.matchMedia = (function () {
         "use strict";
 
         // For browsers that support matchMedium api such as IE 9 and webkit
@@ -7,12 +8,12 @@ if(!window.matchMedia) {
 
         // For those that don't support matchMedium
         if (!styleMedia) {
-            var style       = document.createElement('style'),
-                script      = document.getElementsByTagName('script')[0],
-                info        = null;
+            var style = document.createElement('style'),
+                script = document.getElementsByTagName('script')[0],
+                info = null;
 
-            style.type  = 'text/css';
-            style.id    = 'matchmediajs-test';
+            style.type = 'text/css';
+            style.id = 'matchmediajs-test';
 
             script.parentNode.insertBefore(style, script);
 
@@ -20,7 +21,7 @@ if(!window.matchMedia) {
             info = ('getComputedStyle' in window) && window.getComputedStyle(style, null) || style.currentStyle;
 
             styleMedia = {
-                matchMedium: function(media) {
+                matchMedium: function (media) {
                     var text = '@media ' + media + '{ #matchmediajs-test { width: 1px; } }';
 
                     // 'style.styleSheet' is used by IE <= 8 and 'style.textContent' for all other browsers
@@ -36,7 +37,7 @@ if(!window.matchMedia) {
             };
         }
 
-        return function(media) {
+        return function (media) {
             return {
                 matches: styleMedia.matchMedium(media || 'all'),
                 media: media || 'all'
@@ -46,7 +47,7 @@ if(!window.matchMedia) {
 }
 
 /*! matchMedia() polyfill addListener/removeListener extension. Author & copyright (c) 2012: Scott Jehl. Dual MIT/BSD license */
-(function(){
+(function () {
     "use strict";
     // Bail out for browsers that have addListener support
     if (window.matchMedia && window.matchMedia('all').addListener) {
@@ -55,18 +56,18 @@ if(!window.matchMedia) {
 
     var localMatchMedia = window.matchMedia,
         hasMediaQueries = localMatchMedia('only all').matches,
-        isListening     = false,
-        timeoutID       = 0,    // setTimeout for debouncing 'handleChange'
-        queries         = [],   // Contains each 'mql' and associated 'listeners' if 'addListener' is used
-        handleChange    = function(evt) {
+        isListening = false,
+        timeoutID = 0,    // setTimeout for debouncing 'handleChange'
+        queries = [],   // Contains each 'mql' and associated 'listeners' if 'addListener' is used
+        handleChange = function (evt) {
             // Debounce
             clearTimeout(timeoutID);
 
-            timeoutID = setTimeout(function() {
+            timeoutID = setTimeout(function () {
                 for (var i = 0, il = queries.length; i < il; i++) {
-                    var mql         = queries[i].mql,
-                        listeners   = queries[i].listeners || [],
-                        matches     = localMatchMedia(mql.media).matches;
+                    var mql = queries[i].mql,
+                        listeners = queries[i].listeners || [],
+                        matches = localMatchMedia(mql.media).matches;
 
                     // Update mql.matches value and call listeners
                     // Fire listeners only if transitioning to or from matched state
@@ -81,12 +82,12 @@ if(!window.matchMedia) {
             }, 30);
         };
 
-    window.matchMedia = function(media) {
-        var mql         = localMatchMedia(media),
-            listeners   = [],
-            index       = 0;
+    window.matchMedia = function (media) {
+        var mql = localMatchMedia(media),
+            listeners = [],
+            index = 0;
 
-        mql.addListener = function(listener) {
+        mql.addListener = function (listener) {
             // Changes would not occur to css media type so return now (Affects IE <= 8)
             if (!hasMediaQueries) {
                 return;
@@ -102,17 +103,17 @@ if(!window.matchMedia) {
             // Push object only if it has not been pushed already
             if (index === 0) {
                 index = queries.push({
-                    mql         : mql,
-                    listeners   : listeners
+                    mql: mql,
+                    listeners: listeners
                 });
             }
 
             listeners.push(listener);
         };
 
-        mql.removeListener = function(listener) {
-            for (var i = 0, il = listeners.length; i < il; i++){
-                if (listeners[i] === listener){
+        mql.removeListener = function (listener) {
+            for (var i = 0, il = listeners.length; i < il; i++) {
+                if (listeners[i] === listener) {
                     listeners.splice(i, 1);
                 }
             }

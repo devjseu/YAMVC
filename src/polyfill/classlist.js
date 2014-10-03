@@ -1,3 +1,4 @@
+
 /*
  * classList.js: Cross-browser full element.classList implementation.
  * 2014-01-07
@@ -25,20 +26,20 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
             elemCtrProto = view.Element[protoProp],
             objCtr = Object,
             strTrim = String[protoProp].trim || function () {
-                return this.replace(/^\s+|\s+$/g, "");
-            },
+                    return this.replace(/^\s+|\s+$/g, "");
+                },
             arrIndexOf = Array[protoProp].indexOf || function (item) {
-                var
-                    i = 0,
-                    len = this.length;
+                    var
+                        i = 0,
+                        len = this.length;
 
-                for (; i < len; i++) {
-                    if (i in this && this[i] === item) {
-                        return i;
+                    for (; i < len; i++) {
+                        if (i in this && this[i] === item) {
+                            return i;
+                        }
                     }
-                }
-                return -1;
-            },
+                    return -1;
+                },
         // Vendors: please allow content code to instantiate DOMExceptions
 
             DOMEx = function (type, message) {
@@ -130,9 +131,9 @@ if ("document" in self && !("classList" in document.createElement("_"))) {
             var
                 result = this.contains(token),
                 method = result ?
-                    forse !== true && "remove"
+                forse !== true && "remove"
                     :
-                    forse !== false && "add"
+                forse !== false && "add"
                 ;
 
             if (method) {

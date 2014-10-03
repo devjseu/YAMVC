@@ -3,6 +3,50 @@
  * @class DOM
  */
 ya.$set('ya', 'mixins.DOM', {
+    findParent: function (el, selector) {
+        var queryMatch = ya.mixins.DOM.isQueryMatch,
+            parent = null;
+
+        if (typeof selector !== 'string') {
+            return null;
+        }
+
+        while (el.parentNode) {
+            el = el.parentNode;
+            if (queryMatch(selector, el)) {
+                parent = el;
+                break;
+            }
+        }
+
+
+        return parent;
+    },
+    //todo: new function
+    isChild: function (parent, child) {
+        var isChild = false,
+            walker, node;
+
+        walker = document.createTreeWalker( // Create walker object and
+            parent,
+            NodeFilter.SHOW_ELEMENT,
+            null,
+            false
+        );
+
+        while (walker.nextNode()) {
+            // walk through all nodes
+
+            node = walker.currentNode;
+            if (node === child) {
+                isChild = true;
+            }
+
+        }
+
+
+        return isChild;
+    },
     /**
      * checks if passed selector match to root DOM element
      * @method isQueryMatch
@@ -10,11 +54,13 @@ ya.$set('ya', 'mixins.DOM', {
      * @param {HTMLElement} el DOM to match
      */
     isQueryMatch: function (selector, el) {
-        var match = true, tag, id, classes;
+        var isElement = ya.mixins.DOM.isElement, match = true, tag, id, classes, _class;
 
-        el = this._el || el;
+        if (!isElement(el)) {
+            match = false;
+        }
 
-        if (selector.search(" ") === -1) {
+        if (match && selector.search(" ") === -1) {
             // If selector is only for one lvl element
             // (ex. div.class and not div .class),
             // find tag,
@@ -36,10 +82,24 @@ ya.$set('ya', 'mixins.DOM', {
                 // If any classes were founded
                 while (classes.length) {
 
+                    _class = classes
+                        .pop()
+                        .substring(1);
+
                     // check if the element have all of them.
-                    if (!el.classList.contains(classes.pop().substring(1))) {
+                    if (
+                        el
+                            .classList && !el
+                            .classList
+                            .contains(
+                            _class
+                        )
+                    ) {
+
                         match = false;
+
                         break;
+
                     }
 
                 }
@@ -78,8 +138,8 @@ ya.$set('ya', 'mixins.DOM', {
             //an exception is thrown and we end up here. Testing some
             //properties that all elements have. (works on IE7)
             return (typeof obj === "object") &&
-                (obj.nodeType === 1) && (typeof obj.style === "object") &&
-                (typeof obj.ownerDocument === "object");
+            (obj.nodeType === 1) && (typeof obj.style === "object") &&
+            (typeof obj.ownerDocument === "object");
         }
     },
     /**

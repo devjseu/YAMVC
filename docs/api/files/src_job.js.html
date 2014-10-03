@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>src\job.js - yam</title>
+    <title>src/job.js - yam</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -19,7 +19,7 @@
             
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.2.0</em>
+            <em>API Docs for: 0.3.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -43,15 +43,19 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
+                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+            
+                <li><a href="../classes/ya.Ajax.html">ya.Ajax</a></li>
+            
+                <li><a href="../classes/ya.ajax.JSON.html">ya.ajax.JSON</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
             
-                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
+                <li><a href="../classes/ya.collection.$manager.html">ya.collection.$manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
-                <li><a href="../classes/ya.controller.$Manager.html">ya.controller.$Manager</a></li>
+                <li><a href="../classes/ya.controller.$manager.html">ya.controller.$manager</a></li>
             
                 <li><a href="../classes/ya.Core.html">ya.Core</a></li>
             
@@ -59,7 +63,7 @@
             
                 <li><a href="../classes/ya.data.Proxy.html">ya.data.Proxy</a></li>
             
-                <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
+                <li><a href="../classes/ya.data.proxy.LocalStorage.html">ya.data.proxy.LocalStorage</a></li>
             
                 <li><a href="../classes/ya.Error.html">ya.Error</a></li>
             
@@ -83,17 +87,23 @@
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
+                <li><a href="../classes/ya.Module.html">ya.Module</a></li>
+            
                 <li><a href="../classes/ya.Router.html">ya.Router</a></li>
+            
+                <li><a href="../classes/ya.util.$detection.html">ya.util.$detection</a></li>
+            
+                <li><a href="../classes/ya.util.Parallel.html">ya.util.Parallel</a></li>
             
                 <li><a href="../classes/ya.View.html">ya.View</a></li>
             
-                <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
+                <li><a href="../classes/ya.view.$manager.html">ya.view.$manager</a></li>
             
                 <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
             
-                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
+                <li><a href="../classes/ya.view.template.$manager.html">ya.view.template.$manager</a></li>
             
             </ul>
 
@@ -136,13 +146,13 @@
             <div class="apidocs">
                 <div id="docs-main">
                     <div class="content">
-                        <h1 class="file-heading">File: src\job.js</h1>
+                        <h1 class="file-heading">File: src/job.js</h1>
 
 <div class="file">
     <pre class="code prettyprint linenums">
 /**
  * @namespace ya
- * @class Job
+ * @class ya.Job
  */
 ya.Core.$extend({
     module: &#x27;ya&#x27;,
@@ -151,14 +161,16 @@ ya.Core.$extend({
         id: 0,
         INFINITY: &#x27;infinity&#x27;
     },
-    defaults: {
-        id: null,
-        delay: 0,
-        tasks: null,
-        repeat: 1,
-        spawn: false,
-        results: null,
-        maxTime: null
+    defaults: function () {
+        return {
+            id: null,
+            delay: 0,
+            tasks: null,
+            repeat: 1,
+            spawn: false,
+            results: null,
+            maxTime: null
+        };
     },
     /**
      *
@@ -170,7 +182,7 @@ ya.Core.$extend({
 
         if (!me.getTasks() &amp;&amp; !me._config.task) {
 
-            throw ya.Error.$create(&#x27;At least one task should be defined&#x27;, &#x27;YJ1&#x27;);
+            throw ya.Error.$create(&#x27;At least one task should be defined&#x27;, &#x27;YJ1&#x27;, (new Error).stack);
 
         }
 
@@ -200,31 +212,30 @@ ya.Core.$extend({
 
         return me;
     },
-    doit: function () {
+    doIt: function () {
         var me = this,
-            deferred = ya.$Promise.deferred(),
+            deferred = ya.$promise.deferred(),
             engine, fn, taskIdx;
 
-
         engine = me.getRepeat() &gt; 1 || me.getRepeat() === ya.Job.$INFINITY ?
-        {terminate: function (code, msg) {
+        {
+            terminate: function (code, msg) {
 
-            clearInterval(me._clear);
+                console.log(&#x27;%cLOG: TERMINATE: &#x27; + me.__class__, &#x27;color: red; background: silver;&#x27;);
+                clearInterval(me._clear);
 
-            return deferred.reject({
-                id: code,
-                message: msg
-            });
-        }} :
-        {terminate: function (code, msg) {
+                return deferred.reject(ya.Error.$create(msg, code));
+            }
+        } :
+        {
+            terminate: function (code, msg) {
 
-            clearInterval(me._clear);
+                console.log(&#x27;%cLOG: TERMINATE: &#x27; + me.__class__, &#x27;color: red; background: silver;&#x27;);
+                clearInterval(me._clear);
 
-            return deferred.reject({
-                id: code,
-                message: msg
-            });
-        }};
+                return deferred.reject(ya.Error.$create(msg, code));
+            }
+        };
 
         engine.run = function (a, b) {
             me.set(&#x27;clear&#x27;, setInterval(a, b));
@@ -251,7 +262,7 @@ ya.Core.$extend({
 
         };
 
-        engine.suspend =function () {
+        engine.suspend = function () {
 
             clearInterval(me._clear);
 
@@ -264,13 +275,12 @@ ya.Core.$extend({
                 results = [],
                 i;
 
-
             if (
                 maxTime &amp;&amp;
                 (+new Date() - me._start) &gt; maxTime
-                ) {
+            ) {
 
-                return engine.terminate(&#x27;YJ3&#x27;, &#x27;Timeout&#x27;);
+                return engine.terminate(&#x27;YJ3&#x27;, &#x27;Timeout&#x27;, (new Error).stack);
 
             }
             if (repeat !== ya.Job.$INFINITY) {
@@ -288,7 +298,7 @@ ya.Core.$extend({
             while (i--) {
 
                 taskIdx = i;
-                results.push(tasks[i].call(engine));
+                results.push(tasks[i].call(engine, engine));
 
             }
 
@@ -305,7 +315,13 @@ ya.Core.$extend({
     },
     terminate: function () {
 
-        return this._engine.terminate(&#x27;YJ2&#x27;, &#x27;Task terminated after &#x27; + ((+new Date() - this._start) / 1000) + &#x27; seconds of execution&#x27;);
+        return this
+            ._engine
+            .terminate(
+            &#x27;YJ2&#x27;,
+            &#x27;Task terminated after &#x27; + ((+new Date() - this._start) / 1000) + &#x27; seconds of execution&#x27;,
+            (new Error).stack
+        );
 
     }
 });

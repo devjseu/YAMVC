@@ -42,6 +42,7 @@ ya.Core.$extend({
 
         window.onhashchange = me.onHashChange.bind(me);
 
+
         return this;
     },
     /**

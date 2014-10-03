@@ -1,32 +1,100 @@
 /**
  * @author Sebastian Widelak <sebakpl@gmail.com>
+ * @module ya
+ * @class ya.View
  *
+ *
+ */
+
+/*
+ * TODO: wywalic namespacey! zamiast tego dodac wartosc property ktora bedzie mowila by pod jakim kluczem znajduje sie model
+ * TODO: lub kolekcja. Modele przetrzymywac w obiekcie zamiast tablicy. models:{klucz:model}
  */
 (function (undefined) {
     "use strict";
-
+    // todo: focus and blur implemented here
     var ya = window.ya,
         style = document.createElement('style'),
         __slice = Array.prototype.slice,
-        View,
+        focused = [],
         resize = 0,
-        iv = 0;
+        iv = 0,
+        View;
 
     function onWindowResize(e) {
         // When resize event occur wait 32 miliseconds
         // to not firing it to often.
 
         if (resize === 0) {
-            iv = setInterval(fireResizeEvent, 32);
+            iv = setInterval(function () {
+                fireResizeEvent(e);
+            }, 32);
         }
 
         resize = +new Date();
     }
 
-    function fireResizeEvent() {
+    // todo: focus and blur implemented here
+    function onWindowClick(e) {
+        var el = e.toElement || e.relatedTarget || e.target,
+            _el = el,
+            DOMmixin = ya.mixins.DOM,
+            __isChild = DOMmixin.isChild,
+            __isElement = DOMmixin.isElement,
+            view, _view, toIterate;
+
+        while (_el && __isElement(_el)) {
+
+            if (_el.hasAttribute('ya-class')) {
+
+                view = ya.view.$manager.getItem(_el.getAttribute('id'));
+                view.focus();
+
+                break;
+
+            }
+
+            _el = _el.parentNode;
+
+        }
+
+        if (!view) {
+
+            toIterate = focused.length;
+            while (toIterate--) {
+
+                _view = focused[toIterate];
+                _view.blur();
+
+            }
+
+            return void 0;
+        }
+
+        toIterate = focused.length;
+        while (__isElement(el) && toIterate--) {
+
+            _view = focused[toIterate];
+            if (view.getId() !== _view.getId()) {
+
+                if (!__isChild(_view._el, el)) {
+
+                    _view.blur();
+
+                }
+
+            }
+
+        }
+
+
+    }
+
+    function fireResizeEvent(e) {
         // Fire ya resize event only on components
         // which need to be fitted to their parents.
         var views,
+            view,
             l,
             i,
             now = +new Date();
@@ -36,14 +104,23 @@
             clearInterval(iv);
 
             resize = 0;
-            views = ya.view.$Manager.getItems();
+            views = ya.view.$manager.getItems();
             l = views.length;
             i = 0;
 
             while (i < l) {
+                view = views[i];
 
-                if (views[i].item.getFit()) {
-                    views[i].item.fireEvent('resize', views[i]);
+                if (view && view.item.getFit()) {
+
+                    if (view.item.isInDOM()) {
+
+                        view
+                            .item.
+                            fireEvent('resize', views[i], e);
+
+                    }
+
                 }
 
                 i++;
@@ -57,6 +134,7 @@
 
     document.body.appendChild(style);
     window.addEventListener('resize', onWindowResize);
+    window.addEventListener('mouseup', onWindowClick);
 
     /**
      * @namespace ya
@@ -66,6 +144,7 @@
      * @uses ya.mixins.DOM
      * @params opts Object with configuration properties
      * @type {function}
+     * TODO: to samo co dla modeli, mamy obiekt widoków views:{view1:{class:ya.grid.row.View, arguments:[]}}, a pozniej w html bindujemy tak ya-view="view1"
      */
     ya.Core.$extend({
         module: 'ya',
@@ -113,11 +192,26 @@
              */
             autoCreate: false,
             /**
-             * @attribute config.autoCreate
+             * @attribute config.renderTo
+             * @type boolean
+             */
+            renderTo: null,
+            /**
+             * @attribute config.renderAt
+             * @type boolean
+             */
+            renderAt: null,
+            /**
+             * @attribute config.tpl
              * @type ya.view.Template|String
              * @required
              */
-            tpl: null
+            tpl: null,
+            /**
+             * @attribute config.hideCls
+             * @type String
+             */
+            hideCls: 'hidden'
         },
         mixins: [
             ya.mixins.Array,
@@ -139,9 +233,10 @@
                 .__super(opts)
                 .initModels()
                 .initTemplate()
-                .initParent();
+                .initParent()
+                .initChildren();
 
-            ya.view.$Manager.register(me.getId(), me);
+            ya.view.$manager.register(me.getId(), me);
 
             return me;
         },
@@ -163,11 +258,37 @@
         initDefaults: function () {
             var me = this;
 
-            me.setId(me.getId() || 'view-' + ya.view.$Manager.getCount());
-            me.setChildren(me.getChildren() || []);
-            me.setModels(me.getModels() || []);
-            me.setCollections(me.getCollections() || []);
+            if (me.getId()) {
 
+                me.setId(me.getId());
+
+                me.set('customId', true);
+
+            } else {
+
+                me.setId('view-' + ya.view.$manager.getUniqueId());
+                me.set('customId', false);
+
+            }
+
+            me
+                .setChildren(
+                me.getChildren() || []
+            );
+
+            me
+                .setModels(
+                me.getModels() || []
+            );
+
+            me
+                .setCollections(
+                me.getCollections() || []
+            );
+
+
+            me
+                .set('eventHandlers', []);
             return me;
         },
         /**
@@ -178,28 +299,30 @@
         initModels: function () {
             var me = this;
 
-            me.each(me.getModels(), function (model, i, array) {
+            me.each(
+                me.getModels(),
+                function (model, i, array) {
 
-                if (!(model instanceof ya.Model)) {
+                    if (!(model instanceof ya.Model)) {
 
-                    if (!model.alias) {
+                        if (!model.alias) {
 
-                        model.module = 'ya';
-                        model.alias = 'Model';
+                            model.module = 'ya';
+                            model.alias = 'Model';
 
+                        }
+
+                        try {
+
+                            array[i] = ya.$factory(model);
+
+                        } catch (e) {
+
+                            throw ya.Error.$create(me.__class__ + ': Can not create model', 'YV2');
+
+                        }
                     }
-
-                    try {
-
-                        array[i] = ya.$factory(model);
-
-                    } catch (e) {
-
-                        throw ya.Error.$create(me.__class__ + ': Can not create model', 'YV2');
-
-                    }
-                }
-            });
+                });
 
             return me;
         },
@@ -219,7 +342,7 @@
                 if (
                     tpl instanceof Array || typeof tpl === 'array' ||
                     typeof tpl == 'string' || tpl instanceof String
-                    ) {
+                ) {
                     // if its an array with html def
                     // prepare configuration object and
                     // instantiate it via factory method.
@@ -262,6 +385,21 @@
 
             }
 
+            return me;
+        },
+        /**
+         *
+         * @returns {*}
+         */
+        initChildren: function () {
+            var me = this,
+                children = me.getChildren();
+
+            me.each(children, function (v) {
+                v.setParent(me);
+            });
+
+            return me;
         },
         /**
          * @returns {View}
@@ -343,7 +481,10 @@
                 collection = ya.$factory(collection);
             }
 
-            if (!me.hasCollection(collection.getId())) {
+            if (
+                !me
+                    .hasCollection(collection.getId())
+            ) {
 
                 collections.push(collection);
                 me.setCollections(collections);
@@ -366,10 +507,10 @@
             return false;
         },
         /**
-         * @param id
+         * @param namespace
          * @returns {ya.Collection}
          */
-        getCollection: function (id) {
+        getCollection: function (namespace) {
             var me = this,
                 collections = me.getCollections(),
                 collection = null,
@@ -377,64 +518,109 @@
 
             l = collections.length;
             while (l--) {
-                if (collections[l].getNamespace() === id) {
+                if (collections[l].getNamespace() === namespace) {
                     collection = collections[l];
                     break;
                 }
             }
 
-            return collections;
+            return collection;
         },
-        /**
-         * @version 0.2.0
-         * @returns {Node}
-         */
-        render: function () {
-            var me = this,
-                config = me._config,
-                parent = config.parent,
-                selector = config.renderTo,
-                parentEl, tdom, el;
-
-            parentEl = selector instanceof HTMLElement ? selector : me.getParentEl(selector, true);
-
-            if (me.isInDOM()) {
-
-                me.clear();
-
-            }
+        compile: function () {
+            var me = this, tdom, edom;
 
             tdom = me.getTpl()
                 .getTDOMInstance(me);
 
-            el = tdom.getEDOM();
+            edom = tdom
+                .getEDOM();
 
             me.set('tdom', tdom);
-            me.set('el', el);
+            me.set('edom', edom);
 
-            if (me.getHidden())
+            if (me.getHidden()) {
                 me.hide();
+            }
 
-            if (parentEl) {
+            me
+                .onCompile();
 
-                parentEl.appendChild(el);
+            me
+                .fireEvent('compile', me, tdom);
 
-                if (parent) {
+            return me;
+        },
+        /**
+         * @returns {this}
+         */
+        render: function () {
+            var me = this,
+                parent = me.getParent(),
+                selector = me.getRenderTo(),
+                el, parentNode;
 
-                    if (parent.findChild(me.getId()) < 0) {
+            // get parent node
+            parentNode = selector instanceof HTMLElement ? selector : me.getParentNode(selector, true);
 
-                        parent.getChildren().push(me);
+            if (!me.get('tdom')) {
+                // compile template if we run render first time
+                me.compile();
+            }
 
-                    }
+            if (parentNode) {
+                // if there is no another root view object and parent node was found
+
+                if (me.isInDOM()) {
+                    // if view was already rendered
+                    // remove dom from document
+                    me.clear();
 
                 }
 
-                me.set('isInDOM', true);
-                me.reAppendChildren();
-                me.fireEvent('render', me, parent);
-            }
+                // prepare elements
+                me.prepareElements();
 
-            return el;
+                // set referrer to the root node
+                if (me.get('elements').length === 1) {
+                    me.set('el', me.get('elements')[0]);
+                } else {
+                    me.set('el', parentNode);
+                }
+
+                if (me.hasChildren()) {
+                    // if view has children render them also
+                    me.renderChildren();
+                }
+
+                // add proper class if view shoudlnt be visible
+                if (me.getHidden()) {
+                    me.get('el').classList.add(me.getHideCls());
+                    me.set('visible', false);
+                }
+
+                // add element(s) to the DOM
+                parentNode.insertBefore(
+                    me.get('edom'),
+                    me.getRenderAt() === null ? null : parentNode.childNodes.item(me.getRenderAt())
+                );
+
+                me.set('isInDOM', true);
+
+                if (parent && parent.isInDOM() || !parent) {
+                    ya.event.$dispatcher.apply(me);
+                }
+
+                me.onRender();
+                me.fireEvent('render', me, parent);
+
+            }
+        },
+        renderChildren: function () {
+            var me = this;
+
+            me.each(me.getChildren(), function (r) {
+                r.appendTo(me, r.getRenderTo());
+            });
         },
         /**
          * @version 0.1.12
@@ -442,9 +628,12 @@
         clear: function () {
             var me = this;
 
-            me.removeFromDOM();
-            me._tdom.clear();
-            me.set('el', null);
+            //todo: blur when cleared
+            me
+                .blur();
+
+            me
+                .removeFromDOM();
 
             return me;
         },
@@ -453,19 +642,24 @@
          * @returns {Node}
          */
         querySelector: function (selector) {
-            return this.get('el').querySelector(selector) ||
-                (this.isQueryMatch(selector) ? this.get('el') : null);
+            var me = this,
+                el = me.isInDOM() ? me.get('el') : me.get('edom');
+
+            return el.querySelector(selector) ||
+            (me.isQueryMatch(selector, el) ? el : null);
         },
         /**
          * @param selector
          * @returns {Array}
          */
         querySelectorAll: function (selector) {
-            var results = __slice.call(this.get('el').querySelectorAll(selector) || [], 0);
+            var me = this,
+                el = me.isInDOM() ? me.get('el') : me.get('edom'),
+                results = __slice.call(el.querySelectorAll(selector) || [], 0);
 
-            if (this.isQueryMatch(selector)) {
+            if (me.isQueryMatch(selector, el)) {
 
-                results.push(this.get('el'));
+                results.push(el);
 
             }
 
@@ -477,16 +671,21 @@
          * @returns {View}
          */
         addChild: function (view, selector) {
-            var me = this;
+            var me = this,
+                parent = view.getParent();
 
-            view.appendTo(me, selector);
+            if (parent && parent.getId() != me.getId()) {
+                parent.removeChild(me);
+            }
 
-            if (me.isInDOM()) {
+            if (!me.getChild(view.getId())) {
 
-                ya.event.$dispatcher.apply(view);
+                me.getChildren().push(view);
+                view.setParent(me);
 
             }
 
+            view.appendTo(me, selector);
             me.fireEvent('childAdded', me, view);
 
             return me;
@@ -496,12 +695,30 @@
          * @returns {View||Boolean}
          */
         getChild: function (id) {
-            var me = this;
+            var me = this,
+                views = this.getChildren();
 
             if (me.findChild(id) < 0)
-                return false;
+                return null;
 
-            return me.findChild(id);
+            return views[me.findChild(id)];
+        },
+        getChildByClass: function (className) {
+            var me = this,
+                views = me.getChildren(),
+                some = ya.mixins.Array.some,
+                idx;
+
+            if (!some(views, function (child, i) {
+                    if (child.__class__ === className) {
+                        idx = i;
+                        return true;
+                    }
+                })) {
+                return null;
+            }
+
+            return views[idx];
         },
         /**
          *
@@ -521,24 +738,28 @@
         },
         /**
          *
-         * @param id
+         * @param view
          * @returns {*|null}
          */
         removeChild: function (view) {
             var views = this.getChildren(),
                 l = views.length,
-                removed = [];
+                removed;
 
             while (l--) {
                 if (views[l].getId() === view.getId()) {
 
-                    removed = views.splice(l, 1);
-                    removed[0].removeFromDOM();
+
+                    removed = views.splice(l, 1)[0];
+
+                    removed
+                        .removeFromDOM()
+                        .setParent(null);
 
                 }
             }
 
-            return removed[0] || null;
+            return removed;
         },
         /**
          * @returns {Array}
@@ -560,11 +781,19 @@
          */
         removeFromDOM: function () {
             var me = this,
-                el = me._el;
+                el = me.get('el'),
+                children;
 
             if (me.isInDOM()) {
-                el.parentNode.removeChild(el);
+
+                children = el
+                    .parentNode
+                    .removeChild(el);
+
                 me.set('isInDOM', false);
+                me.get('edom')
+                    .appendChild(children);
+
             }
 
             return me;
@@ -573,7 +802,7 @@
          * @returns {Boolean}
          */
         isInDOM: function () {
-            return this._isInDOM;
+            return this._isInDOM === true;
         },
         /**
          *
@@ -591,7 +820,7 @@
 
             } else if (parent) {
 
-                parentEl = selector ? parent._el.querySelector(selector) : parent._el;
+                parentEl = selector ? parent.querySelector(selector) : parent._el;
 
             } else if (globally) {
 
@@ -602,70 +831,60 @@
             return parentEl;
         },
         /**
+         * @private
          * @param parent
-         * @param {String|HTMLElement} selector String or DOM Element
-         * @returns {View}
+         * @param selector
+         * @returns {*}
          */
         appendTo: function (parent, selector) {
+            var me = this;
+
+            me.render();
+
+            return me;
+        },
+        /**
+         *
+         * @param selector
+         * @param globally
+         * @returns {*}
+         */
+        getParentNode: function (selector, globally) {
             var me = this,
-                config = me._config,
-                id = me.getId(),
-                views = parent.getChildren(),
-                oldParent = config.parent,
+                parent = me.getParent(),
                 parentEl;
 
-            selector = selector || config.renderTo;
+            if (me.isElement(selector)) {
 
-            parentEl = selector instanceof HTMLElement ? selector : me.getParentEl(selector, false);
+                parentEl = selector;
 
+            } else if (parent) {
 
-            config.renderTo = parentEl;
+                parentEl = selector ?
+                    parent.querySelector(selector) :
+                    (parent.isInDOM() ? parent.get('el') : parent.get('edom').firstChild);
 
-            if (!oldParent) {
+            } else if (globally) {
 
-                config.parent = parent;
-
-                views.push(me);
-
-            }
-            else if (oldParent && oldParent.getId() !== parent.getId()) {
-
-                if (oldParent.findChild(id) > -1) {
-
-                    oldParent
-                        .getChildren()
-                        .splice(
-                        oldParent.findChild(id), 1
-                    );
-
-                }
-
-                views.push(me);
+                parentEl = document.querySelector(selector);
 
             }
 
-            config.parent = parent;
-
-
-            if (!me.isInDOM() && parent.isInDOM()) {
-
-                if (!me._el) {
-
-                    me.render();
-
-                } else {
-
-                    parentEl.appendChild(me._el);
-                    me.set('isInDOM', true);
-                    me.reAppendChildren();
-                    me.fireEvent('render', me, parent);
-
-                }
-
-            }
-
-            me.fireEvent('append', me, parent);
-
+            return parentEl;
+        },
+        hasChildren: function () {
+            return this.getChildren().length > 0;
+        },
+        /**
+         *
+         * @returns {this}
+         */
+        prepareElements: function () {
+            var me = this;
+            me.set('elements',
+                me.get('edom').childNodes.length > 1 ?
+                    Array.prototype.slice.call(me.get('edom').childNodes) : [me.get('edom').firstChild]
+            );
             return me;
         },
         /**
@@ -682,19 +901,103 @@
 
             return this;
         },
+        //todo: focus and blur
+        focus: function () {
+            var me = this,
+                Array = ya.mixins.Array,
+                __find = Array.find;
+
+            if (me._destroyed) {
+                return false;
+            }
+
+            var idx = __find(focused, '_config.id', me.getId());
+
+            if (idx < 0 && me.isInDOM()) {
+
+                focused
+                    .push(me);
+
+                me
+                    .set('focused', true);
+
+                me
+                    .fireEvent(
+                    'focus',
+                    me
+                );
+            }
+
+            return me;
+        },
+        blur: function () {
+            var me = this,
+                __find = ya.mixins.Array.find,
+                idx = __find(focused, '_config.id', me.getId());
+
+            if (idx >= 0) {
+
+                focused
+                    .splice(idx, 1);
+
+                me
+                    .set('focused', false);
+                me
+                    .fireEvent('blur');
+
+            }
+
+            return me;
+        },
+        isFocus: function () {
+            return this._focused;
+        },
+        /**
+         * @returns {Boolean}
+         */
+        isVisible: function () {
+            return this._visible && this.isInDOM();
+        },
+        /**
+         *
+         * @returns {Boolean}
+         */
+        hasCustomId: function () {
+            return this._customId;
+        },
         /**
          * @returns {View}
          */
         show: function () {
             var me = this;
 
+
             if (!me._el)
                 return me;
 
-            me._el.classList.remove('hidden');
+            me
+                ._el
+                .classList
+                .remove(
+                me.getHideCls()
+            );
 
-            me.set('visible', true);
-            me.fireEvent('show', me);
+            me
+                .set('visible', true);
+            me
+                .fireEvent('show', me);
+
+            ya.Job
+                .$create({
+                    config: {
+                        repeat: 1,
+                        task: function () {
+
+                            me.focus();
+
+                        }
+                    }
+                }).doIt();
 
             return me;
         },
@@ -707,10 +1010,13 @@
             if (!me._el)
                 return me;
 
+            //todo: added blur action
+            me.blur();
 
-            me._el.classList.add('hidden');
+            me._el.classList.add(me.getHideCls());
 
             me.set('visible', false);
+
             me.fireEvent('hide', me);
 
             return me;
@@ -729,11 +1035,65 @@
             }
 
         },
-        /**
-         * @returns {Boolean}
-         */
-        isVisible: function () {
-            return this.get('visible') && this.isInDOM();
+        onCompile: function () {
+        },
+        // abstract
+        onRender: function () {
+        },
+        //todo : destory
+        destroy: function () {
+            var me = this,
+                $colManager = ya
+                    .collection
+                    .$manager;
+
+            //todo: blur when cleared
+            me
+                .blur();
+
+
+            // unbind from parent
+            if (me.getParent()) {
+
+                me
+                    .getParent()
+                    .removeChild(me);
+
+            }
+
+            // clear dom
+            if (me.isInDOM()) {
+
+                me
+                    .clear();
+
+            }
+
+            // deregister from manager
+            ya
+                .view
+                .$manager
+                .deregister(
+                me.getId()
+            );
+
+
+            // kill all collection connected with view
+            // TODO: we should kill only those which were created by view
+            me.each(
+                me.getCollections(),
+                function (c) {
+                    $colManager
+                        .deregister(
+                        c.getId()
+                    );
+                }
+            );
+
+            me
+                .__super();
+
+            return me;
         }
     });
 

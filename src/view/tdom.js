@@ -72,17 +72,69 @@ ya.Core.$extend({
             bindings = me.getBindings(),
             dom = me.getDOM(),
             $B = ya.view.Template.$BindingType,
-            namespace, callback, event;
+            namespace, callback, event, model;
 
         me.each(bindings, function (binding) {
 
             switch (binding.type) {
+                case $B.IF :
+                    binding.pointer = dom
+                        .querySelector('[ya-id="' + binding.pointer + '"]');
+
+                    me.each(binding.headers, function (header) {
+                        namespace = header[0];
+                        model = view.getModel(namespace);
+                        if (model) {
+                            binding.models[namespace] = model;
+
+                            // put callback in variable
+                            callback = (function (binding) {
+                                return function () {
+                                    me.updateCond(binding);
+                                };
+                            }(binding));
+
+                            event = 'data' + header[1].charAt(0).toUpperCase() + header[1].slice(1) + 'Change';
+
+                            // and push it to callbacks array
+                            // which will be useful when the view
+                            // will be destroyed (for remove
+                            // unnecessary listeners)
+                            binding.callbacks.push({
+                                namespace: model.getNamespace(),
+                                event: event,
+                                callback: callback
+                            });
+
+                            // add callback to the model
+                            model.addEventListener(
+                                event,
+                                callback
+                            );
+
+
+                            me.updateCond(binding);
+                        }
+
+                    });
+
+                    break;
                 case $B.ATTR :
 
-                    binding.pointer = dom
-                        .querySelector('[ya-id="' + binding.pointer + '"]')
-                        .attributes
-                        .getNamedItem(binding.name);
+                    //todo: different binging action when attribute does not have value
+                    if (binding.fillAttr) {
+
+                        binding.pointer = dom
+                            .querySelector('[ya-id="' + binding.pointer + '"]');
+
+                    } else {
+
+                        binding.pointer = dom
+                            .querySelector('[ya-id="' + binding.pointer + '"]')
+                            .attributes
+                            .getNamedItem(binding.name);
+
+                    }
 
                     // iterate trough each header
                     me.each(binding.headers, function (header) {
@@ -119,18 +171,14 @@ ya.Core.$extend({
                                 callback
                             );
 
-
                             me.updateAttr(binding);
                         }
 
                     });
 
-                    delete binding.name;
-
                     break;
 
                 case $B.TEXT :
-                    var model;
 
                     binding.pointer = dom.querySelector('[ya-id="' + binding.pointer + '"]');
 
@@ -142,16 +190,14 @@ ya.Core.$extend({
 
                             binding.models[namespace] = model;
 
-                            // put callback in variable
+                            // assign callback to the variable
                             callback = (function (binding) {
                                 return function () {
                                     me.updateTxt(binding);
                                 };
                             }(binding));
 
-                            event = 'data' + header[1].charAt(0).toUpperCase() + header[1].slice(1) + 'Change';
-
-                            // and push it to callbacks array
+                            // and push it to the callbacks array
                             // which will be useful when the view
                             // will be destroyed (for remove
                             // unnecessary listeners)
@@ -161,11 +207,16 @@ ya.Core.$extend({
                                 callback: callback
                             });
 
+                            // build event name
+                            event = 'data' + header[1].charAt(0).toUpperCase() + header[1].slice(1) + 'Change';
+
+                            // and add listener on it
                             model.addEventListener(
                                 event,
                                 callback
                             );
 
+                            // update DOM
                             me.updateTxt(binding);
                         }
 
@@ -183,11 +234,11 @@ ya.Core.$extend({
                     if (collection.id) {
 
                         // Try to find collection by its id
-                        collection.pointer = ya.collection.$Manager.getItem(collection.id);
+                        collection.pointer = ya.collection.$manager.getItem(collection.id);
 
                     } else {
 
-                        // If not founded try match one from view,
+                        // If not founded try match one from view object,
                         // by namespace (if exist) or by class name
                         collections = view.getCollections();
                         me.some(collections, collection.namespace ?
@@ -213,24 +264,55 @@ ya.Core.$extend({
 
                     if (!collection.pointer) {
 
+                        // if still collection is not founded
+                        // create new one
                         definition = collection.class.split(".");
                         collection.pointer = ya.$factory({
                             module: definition.shift(),
                             alias: definition.join("."),
+                            //todo : binding fix
+                            namespace: collection.namespace,
                             id: collection.id
                         });
 
-                        view.setCollection(collection.pointer);
-
                     }
 
+                    if (collection.pointer) {
+                        // and assign it to the view
+                        view.setCollection(collection.pointer);
+                    }
 
+                    // setup connection between view and collection
                     me.setupCollection(binding);
 
                     break;
-                default:
+                case $B.MODEL :
 
                     binding.pointer = dom.querySelector('[ya-id="' + binding.pointer + '"]');
+                    model = binding.model;
+
+                    model.pointer = view.getModel(model.namespace);
+
+                    if (!model.pointer) {
+
+                        definition = model.class.split('.');
+                        model.pointer = ya.$factory({
+                            module: definition.shift(),
+                            alias: definition.join('.'),
+                            namespace: model.namespace
+                        });
+
+                        view.setModel(model.pointer);
+
+                    }
+
+                    me.setupModel(binding);
+
+                    break;
+                default:
+                    binding.pointer = dom.querySelector('[ya-id="' + binding.pointer + '"]');
+
+                    me.setupView(binding);
 
             }
 
@@ -241,62 +323,77 @@ ya.Core.$extend({
 
         return me;
     },
-    /**
-     * setup all connection between collection and view
-     * and generate new elements for all records from it
-     * @param binding
-     */
-    setupCollection: function (binding) {
-
+    setupModel: function (binding) {
         var me = this,
-            bindCol = binding.collection,
-            collection = bindCol.pointer,
-            callback, remCallback;
+            element = binding.pointer,
+            bindModel = binding.model,
+            model = bindModel.pointer,
+            property = bindModel.property,
+            callback, event;
 
         callback = (function (binding) {
             return function () {
-                me.updateCollection(binding);
+                me.updateModel(binding);
             };
         }(binding));
 
-        remCallback = (function (binding) {
-            return function (col, records) {
-                me.removeFromCollection(binding, records);
-            };
-        }(binding));
+        event = property + 'Change';
 
-        binding.collection.connections = [];
+        // todo: clear listeners when model removed from view
+        model.addEventListener(event, callback, me);
+        element.addEventListener('keyup', function (e) {
 
-        // generates new view
-        collection.each(function (record) {
-
-            me.generateView(binding, record);
+            model.data(property, element.value);
 
         });
 
-        me.updateCollection(binding);
+        me.updateModel(binding);
+    },
+    updateCond: function (binding) {
+        var me = this,
+            txt = binding.condition,
+            model, value, method, view;
 
-        collection.addEventListener('prepare', callback, me);
-        collection.addEventListener('filter', callback, me);
-        collection.addEventListener('sort', callback, me);
-        collection.addEventListener('push', callback, me);
-        collection.addEventListener('remove', remCallback, me);
+        me.each(binding.headers, function (header, idx) {
+            model = binding.models[header[0]];
+            value = model.data(header[1]);
+            if (typeof value === 'undefined') {
+                value = '"undefined"';
+            }
+
+            txt = txt.replace('{{' + header.join('.') + '}}', value);
+
+        });
+
+        if (!!ya.exec(txt)) {
+            console.log('TRUE:')
+        } else {
+            console.log('FALSE:')
+        }
 
     },
-    generateView: function (binding, record) {
-        var me = this,
-            collection = binding.collection,
-            tpl = ya.view.template.$Manager.getItem(collection.tpl),
-            viewInstance;
+    updateModel: function (binding) {
+        var element = binding.pointer,
+            bindModel = binding.model;
 
-        viewInstance = ya.$factory({
-            alias: collection.view,
-            renderTo: binding.pointer,
-            tpl: tpl || undefined,
-            models: [
-                record
-            ]
-        });
+        element.value = bindModel.pointer.data(bindModel.property);
+
+    },
+    setupView: function (binding) {
+        var me = this,
+            viewInstance,
+            definition = binding.view.class.split('.'),
+            config = {
+                module: definition.shift(),
+                alias: definition.join('.'),
+                renderTo: binding.pointer
+            };
+
+        if (binding.view.id) {
+            config.id = binding.view.id;
+        }
+
+        viewInstance = ya.$factory(config);
 
 
         me
@@ -306,15 +403,60 @@ ya.Core.$extend({
             binding.pointer
         );
 
-        collection.connections.push({
-            view: viewInstance,
-            model: record
+        binding.view = viewInstance;
+    },
+    /**
+     * setup all connection between collection and view
+     * and generate new elements for all records from it
+     * @method setupCollection
+     * @private
+     * @param binding
+     */
+    setupCollection: function (binding) {
+        var me = this,
+            bindCol = binding.collection,
+            collection = bindCol.pointer,
+            callback, remCallback;
+
+        callback = (function (binding) {
+            return function () {
+                console.log('update', binding);
+                me.updateCollection(binding);
+            };
+        }(binding));
+
+        remCallback = (function (binding) {
+            return function (col, records) {
+                console.log('remove', binding);
+                me.removeFromCollection(binding, records);
+            };
+        }(binding));
+
+        binding.collection.connections = [];
+
+        // generates new view
+        collection.each(function (record, idx) {
+
+            record.set('index', idx);
+
+            me.generateView(binding, record, idx);
+
         });
 
-        return me;
+        me.updateCollection(binding);
+
+        //todo: clear all of this things
+        collection.addEventListener('prepare', callback, me);
+        collection.addEventListener('filter', callback, me);
+        collection.addEventListener('sort', callback, me);
+        collection.addEventListener('push', callback, me);
+        collection.addEventListener('remove', remCallback, me);
+
     },
     /**
      * Update DOM connected with collection
+     * @method updateCollection
+     * @private
      * @param binding
      * @returns {*}
      */
@@ -328,15 +470,21 @@ ya.Core.$extend({
             connections = binding.collection.connections,
             len, conn, idx, viewIdx;
 
+        if (me.getView().isInDOM()) {
 
-        collection.each(function (record, index) {
+            collection.each(function (record, index) {
 
-            idx = __find(connections, 'model._clientId', record._clientId);
+                idx = __find(
+                    connections,
+                    'model._clientId',
+                    record
+                        ._clientId
+                );
 
-            if (idx >= 0) {
+                if (idx >= 0) {
 
-                conn = connections[idx];
-                if (me.getView().isInDOM()) {
+                    conn = connections[idx];
+
 
                     viewIdx = __indexOf.call(childNodes, conn.view._el);
                     if (viewIdx > -1 && viewIdx !== index) {
@@ -344,7 +492,6 @@ ya.Core.$extend({
                         if (childNodes.length - 1 > index) {
 
                             parent.insertBefore(childNodes[index], childNodes[viewIdx]);
-
 
                         } else {
 
@@ -354,24 +501,29 @@ ya.Core.$extend({
 
                     }
 
+                } else {
+
+                    me.generateView(binding, record, index).render();
+
                 }
 
-            } else {
-                me.generateView(binding, record);
+            });
 
-            }
+            len = connections.length;
+            while (len--) {
 
-        });
+                conn = connections[len];
+                idx = __find(collection._set, '_clientId', conn.model._clientId);
+                if (idx < 0) {
 
-        len = connections.length;
-        while (len--) {
+                    connections
+                        .splice(len, 1)
+                        .pop();
+                    conn
+                        .view
+                        .clear();
 
-            conn = connections[len];
-            idx = __find(collection._set, '_clientId', conn.model._clientId);
-            if (idx < 0) {
-
-                connections.splice(len, 1).pop();
-                conn.view.clear();
+                }
 
             }
 
@@ -379,10 +531,20 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * Clear dependencies between view and model which
+     * was removed from collection
+     *
+     * @method removeFromCollection
+     * @private
+     * @param binding
+     * @param records
+     * @returns {*}
+     */
     removeFromCollection: function (binding, records) {
         var me = this,
             __find = ya.mixins.Array.find,
-            connections, idx, conn, record, view;
+            connections, idx, conn, record;
 
         // get array of connections between collection
         // and generated child views
@@ -398,16 +560,48 @@ ya.Core.$extend({
             // put connection object into variable
             conn = connections[idx];
 
-            // remove from connections array founded one
-            connections.splice(idx, 1).pop();
+            // remove it from connections array
+            connections.splice(idx, 1);
 
-            conn.view.clear();
-
-            conn.view = null;
+            // destroy view
+            conn.view.destroy();
 
         }
 
         return me;
+    },
+    /**
+     * @method generateView
+     * @private
+     * @param binding
+     * @param record
+     * @param idx deprecated
+     * @returns {*}
+     */
+    generateView: function (binding, record, idx) {
+        var me = this,
+            collection = binding.collection,
+            tpl = ya.view.template.$manager.getItem(collection.tpl),
+            definition = collection.view.split('.'),
+            viewInstance;
+
+        viewInstance = ya.$factory({
+            module: definition.shift(),
+            alias: definition.join('.'),
+            renderTo: binding.pointer,
+            parent: me.getView(),
+            tpl: tpl || undefined,
+            models: [
+                record
+            ]
+        });
+
+        collection.connections.push({
+            view: viewInstance,
+            model: record
+        });
+
+        return viewInstance;
     },
     /**
      * @method updateTxt
@@ -417,16 +611,44 @@ ya.Core.$extend({
     updateTxt: function (binding) {
         var me = this,
             txt = binding.original,
-            value;
+            model, value, method, view, filters, filter;
 
-        me.each(binding.headers, function (header) {
+        me.each(binding.headers, function (header, idx) {
+            var filterHeader = '';
 
-            value = binding.models[header[0]].data(header[1]);
-            if (typeof value === 'undefined') {
-                value = "";
+            model = binding.models[header[0]];
+            if (header[1].search(/\$/) === 0) {
+                value = model.get(header[1].substring(1));
+            } else {
+                value = model.data(header[1]);
+                if (typeof value === 'undefined') {
+                    value = "";
+                }
             }
 
-            txt = txt.replace('{{' + header.join('.') + '}}', value);
+            view = me.getView();
+            if (binding.filters[idx].length) {
+                filters = binding.filters[idx];
+                view = me.getView();
+                for (var i = 0, l = filters.length; i < l; i++) {
+                    filter = filters[i];
+                    filterHeader += '||' + filter;
+                    filter = filter.split('.');
+                    var scope;
+                    if (filter.length > 1) {
+                        scope = view._config[filter[0]];
+                        method = scope[filter[1]];
+                    } else {
+                        scope = view;
+                        method = view[filter[0]];
+                    }
+                    if (method) {
+                        value = method.call(scope, value, model, view);
+                    }
+                }
+            }
+
+            txt = txt.replace('{{' + header.join('.') + filterHeader + '}}', value);
         });
 
         binding.pointer.innerHTML = txt;
@@ -439,26 +661,84 @@ ya.Core.$extend({
      */
     updateAttr: function (binding) {
         var me = this,
-            txt = binding.original,
-            value;
+            txt, view, filters, filter, method,
+            filterHeader = '',
+            model, value = true;
 
+        //todo: fill attribute binding
+        if (binding.fillAttr) {
 
-        me.each(binding.headers, function (header) {
+            me.each(binding.headers, function (header) {
 
-            value = binding.models[header[0]].data(header[1]);
-            if (typeof value === 'undefined') {
-                value = "";
+                value = value && binding.models[header[0]].data(header[1]);
+                if (typeof value === 'undefined') {
+                    value = false;
+                }
+
+            });
+
+            if (value) {
+
+                binding.pointer.setAttribute(binding.name, true);
+
+            } else {
+
+                binding.pointer.removeAttribute(binding.name);
+
             }
 
-            txt = txt.replace('{{' + header.join('.') + '}}', value);
+        } else {
 
-        });
+            txt = binding.original;
 
-        binding.pointer.value = txt;
+            me.each(binding.headers, function (header, idx) {
+
+                model = binding.models[header[0]];
+                if (header[1].search(/\$/) === 0) {
+                    value = model.get(header[1].substring(1));
+                } else {
+                    value = model.data(header[1]);
+                    if (typeof value === 'undefined' || value === null) {
+                        value = "";
+                    }
+                }
+
+                view = me.getView();
+                if (binding.filters[idx].length) {
+                    filters = binding.filters[idx];
+                    view = me.getView();
+                    for (var i = 0, l = filters.length; i < l; i++) {
+                        filter = filters[i];
+                        filterHeader += '||' + filter;
+                        filter = filter.split('.');
+                        if (filter.length > 1) {
+                            var property = view._config[filter[0]];
+                            method = property[filter[1]];
+                        } else {
+                            method = view[filter[0]];
+                        }
+                        if (method) {
+                            value = method.call(view.getParent(), value, model, view);
+                        }
+                    }
+                }
+
+                txt = txt
+                    .replace(
+                    '{{' + header.join('.') + filterHeader + '}}',
+                    value
+                );
+
+            });
+
+            binding.pointer.value = txt;
+
+        }
 
     },
     /**
-     * @method removeBindings
+     * Remove all connections between view and models
+     * @method clear
      * @private
      */
     clear: function () {
@@ -471,7 +751,7 @@ ya.Core.$extend({
         __each(bindings, function (binding) {
 
             callbacks = binding.callbacks;
-            if(callbacks) {
+            if (callbacks) {
 
                 __each(binding.callbacks, function (options) {
 
@@ -482,10 +762,6 @@ ya.Core.$extend({
                 });
 
             }
-
-            binding.pointer = null;
-            binding.callbacks.length = 0;
-            binding.models = null;
 
         });
 
@@ -501,38 +777,29 @@ ya.Core.$extend({
     getEDOM: function () {
         var me = this,
             dom = me.getDOM(),
-            div, firstChild;
+            node;
 
         if (
-            dom.childNodes.length > 1 ||
-            dom.firstChild.nodeType === 3
-            ) {
+            dom.childNodes.length > 1
+        ) {
 
-            div = document.createElement('div');
-
-            while (dom.childNodes.length) {
-                div.appendChild(dom.firstChild);
+            node = dom.firstChild;
+            while (node) {
+                if (node.nodeType !== 3) {
+                    node.classList.add(
+                        me.getView().getId()
+                    );
+                }
+                node = node.nextSibling;
             }
 
-            div
-                .setAttribute(
-                'class',
-                'ya inline'
+        } else if (dom.firstChild.nodeType !== 3) {
+            dom.firstChild.setAttribute(
+                'id',
+                me.getView().getId()
             );
-
-            dom
-                .appendChild(div);
-
-
         }
 
-        firstChild = dom.firstChild;
-
-        firstChild.setAttribute(
-            'id',
-            me.getView().getId()
-        );
-
-        return firstChild;
+        return dom;
     }
 });

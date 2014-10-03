@@ -114,9 +114,9 @@ module.exports = function (grunt) {
                     'test/*.js',
                     'test/*.html'
                 ],
-                tasks: ['jshint'],
+                tasks: [],
                 options: {
-                    livereload: true,
+                    livereload: 11538,
                     spawn: true
                 }
             }
@@ -147,6 +147,6 @@ module.exports = function (grunt) {
 
     grunt.registerTask("tdd", ['jshint', 'connect', 'qunit']);
     grunt.registerTask("tdd:browser", ['watch:default']);
-    grunt.registerTask('default', ['jshint', 'concat', 'uglify', 'copy', 'yuidoc']);
+    grunt.registerTask('default', [/*'jshint',*/ 'concat', 'uglify', 'copy', 'yuidoc']);
     grunt.registerTask('travis', ['jshint', 'connect:server', 'blanket_qunit:all', 'concat', 'uglify', 'copy', 'yuidoc']);
 };

@@ -1,6 +1,6 @@
 /**
  * @namespace ya
- * @class Job
+ * @class ya.Job
  */
 ya.Core.$extend({
     module: 'ya',
@@ -9,14 +9,16 @@ ya.Core.$extend({
         id: 0,
         INFINITY: 'infinity'
     },
-    defaults: {
-        id: null,
-        delay: 0,
-        tasks: null,
-        repeat: 1,
-        spawn: false,
-        results: null,
-        maxTime: null
+    defaults: function () {
+        return {
+            id: null,
+            delay: 0,
+            tasks: null,
+            repeat: 1,
+            spawn: false,
+            results: null,
+            maxTime: null
+        };
     },
     /**
      *
@@ -28,7 +30,7 @@ ya.Core.$extend({
 
         if (!me.getTasks() && !me._config.task) {
 
-            throw ya.Error.$create('At least one task should be defined', 'YJ1');
+            throw ya.Error.$create('At least one task should be defined', 'YJ1', (new Error).stack);
 
         }
 
@@ -58,31 +60,30 @@ ya.Core.$extend({
 
         return me;
     },
-    doit: function () {
+    doIt: function () {
         var me = this,
-            deferred = ya.$Promise.deferred(),
+            deferred = ya.$promise.deferred(),
             engine, fn, taskIdx;
 
-
         engine = me.getRepeat() > 1 || me.getRepeat() === ya.Job.$INFINITY ?
-        {terminate: function (code, msg) {
+        {
+            terminate: function (code, msg) {
 
-            clearInterval(me._clear);
+                console.log('%cLOG: TERMINATE: ' + me.__class__, 'color: red; background: silver;');
+                clearInterval(me._clear);
 
-            return deferred.reject({
-                id: code,
-                message: msg
-            });
-        }} :
-        {terminate: function (code, msg) {
+                return deferred.reject(ya.Error.$create(msg, code));
+            }
+        } :
+        {
+            terminate: function (code, msg) {
 
-            clearInterval(me._clear);
+                console.log('%cLOG: TERMINATE: ' + me.__class__, 'color: red; background: silver;');
+                clearInterval(me._clear);
 
-            return deferred.reject({
-                id: code,
-                message: msg
-            });
-        }};
+                return deferred.reject(ya.Error.$create(msg, code));
+            }
+        };
 
         engine.run = function (a, b) {
             me.set('clear', setInterval(a, b));
@@ -109,7 +110,7 @@ ya.Core.$extend({
 
         };
 
-        engine.suspend =function () {
+        engine.suspend = function () {
 
             clearInterval(me._clear);
 
@@ -122,13 +123,12 @@ ya.Core.$extend({
                 results = [],
                 i;
 
-
             if (
                 maxTime &&
                 (+new Date() - me._start) > maxTime
-                ) {
+            ) {
 
-                return engine.terminate('YJ3', 'Timeout');
+                return engine.terminate('YJ3', 'Timeout', (new Error).stack);
 
             }
             if (repeat !== ya.Job.$INFINITY) {
@@ -146,7 +146,7 @@ ya.Core.$extend({
             while (i--) {
 
                 taskIdx = i;
-                results.push(tasks[i].call(engine));
+                results.push(tasks[i].call(engine, engine));
 
             }
 
@@ -163,7 +163,13 @@ ya.Core.$extend({
     },
     terminate: function () {
 
-        return this._engine.terminate('YJ2', 'Task terminated after ' + ((+new Date() - this._start) / 1000) + ' seconds of execution');
+        return this
+            ._engine
+            .terminate(
+            'YJ2',
+            'Task terminated after ' + ((+new Date() - this._start) / 1000) + ' seconds of execution',
+            (new Error).stack
+        );
 
     }
 });

@@ -8,21 +8,23 @@
             htmlMock = document.createElement('div');
             htmlMock.innerHTML =
                 '<div ya-css="backround: red">' +
-                    '<button disabled="{{options.disabled}}">Disabled!</button>' +
-                    '{{example.value}} <p class="{{options.classes}}">{{text.value}}</p>' +
-                    '<ul ya-collection="$examples list">' +
-                    '<div ya-view="class:app.view.Todos3">' +
-                    '<div ya-view="class:app.view.Todos4">' +
-                    '</div>' +
-                    '</div>' +
-                    '<li class="{{list.class}}">{{list.value}} <p class="{{list.b}}"><span class="{list.a}}"></span></p></li>' +
-                    '<div ya-view="class:app.view.Todos2">' +
-                    '</div>' +
-                    '</ul>' +
-                    '{{text.node}} sialalala {{text.node2}}' +
-                    '<div ya-view="id:todos class:app.view.Todos">' +
-                    '</div>' +
-                    '</div>';
+                '<button disabled="{{options.disabled}}">Disabled!</button>' +
+                '{{example.value}} <p class="{{options.classes}}">{{text.value}}</p>' +
+                '<ul ya-collection="id:examples namespace:list">' +
+                '<div ya-view="class:app.view.Todos3">' +
+                '<div ya-view="class:app.view.Todos4">' +
+                '</div>' +
+                '</div>' +
+                '<li class="{{list.class}}">{{list.value}} <p class="{{list.b}}"><span class="{list.a}}"></span></p></li>' +
+                '<div ya-view="class:app.view.Todos2">' +
+                '</div>' +
+                '</ul>' +
+                '{{text.node}} sialalala {{text.node2}}' +
+                '<div ya-view="id:todos class:app.view.Todos">' +
+                '</div>' +
+                '<input ya-model="namespace:editor" name="value" />' +
+                '<textarea ya-model="namespace:editor" name="value2" ></textarea>' +
+                '</div>';
 
         }
     });
@@ -45,7 +47,7 @@
     });
 
     test("find bindings", function () {
-        var Template, called = 0, called2 = 0, called3 = 0, called4 = 0, called5 = 0;
+        var Template, called = 0, called2 = 0, called3 = 0, called4 = 0, called5 = 0, called6 = 0, exec;
 
         Template = ya.view.Template.$create({
             config: {
@@ -53,9 +55,13 @@
                 id: 'tpl-id-1'
             },
             init: function (opts) {
-                this
+                var me = this;
+
+                me
                     .initConfig(opts)
-                    .initDefaults();
+                    .initDefaults()
+                    .initRequired()
+                    .initRegister();
             }
         });
 
@@ -79,13 +85,18 @@
             called5++;
         };
 
+        Template.prepareModelBindings = function () {
+            called6++;
+        };
+
         Template.initBindings();
 
         equal(called, 1, 'prepareColBindings should be called ones');
         equal(called2, 1, 'prepareViewBindings should be called');
         equal(called3, 1, 'prepareCssBindings should be called');
-        equal(called4, 2, 'prepareAttrBindings should be called');
+        equal(called4, 4, 'prepareAttrBindings should be called');
         equal(called5, 5, 'prepareTextBindings should be called');
+        equal(called6, 2, 'prepareModelBindings should be called');
 
 
     });
@@ -134,7 +145,7 @@
 
         equal(binding.collection.view, 'ya.View', 'binding should have default view');
 
-        var tpl = ya.view.template.$Manager.getItem(binding.collection.tpl);
+        var tpl = ya.view.template.$manager.getItem(binding.collection.tpl);
 
         equal(tpl.getTpl().hasChildNodes(), true, 'template retrieved from DOM');
 
@@ -164,6 +175,33 @@
         equal(binding.pointer, div.getAttribute('ya-id'));
         equal(binding.view.id, 'todos');
         equal(binding.view.class, 'app.collection.Todos');
+
+    });
+
+    test("prepare model bindings", function () {
+        var Template, attr, binding, input = document.createElement('input');
+
+        Template = ya.view.Template.$create({
+            config: {
+                tpl: htmlMock,
+                id: 'tpl-id-7'
+            }
+        });
+
+        input.setAttribute('ya-model', 'namespace:editor class:my.Model');
+        input.setAttribute('name', 'editor');
+
+        attr = {
+            name: 'ya-model',
+            value: 'namespace:editor class:my.Model',
+            ownerElement: input
+        };
+
+        binding = Template.prepareModelBindings(attr);
+
+        equal(binding.pointer, input.getAttribute('ya-id'));
+        equal(binding.model.namespace, 'editor');
+        equal(binding.model.class, 'my.Model');
 
     });
 
@@ -210,31 +248,6 @@
         binding = Template.prepareAttrBindings(attr);
 
         equal(binding.pointer, div.getAttribute('ya-id'));
-
-    });
-
-    test("clone DOM and bindings", function () {
-        var template, instance, view;
-
-        template = ya.view.Template.$create({
-            config: {
-                tpl: htmlMock,
-                id: 'tpl-id-4b'
-            }
-        });
-
-
-        view = ya.View.$create({
-            config: {
-                tpl: template
-            }
-        });
-
-
-        instance = template.getTDOMInstance(view);
-
-        ok(instance.getDOM() instanceof DocumentFragment);
-        ok(instance.getBindings() instanceof Array);
 
     });
 

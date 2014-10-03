@@ -86,6 +86,8 @@ ya.$set('ya', 'Core', (function () {
                         me.get('config')[property] = value;
                         me.fireEvent(property + 'Change', this, value, oldVal);
                     }
+
+                    return this;
                 };
             };
 
@@ -131,10 +133,10 @@ ya.$set('ya', 'Core', (function () {
      * @param callback
      * @chainable
      */
-    Core.prototype.onChange = function (property, callback) {
+    Core.prototype.onChange = function (property, callback, single) {
         var me = this;
 
-        me.addEventListener(property + 'Change', callback);
+        me.addEventListener(property + 'Change', callback, me, single);
 
         return me;
     };
@@ -155,6 +157,36 @@ ya.$set('ya', 'Core', (function () {
             }
         }
         this._listeners[property + 'Change'] = listeners;
+
+        return me;
+    };
+
+    Core.prototype.destroy = function () {
+        var me = this,
+            config = me._config,
+            property;
+
+        me.fireEvent('destroy', me);
+
+
+        for (property in config) {
+            if (config.hasOwnProperty(property)) {
+                if (property !== 'id') {
+                    config[property] = null;
+                }
+            }
+        }
+
+
+        for (property in me) {
+            if (me.hasOwnProperty(property)) {
+                if (property !== '_config') {
+                    me[property] = null;
+                }
+            }
+        }
+
+        me._destroyed = true;
 
         return me;
     };

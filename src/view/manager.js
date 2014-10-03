@@ -1,10 +1,10 @@
 /**
  * @namespace ya
- * @class view.$Manager
+ * @class view.$manager
  * @extends ya.Manager
  */
 ya.Manager.$extend({
     module: 'ya',
-    alias: 'view.$Manager',
+    alias: 'view.$manager',
     singleton: true
 });

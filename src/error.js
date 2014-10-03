@@ -50,6 +50,11 @@ ya.Core.$extend({
 
         me.setStack((new Error(me.getMessage())).stack);
 
+        // Compatibility with native exception
+        me.id = me.getId();
+        me.message = me.getMessage();
+        me.stack = me.getStack();
+
         return me;
     },
     toString: function () {

@@ -182,7 +182,7 @@ test("we are able to add records to collection", function () {
     var collection,
         proxy;
 
-    proxy = new ya.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.LocalStorage();
 
     collection = new ya.Collection({
         config: {
@@ -219,7 +219,7 @@ test("we are able to get record from collection", function () {
         proxy,
         record;
 
-    proxy = new ya.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.LocalStorage();
 
     collection = new ya.Collection({
         config: {
@@ -261,7 +261,7 @@ test("we are able to get records from collection", function () {
         proxy,
         records = [];
 
-    proxy = new ya.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.LocalStorage();
 
     collection = new ya.Collection({
         config: {
@@ -302,7 +302,7 @@ asyncTest("we are able to save collection records to storage", function () {
         proxy,
         promise;
 
-    proxy = new ya.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.LocalStorage();
 
     collection = new ya.Collection({
         config: {
@@ -341,13 +341,13 @@ asyncTest("we are able to save collection records to storage", function () {
                 "Collection was saved"
             );
 
-            ya.data.proxy.Localstorage.$clear('test8');
+            ya.data.proxy.LocalStorage.$clear('test8');
             start();
         })
         .then(0, function () {
 
             console.log(arguments);
-            ya.data.proxy.Localstorage.$clear('test8');
+            ya.data.proxy.LocalStorage.$clear('test8');
             start();
         });
 

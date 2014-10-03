@@ -1,16 +1,15 @@
 /**
- Main framework object...
-
+ Static object
  @module ya
  @main ya
  **/
-(function (undefined) {
+(function (window, undefined) {
     'use strict';
 
     var ya = window.ya || {},
         appNamespace = 'app',
         onReadyCallbacks = [],
-        readyStateCheckInterval;
+        readyStateCheckTimeout;
 
     // Run all method when ready
     function run() {
@@ -32,15 +31,22 @@
      */
     ya.$onReady = function (callback) {
         onReadyCallbacks.push(callback);
-        if (!readyStateCheckInterval && document.readyState !== "complete") {
-            readyStateCheckInterval = setInterval(function () {
+        checkState();
+    };
+
+    function checkState() {
+        if (!readyStateCheckTimeout && document.readyState !== "complete") {
+            readyStateCheckTimeout = setTimeout(function () {
                 if (document.readyState === "complete") {
-                    clearInterval(readyStateCheckInterval);
+                    console.log('%cLOG: document ready!', 'backdround: green; color: white;');
                     run();
+                } else {
+                    readyStateCheckTimeout = null;
+                    checkState();
                 }
             }, 10);
         }
-    };
+    }
 
     // Merge two objects.
     /**
@@ -57,7 +63,7 @@
 
             if (obj2.hasOwnProperty(property)) {
 
-                if(typeof obj2[property] !== 'undefined') {
+                if (typeof obj2[property] !== 'undefined') {
 
                     obj1[property] = obj2[property];
 
@@ -124,7 +130,10 @@
     ya.$get = function () {
         var module = arguments.length < 2 ? appNamespace : arguments[0],
             namespace = arguments.length < 2 ? arguments[0] : arguments[1],
-            namespaces = namespace ? (namespace.search(/\./) > 0 ? namespace.split('.') : [namespace]) : [],
+            className = arguments.length > 1 ? (module + '.' + namespace) : namespace,
+            namespaces = namespace ? (
+                namespace.search(/\./) > 0 ? namespace.split('.') : [namespace]
+            ) : [],
             pointer = null,
             current;
 
@@ -146,9 +155,10 @@
                 pointer = window[current];
 
             } else {
-
                 pointer = null;
-                break;
+                throw ya.Error.$create(
+                    'ya.$get: Cannot find class: ' + className, 'GEN1'
+                );
 
             }
 
@@ -167,20 +177,26 @@
     ya.$factory = function (config) {
         var Class, instance, opts;
 
-        if (!config.alias) {
+        if (!config.alias && !config.class) {
 
             throw ya.Error.$create('Factory method needs alias property', 'YA1');
 
         }
 
+        if (config.class) {
+            config.class = config.class.split('.');
+            Class = ya.$get(config.class.shift(), config.class.join('.'));
+        } else {
+            Class = ya.$get(config.module || appNamespace, config.alias);
 
-        Class = ya.$get(config.module || appNamespace, config.alias);
+        }
         opts = config.methods || {};
 
         opts.config = config;
 
         delete config.alias;
         delete config.module;
+        delete config.class;
         delete config.methods;
 
         instance = Class.$create(opts);
@@ -205,5 +221,16 @@
 
     };
 
+    ya.$uuid = function () {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    };
+
+    ya.$exec = function (fn) {
+        return new Function('return ' + fn)();
+    };
+
     window.ya = ya;
-}());
+}(window));

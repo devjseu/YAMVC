@@ -1,15 +1,15 @@
 /**
  * @description
- * ## Localstorage
+ * ## LocalStorage
  *   Proxy provides access to localStorage object. Gives possibility to retrieve data
  *   by id or trough parameters.
  * @namespace ya.data.proxy
- * @class Localstorage
+ * @class LocalStorage
  * @extends ya.data.Proxy
  */
 ya.data.Proxy.$extend({
     module: 'ya',
-    alias: 'data.proxy.Localstorage',
+    alias: 'data.proxy.LocalStorage',
     static: {
         /**
          *
@@ -38,7 +38,7 @@ ya.data.Proxy.$extend({
     /**
      * @method readBy
      * @param action
-     * @returns {Localstorage}
+     * @returns {LocalStorage}
      */
     readBy: function (action) {
         var me = this,
@@ -149,7 +149,7 @@ ya.data.Proxy.$extend({
      *
      * @method readById
      * @param action
-     * @returns {Localstorage}
+     * @returns {LocalStorage}
      */
     readById: function (action) {
         var me = this,
@@ -191,8 +191,18 @@ ya.data.Proxy.$extend({
                 }
             }
 
-            me.setStatus(ya.data.Action.$status.FAIL);
-            response.error = ya.Error.$create("Not found");
+
+            response.error = ya.Error.$create('Not found', 'APP_NAMESPACE_NOT_FOUND');
+            action
+                .setStatus(
+                ya
+                    .data
+                    .Action
+                    .$status
+                    .FAIL
+            )
+                .setResponse(response);
+
             callback(me, action);
         };
 
@@ -203,7 +213,7 @@ ya.data.Proxy.$extend({
     /**
      * @methods create
      * @param action
-     * @returns {Localstorage}
+     * @returns {LocalStorage}
      */
     create: function (action) {
         var me = this,
@@ -287,7 +297,7 @@ ya.data.Proxy.$extend({
     /**
      * @methods update
      * @param action
-     * @returns {Localstorage}
+     * @returns {LocalStorage}
      */
     update: function (action) { //
         var me = this,
@@ -297,73 +307,78 @@ ya.data.Proxy.$extend({
             records = [],
             result,
             response = {},
-            id, l, l2, async;
+            id, l, l2, async, match;
 
         async = function () { // update record asynchronously
-            if (localStorage[namespace]) { // but only if namespace for saving object exist
 
-                records = JSON.parse(localStorage[namespace]);
+            records = JSON.parse(localStorage[namespace] || '[]');
 
-                if (Array.isArray(data)) {
+            if (Array.isArray(data)) {
 
-                    result = [];
-                    l = data.length;
-                    while (l--) {
-                        l2 = records.length;
-                        id = data[l].id;
-                        while (l2--) {
-                            if (records[l2].id === id) {
-                                records[l2] = data[l];
-                                result.splice(0, 0, data[l]);
-                            }
+                result = [];
+                l = data.length;
+                while (l--) {
+                    l2 = records.length;
+                    id = data[l].id;
+                    match = false;
+                    while (l2--) {
+                        if (records[l2].id === id) {
+                            records[l2] = data[l];
+                            result.splice(0, 0, data[l]);
+                            match = true;
                         }
                     }
+                    if (!match) {
 
-                } else {
-                    l = records.length;
-                    id = data.id;
-                    while (l--) {
-                        if (records[l].id === id) {
-                            result = records[l] = data;
-                        }
+                        records.push(data[l]);
+                        result.splice(0, 0, data[l]);
+
                     }
-
                 }
 
-                try {
+            } else {
+                l = records.length;
+                id = data.id;
+                match = false;
+                while (l--) {
+                    if (records[l].id === id) {
+                        match = true;
+                        result = records[l] = data;
 
-                    localStorage[namespace] = JSON.stringify(records);
-                    response.success = true;
-                    response.result = result;
-
-                    action
-                        .setStatus(ya.data.Action.$status.SUCCESS)
-                        .setResponse(response);
-
-                } catch (e) {
-
-                    response.success = false;
-                    response.error = e;
-
-                    action
-                        .setStatus(ya.data.Action.$status.FAIL)
-                        .setResponse(response);
-
+                    }
                 }
 
-                callback(me, action);
+                if (!match) {
+                    records.push(data);
+                    result = data;
+                }
 
-                return me;
             }
 
-            response.success = false;
-            response.error = ya.Error.$create("Not found");
+            try {
 
-            action
-                .setStatus(ya.data.Action.$status.FAIL)
-                .setResponse(response);
+                localStorage[namespace] = JSON.stringify(records);
+                response.success = true;
+                response.result = result;
+
+                action
+                    .setStatus(ya.data.Action.$status.SUCCESS)
+                    .setResponse(response);
+
+            } catch (e) {
+
+                response.success = false;
+                response.error = e;
+
+                action
+                    .setStatus(ya.data.Action.$status.FAIL)
+                    .setResponse(response);
+
+            }
 
             callback(me, action);
+
+            return me;
         };
 
         setTimeout(async, 0);
@@ -372,7 +387,7 @@ ya.data.Proxy.$extend({
     /**
      * @methods destroy
      * @param action
-     * @returns {Localstorage}
+     * @returns {LocalStorage}
      */
     destroy: function (action) {
         var me = this,

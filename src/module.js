@@ -1,8 +1,14 @@
+/**
+ * @namespace ya
+ * @class Module
+ */
 ya.Core.$extend({
     module: 'ya',
     alias: 'Module',
     defaults: function () {
         return {
+            configs: null,
+            launcher: true,
             delay: 16,
             maxLoadingTime: 10000,
             module: null,
@@ -47,35 +53,58 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * init required dependencies
+     * @returns {*}
+     */
     initDependencies: function () {
         var me = this,
-            tasks = [];
+            tasks = [],
+            modLen = me.getModules().length,
+            reqLen = me.getRequires().length,
+            job;
 
-        tasks.push(function () {
-            me.initRequires(this);
+        console.log('%cLOG: initDependencies: ' + me.__class__, 'color: yellow; background: green;');
+
+        tasks.push(function (engine) {
+            // terminate function if no modules need to be included
+            if (modLen + reqLen === 0) {
+
+                engine.finish();
+                return me;
+
+            }
+
+            if(reqLen) {
+                me.initRequires(engine);
+            }
+
+            if(modLen) {
+                me.initModules(engine);
+            }
         });
-        tasks.push(function () {
 
-            me.initModules(this);
-
-        });
-
-        ya.Job.$create({
+        job = ya.Job.$create({
             config: {
                 tasks: tasks,
                 delay: me.getDelay(),
                 repeat: ya.Job.$INFINITY,
                 maxTime: me.getMaxLoadingTime()
             }
-        })
-            .doit()
+        });
+
+
+        job
+            .doIt()
             .then(function () {
 
                 me.continueInit();
 
             })
-            ["catch"](function () {
-
+            ["catch"](function (e) {
+            if (me._unresolved.length) {
+                console.warn('Can\'t resolve class ' + me._unresolved.join(', '));
+            }
             me.onError.apply(me, arguments);
 
         });
@@ -87,22 +116,25 @@ ya.Core.$extend({
             __each = ya.mixins.Array.each,
             requires = me.getRequires(),
             len = requires.length,
-            isReady = true, i = 0, initialized = [],
-            resolveParams, args, require, className, params, instance;
-
-        // terminate function if nothing to instantiate
-        if (len === 0) {
-
-            engine.finish();
-            return me;
-
-        }
+            isReady = true, i = 0, initialized = [], config = {}, configs = null, unresolved = [], require = null,
+            resolveParams, args, className, params, instance, requireName;
 
         resolveParams = function (param) {
+            configs = me.getConfigs();
+            config = configs ? (configs[className] ? configs[className] : {}) : {};
+
             switch (param) {
                 case '-i' :
 
-                    initialized.push(require.$create());
+                    console.log('%cINIT: ' + me.__class__ + ':' + className, 'background: yellow; color: black;');
+
+                    initialized
+                        .push(
+                        require
+                            .$create({
+                                config: config
+                            })
+                    );
 
                     break;
                 case '-p' :
@@ -112,10 +144,15 @@ ya.Core.$extend({
                     break;
                 case '-ip' :
 
-                    instance = require.$create();
+                    instance = require
+                        .$create({
+                            config: config
+                        });
 
-                    args.push(instance);
-                    initialized.push(instance);
+                    args
+                        .push(instance);
+                    initialized
+                        .push(instance);
 
                     break;
 
@@ -125,16 +162,30 @@ ya.Core.$extend({
 
         while (i < len) {
 
-            require = ya.$get(
-                    me.getModule() + '.' + requires[i].split(" ").shift()
-            );
+            requireName = me.getModule() + '.' + requires[i].split(" ").shift();
+
+            try {
+
+                require = ya.$get(
+                    requireName
+                );
+
+            } catch (e) {
+
+                require = null;
+
+            }
 
             if (require === null) {
                 isReady = false;
+                unresolved.push(requireName);
             }
 
             i++;
         }
+
+        //todo
+        me.set('unresolved', unresolved);
 
         if (isReady) {
 
@@ -147,7 +198,7 @@ ya.Core.$extend({
                 params = require.join("").match(/-(\w+)/g);
 
                 require = ya.$get(
-                        me.getModule() + '.' + className
+                    me.getModule() + '.' + className
                 );
 
                 if (params) {
@@ -158,7 +209,7 @@ ya.Core.$extend({
 
                     } catch (e) {
 
-                        engine.terminate(e.getId(), e.getMessage());
+                        engine.terminate(e.id, e.message, e.stack);
                         break;
 
                     }
@@ -182,20 +233,11 @@ ya.Core.$extend({
             __each = ya.mixins.Array.each,
             modules = me.getModules(),
             len = modules.length,
-            isReady = true, i = 0, module = null, initialized = [], semaphore = 0,
-            className, params;
-
-
-        // terminate function if no modules need to be included
-        if (len === 0) {
-
-            engine.finish();
-            return me;
-
-        }
+            isReady = true, i = 0, module = null, initialized = [], semaphore = 0, unresolved = [],
+            className, params, moduleName, configs = null, config;
 
         /**
-         * Callback which tell engine to stop particular task
+         * Callback which tells engine to stop particular task
          */
         function onReady() {
 
@@ -204,9 +246,7 @@ ya.Core.$extend({
 
             if (semaphore === 0) {
 
-                engine.run();
                 engine.finish();
-
 
             }
 
@@ -221,9 +261,16 @@ ya.Core.$extend({
 
             switch (param) {
                 case '-i' :
+
+                    configs = me.getConfigs();
+                    config = configs && configs[moduleName] || {};
+                    config.launcher = false;
+
                     initialized.push(
                         module
-                            .$create()
+                            .$create({
+                                config: config
+                            })
                             .addEventListener('ready', onReady)
                     );
 
@@ -237,16 +284,30 @@ ya.Core.$extend({
 
         while (i < len) {
 
-            module = ya.$get(
-                    me.getModule() + '.' + modules[i].split(" ").shift()
-            );
+            moduleName = modules[i].split(" ").shift();
+
+            try {
+
+                module = ya.$get(
+                    moduleName
+                );
+
+            } catch (e) {
+
+                module = null;
+
+            }
 
             if (module === null) {
                 isReady = false;
+                unresolved.push(moduleName);
             }
 
             i++;
         }
+
+        //todo
+        me.set('unresolved', unresolved);
 
         if (isReady) {
 
@@ -256,11 +317,12 @@ ya.Core.$extend({
             while (i < len) {
 
                 module = modules[i].split(" ");
-                className = module.shift() + ".Module";
+                moduleName = module.shift();
+                className = moduleName + ".Module";
                 params = module.join("").match(/-(\w+)/g);
 
                 module = ya.$get(
-                        me.getModule() + '.' + className
+                    me.getModule() + '.' + className
                 );
 
                 if (params) {
@@ -276,14 +338,16 @@ ya.Core.$extend({
 
                         // if any error occurred terminate the task
                         // and return reason of that
-                        engine.terminate(e.getId(), e.getMessage());
+                        //todo
+                        engine
+                            .terminate(
+                            e.getId() || e.id,
+                            e.getMessage() || e.message,
+                            e.getStack() || e.stack
+                        );
                         break;
 
                     }
-
-                } else {
-
-                    engine.finish();
 
                 }
 
@@ -299,13 +363,24 @@ ya.Core.$extend({
     continueInit: function () {
         var me = this;
 
+        // initialize bus communication between
+        // different objects
         me
             .initBus()
             .fireEvent('ready', me);
 
+        //
         me
             .onReady
             .apply(me, me._args);
+
+
+        if (me.getLauncher()) {
+
+            me
+                .notifyChildren();
+
+        }
 
         return me;
     },
@@ -315,20 +390,63 @@ ya.Core.$extend({
             left, right, event, callback;
 
 
-        for (var connection in bus) {
+        if (Array.isArray(bus)) {
 
-            if (bus.hasOwnProperty(connection)) {
+            while (bus.length) {
+                var pop = bus.pop();
 
-                right = bus[connection].split(':');
-                left = connection.split(':');
-                event = left.pop();
-                callback = right.pop();
-                left = me.findConn(left);
-                right = me.findConn(right);
+                for (var connection2 in pop) {
 
-                if (left.idx < 0 || right.idx < 0) continue;
+                    if (pop.hasOwnProperty(connection2)) {
 
-                left.obj.addEventListener(event, right.obj[callback]);
+                        right = pop[connection2].split(':');
+                        left = connection2.split(':');
+                        event = left.pop();
+                        callback = right.pop();
+                        left = me.findConn(left);
+                        right = me.findConn(right);
+
+                        if (left.idx < 0 || right.idx < 0) continue;
+
+                        left
+                            .obj
+                            .addEventListener(
+                            event,
+                            right.obj[callback],
+                            right.obj
+                        );
+
+                    }
+
+                }
+
+            }
+
+
+        } else {
+
+            for (var connection in bus) {
+
+                if (bus.hasOwnProperty(connection)) {
+
+                    right = bus[connection].split(':');
+                    left = connection.split(':');
+                    event = left.pop();
+                    callback = right.pop();
+                    left = me.findConn(left);
+                    right = me.findConn(right);
+
+                    if (left.idx < 0 || right.idx < 0) continue;
+
+                    left
+                        .obj
+                        .addEventListener(
+                        event,
+                        right.obj[callback],
+                        right.obj
+                    );
+
+                }
 
             }
 
@@ -362,11 +480,34 @@ ya.Core.$extend({
         }
 
         found.idx = idx = __find(initialized, '__class__', name);
-        found.obj = idx > -1 ? initialized[idx]: null;
+        found.obj = idx > -1 ? initialized[idx] : null;
 
         return found;
     },
+    notifyChildren: function () {
+        var me = this,
+            len = me._initialized.length,
+            i = 0, rx = /\.Module$/,
+            init;
+
+        while (i < len) {
+            init = me._initialized[i];
+
+            if (rx.test(init.__class__)) {
+
+                init.onParentReady();
+                init.notifyChildren();
+
+            }
+
+            i++;
+        }
+
+    },
     onReady: function () {
+    },
+    onParentReady: function () {
+
     },
     onError: function () {
     }

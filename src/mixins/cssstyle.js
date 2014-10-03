@@ -7,7 +7,7 @@
         // Make object map from string.
         var obj = {}, items = str.split(",");
         for (var i = 0; i < items.length; i++)
-            obj[ items[i] ] = true;
+            obj[items[i]] = true;
         return obj;
     }
 
@@ -21,9 +21,6 @@
     ya.$set('ya', 'mixins.CSSStyle', {
         isFillAttr: function (attr) {
             return typeof fillAttrs[attr] !== 'undefined';
-        },
-        get: function () {
-
         }
     });
 

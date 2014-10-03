@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>src\module.js - yam</title>
+    <title>src/module.js - yam</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -19,7 +19,7 @@
             
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.2.0</em>
+            <em>API Docs for: 0.3.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -43,15 +43,19 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
+                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+            
+                <li><a href="../classes/ya.Ajax.html">ya.Ajax</a></li>
+            
+                <li><a href="../classes/ya.ajax.JSON.html">ya.ajax.JSON</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
             
-                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
+                <li><a href="../classes/ya.collection.$manager.html">ya.collection.$manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
-                <li><a href="../classes/ya.controller.$Manager.html">ya.controller.$Manager</a></li>
+                <li><a href="../classes/ya.controller.$manager.html">ya.controller.$manager</a></li>
             
                 <li><a href="../classes/ya.Core.html">ya.Core</a></li>
             
@@ -59,7 +63,7 @@
             
                 <li><a href="../classes/ya.data.Proxy.html">ya.data.Proxy</a></li>
             
-                <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
+                <li><a href="../classes/ya.data.proxy.LocalStorage.html">ya.data.proxy.LocalStorage</a></li>
             
                 <li><a href="../classes/ya.Error.html">ya.Error</a></li>
             
@@ -83,17 +87,23 @@
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
+                <li><a href="../classes/ya.Module.html">ya.Module</a></li>
+            
                 <li><a href="../classes/ya.Router.html">ya.Router</a></li>
+            
+                <li><a href="../classes/ya.util.$detection.html">ya.util.$detection</a></li>
+            
+                <li><a href="../classes/ya.util.Parallel.html">ya.util.Parallel</a></li>
             
                 <li><a href="../classes/ya.View.html">ya.View</a></li>
             
-                <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
+                <li><a href="../classes/ya.view.$manager.html">ya.view.$manager</a></li>
             
                 <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
             
-                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
+                <li><a href="../classes/ya.view.template.$manager.html">ya.view.template.$manager</a></li>
             
             </ul>
 
@@ -136,15 +146,21 @@
             <div class="apidocs">
                 <div id="docs-main">
                     <div class="content">
-                        <h1 class="file-heading">File: src\module.js</h1>
+                        <h1 class="file-heading">File: src/module.js</h1>
 
 <div class="file">
     <pre class="code prettyprint linenums">
+/**
+ * @namespace ya
+ * @class Module
+ */
 ya.Core.$extend({
     module: &#x27;ya&#x27;,
     alias: &#x27;Module&#x27;,
     defaults: function () {
         return {
+            configs: null,
+            launcher: true,
             delay: 16,
             maxLoadingTime: 10000,
             module: null,
@@ -189,35 +205,58 @@ ya.Core.$extend({
 
         return me;
     },
+    /**
+     * init required dependencies
+     * @returns {*}
+     */
     initDependencies: function () {
         var me = this,
-            tasks = [];
+            tasks = [],
+            modLen = me.getModules().length,
+            reqLen = me.getRequires().length,
+            job;
 
-        tasks.push(function () {
-            me.initRequires(this);
+        console.log(&#x27;%cLOG: initDependencies: &#x27; + me.__class__, &#x27;color: yellow; background: green;&#x27;);
+
+        tasks.push(function (engine) {
+            // terminate function if no modules need to be included
+            if (modLen + reqLen === 0) {
+
+                engine.finish();
+                return me;
+
+            }
+
+            if(reqLen) {
+                me.initRequires(engine);
+            }
+
+            if(modLen) {
+                me.initModules(engine);
+            }
         });
-        tasks.push(function () {
 
-            me.initModules(this);
-
-        });
-
-        ya.Job.$create({
+        job = ya.Job.$create({
             config: {
                 tasks: tasks,
                 delay: me.getDelay(),
                 repeat: ya.Job.$INFINITY,
                 maxTime: me.getMaxLoadingTime()
             }
-        })
-            .doit()
+        });
+
+
+        job
+            .doIt()
             .then(function () {
 
                 me.continueInit();
 
             })
-            [&quot;catch&quot;](function () {
-
+            [&quot;catch&quot;](function (e) {
+            if (me._unresolved.length) {
+                console.warn(&#x27;Can\&#x27;t resolve class &#x27; + me._unresolved.join(&#x27;, &#x27;));
+            }
             me.onError.apply(me, arguments);
 
         });
@@ -229,22 +268,25 @@ ya.Core.$extend({
             __each = ya.mixins.Array.each,
             requires = me.getRequires(),
             len = requires.length,
-            isReady = true, i = 0, initialized = [],
-            resolveParams, args, require, className, params, instance;
-
-        // terminate function if nothing to instantiate
-        if (len === 0) {
-
-            engine.finish();
-            return me;
-
-        }
+            isReady = true, i = 0, initialized = [], config = {}, configs = null, unresolved = [], require = null,
+            resolveParams, args, className, params, instance, requireName;
 
         resolveParams = function (param) {
+            configs = me.getConfigs();
+            config = configs ? (configs[className] ? configs[className] : {}) : {};
+
             switch (param) {
                 case &#x27;-i&#x27; :
 
-                    initialized.push(require.$create());
+                    console.log(&#x27;%cINIT: &#x27; + me.__class__ + &#x27;:&#x27; + className, &#x27;background: yellow; color: black;&#x27;);
+
+                    initialized
+                        .push(
+                        require
+                            .$create({
+                                config: config
+                            })
+                    );
 
                     break;
                 case &#x27;-p&#x27; :
@@ -254,10 +296,15 @@ ya.Core.$extend({
                     break;
                 case &#x27;-ip&#x27; :
 
-                    instance = require.$create();
+                    instance = require
+                        .$create({
+                            config: config
+                        });
 
-                    args.push(instance);
-                    initialized.push(instance);
+                    args
+                        .push(instance);
+                    initialized
+                        .push(instance);
 
                     break;
 
@@ -267,16 +314,30 @@ ya.Core.$extend({
 
         while (i &lt; len) {
 
-            require = ya.$get(
-                    me.getModule() + &#x27;.&#x27; + requires[i].split(&quot; &quot;).shift()
-            );
+            requireName = me.getModule() + &#x27;.&#x27; + requires[i].split(&quot; &quot;).shift();
+
+            try {
+
+                require = ya.$get(
+                    requireName
+                );
+
+            } catch (e) {
+
+                require = null;
+
+            }
 
             if (require === null) {
                 isReady = false;
+                unresolved.push(requireName);
             }
 
             i++;
         }
+
+        //todo
+        me.set(&#x27;unresolved&#x27;, unresolved);
 
         if (isReady) {
 
@@ -289,7 +350,7 @@ ya.Core.$extend({
                 params = require.join(&quot;&quot;).match(/-(\w+)/g);
 
                 require = ya.$get(
-                        me.getModule() + &#x27;.&#x27; + className
+                    me.getModule() + &#x27;.&#x27; + className
                 );
 
                 if (params) {
@@ -300,7 +361,7 @@ ya.Core.$extend({
 
                     } catch (e) {
 
-                        engine.terminate(e.getId(), e.getMessage());
+                        engine.terminate(e.id, e.message, e.stack);
                         break;
 
                     }
@@ -324,20 +385,11 @@ ya.Core.$extend({
             __each = ya.mixins.Array.each,
             modules = me.getModules(),
             len = modules.length,
-            isReady = true, i = 0, module = null, initialized = [], semaphore = 0,
-            className, params;
-
-
-        // terminate function if no modules need to be included
-        if (len === 0) {
-
-            engine.finish();
-            return me;
-
-        }
+            isReady = true, i = 0, module = null, initialized = [], semaphore = 0, unresolved = [],
+            className, params, moduleName, configs = null, config;
 
         /**
-         * Callback which tell engine to stop particular task
+         * Callback which tells engine to stop particular task
          */
         function onReady() {
 
@@ -346,9 +398,7 @@ ya.Core.$extend({
 
             if (semaphore === 0) {
 
-                engine.run();
                 engine.finish();
-
 
             }
 
@@ -363,9 +413,16 @@ ya.Core.$extend({
 
             switch (param) {
                 case &#x27;-i&#x27; :
+
+                    configs = me.getConfigs();
+                    config = configs &amp;&amp; configs[moduleName] || {};
+                    config.launcher = false;
+
                     initialized.push(
                         module
-                            .$create()
+                            .$create({
+                                config: config
+                            })
                             .addEventListener(&#x27;ready&#x27;, onReady)
                     );
 
@@ -379,16 +436,30 @@ ya.Core.$extend({
 
         while (i &lt; len) {
 
-            module = ya.$get(
-                    me.getModule() + &#x27;.&#x27; + modules[i].split(&quot; &quot;).shift()
-            );
+            moduleName = modules[i].split(&quot; &quot;).shift();
+
+            try {
+
+                module = ya.$get(
+                    moduleName
+                );
+
+            } catch (e) {
+
+                module = null;
+
+            }
 
             if (module === null) {
                 isReady = false;
+                unresolved.push(moduleName);
             }
 
             i++;
         }
+
+        //todo
+        me.set(&#x27;unresolved&#x27;, unresolved);
 
         if (isReady) {
 
@@ -398,11 +469,12 @@ ya.Core.$extend({
             while (i &lt; len) {
 
                 module = modules[i].split(&quot; &quot;);
-                className = module.shift() + &quot;.Module&quot;;
+                moduleName = module.shift();
+                className = moduleName + &quot;.Module&quot;;
                 params = module.join(&quot;&quot;).match(/-(\w+)/g);
 
                 module = ya.$get(
-                        me.getModule() + &#x27;.&#x27; + className
+                    me.getModule() + &#x27;.&#x27; + className
                 );
 
                 if (params) {
@@ -418,14 +490,16 @@ ya.Core.$extend({
 
                         // if any error occurred terminate the task
                         // and return reason of that
-                        engine.terminate(e.getId(), e.getMessage());
+                        //todo
+                        engine
+                            .terminate(
+                            e.getId() || e.id,
+                            e.getMessage() || e.message,
+                            e.getStack() || e.stack
+                        );
                         break;
 
                     }
-
-                } else {
-
-                    engine.finish();
 
                 }
 
@@ -441,13 +515,24 @@ ya.Core.$extend({
     continueInit: function () {
         var me = this;
 
+        // initialize bus communication between
+        // different objects
         me
             .initBus()
             .fireEvent(&#x27;ready&#x27;, me);
 
+        //
         me
             .onReady
             .apply(me, me._args);
+
+
+        if (me.getLauncher()) {
+
+            me
+                .notifyChildren();
+
+        }
 
         return me;
     },
@@ -457,20 +542,63 @@ ya.Core.$extend({
             left, right, event, callback;
 
 
-        for (var connection in bus) {
+        if (Array.isArray(bus)) {
 
-            if (bus.hasOwnProperty(connection)) {
+            while (bus.length) {
+                var pop = bus.pop();
 
-                right = bus[connection].split(&#x27;:&#x27;);
-                left = connection.split(&#x27;:&#x27;);
-                event = left.pop();
-                callback = right.pop();
-                left = me.findConn(left);
-                right = me.findConn(right);
+                for (var connection2 in pop) {
 
-                if (left.idx &lt; 0 || right.idx &lt; 0) continue;
+                    if (pop.hasOwnProperty(connection2)) {
 
-                left.obj.addEventListener(event, right.obj[callback]);
+                        right = pop[connection2].split(&#x27;:&#x27;);
+                        left = connection2.split(&#x27;:&#x27;);
+                        event = left.pop();
+                        callback = right.pop();
+                        left = me.findConn(left);
+                        right = me.findConn(right);
+
+                        if (left.idx &lt; 0 || right.idx &lt; 0) continue;
+
+                        left
+                            .obj
+                            .addEventListener(
+                            event,
+                            right.obj[callback],
+                            right.obj
+                        );
+
+                    }
+
+                }
+
+            }
+
+
+        } else {
+
+            for (var connection in bus) {
+
+                if (bus.hasOwnProperty(connection)) {
+
+                    right = bus[connection].split(&#x27;:&#x27;);
+                    left = connection.split(&#x27;:&#x27;);
+                    event = left.pop();
+                    callback = right.pop();
+                    left = me.findConn(left);
+                    right = me.findConn(right);
+
+                    if (left.idx &lt; 0 || right.idx &lt; 0) continue;
+
+                    left
+                        .obj
+                        .addEventListener(
+                        event,
+                        right.obj[callback],
+                        right.obj
+                    );
+
+                }
 
             }
 
@@ -504,11 +632,34 @@ ya.Core.$extend({
         }
 
         found.idx = idx = __find(initialized, &#x27;__class__&#x27;, name);
-        found.obj = idx &gt; -1 ? initialized[idx]: null;
+        found.obj = idx &gt; -1 ? initialized[idx] : null;
 
         return found;
     },
+    notifyChildren: function () {
+        var me = this,
+            len = me._initialized.length,
+            i = 0, rx = /\.Module$/,
+            init;
+
+        while (i &lt; len) {
+            init = me._initialized[i];
+
+            if (rx.test(init.__class__)) {
+
+                init.onParentReady();
+                init.notifyChildren();
+
+            }
+
+            i++;
+        }
+
+    },
     onReady: function () {
+    },
+    onParentReady: function () {
+
     },
     onError: function () {
     }

@@ -1,70 +1,42 @@
 (function (undefined) {
 
-    var viewMock, bindingsMock, domMock;
+    var tplMock, viewMock, domMock;
 
     module('TDOM', {
         setup: function () {
             var html;
 
             viewMock = ya.View.$create({
-                init: function () {
-                    this
-                        .initConfig()
-                        .initDefaults();
+                config: {
+                    tpl: '<div>' +
+                    '<p>{{example.value}}</p>' +
+                    '<p>{{example.value}}</p>' +
+                    '<p>{{text.value}}<p>{{text.node}} - {{text.node2}}</p></p>' +
+                    '</div>'
                 }
-            });
-
-            bindingsMock = [
-                {"pointer": 0, "type": 4, "view": {"class": "app.view.Todos", "id": "todos"}},
-                {"pointer": 1, "type": 1, "collection": {"view": "ya.View", "class": "ya.Collection", "tpl": "collection-test-0"}},
-                {"fillAttr": false, callbacks: [], "name": "class", "original": "{{options.classes}}", "models": {}, "headers": [
-                    ["options", "classes"]
-                ], "type": 2, "pointer": 3},
-                {"fillAttr": true, callbacks: [], "name": "disabled", "original": "{{options.disabled}}", "models": {}, "headers": [
-                    ["options", "disabled"]
-                ], "type": 2, "pointer": 4},
-                {"original": "background: red", "fillAttr": false, callbacks: [], "headers": [], "name": "style", "models": {}, "type": 2, "pointer": 5},
-                {"original": "{{example.value}} ", callbacks: [], "models": {}, "headers": [
-                    ["example", "value"]
-                ], "type": 3, "pointer": 6},
-                {"original": "{{text.value}}", callbacks: [], "models": {}, "headers": [
-                    ["text", "value"]
-                ], "type": 3, "pointer": 7},
-                {"original": "{{text.node}} sialalala {{text.node2}}", callbacks: [], "models": {}, "headers": [
-                    ["text", "node"],
-                    ["text", "node2"]
-                ], "type": 3, "pointer": 8}
-            ];
-
-            html = document.createElement('div');
-            html.innerHTML =
-                '<div><div ya-css="background: red" style="background: red" ya-id="5"><button disabled="{{options.disabled}}" ya-id="4">Disabled!</button><span ya-id="6"></span><p class="{{options.classes}}" ya-id="3"><span ya-id="7"></span></p><ul ya-collection="$examples list" ya-id="1"></ul><span ya-id="8"></span><div ya-view="id:todos class:app.view.Todos" ya-id="0"></div></div></div>';
-
-            domMock = document.createDocumentFragment();
-            domMock.appendChild(html.firstChild);
-
+            })
         }
     });
 
 
     test("initialize", function () {
-        var tDOM;
+        var tDOM, err;
 
         try {
 
             ya.view.TDOM.$create();
 
         } catch (e) {
-
-            ok(e.getId());
-
+            err = e;
         }
+
+        ok(err && err.getId && err.getId());
 
         tDOM = ya.view.TDOM.$create({
             config: {
-                bindings: bindingsMock,
-                DOM: domMock,
-                view: viewMock
+                view: viewMock,
+                bindings: ya.$clone(viewMock.getTpl().get('bindings')),
+                DOM: viewMock.getTpl().get('html').cloneNode(true)
             }
         });
 
@@ -78,6 +50,7 @@
 
         view = ya.View.$create({
             config: {
+                tpl : viewMock.getTpl(),
                 models: [
                     ya.$factory({
                         module: 'ya',
@@ -99,7 +72,7 @@
                     })
                 ]
             },
-            initRequired: function () {
+            checkRequired: function () {
                 return this;
             },
             initTemplate: function () {
@@ -110,8 +83,8 @@
         tdom = ya.view.TDOM.$create({
             config: {
                 view: view,
-                bindings: bindingsMock,
-                DOM: domMock
+                bindings: ya.$clone(view.getTpl().get('bindings')),
+                DOM: view.getTpl().get('html').cloneNode(true)
             }
         });
 
@@ -209,5 +182,43 @@
 
     });
 
+    test("update DOM Elements like inputs or textareas bind with model", function () {
+        var view, model;
 
+        model = ya.$factory({
+            module: 'ya',
+            alias: 'Model',
+            namespace: 'editor',
+            data: {
+                value: 'Test1'
+            }
+        });
+
+        view = ya.View.$create({
+            config: {
+                renderTo: '#test-12',
+                tpl: [
+                    '<div>',
+                    '<input ya-model="namespace:editor" name="value" value="" />',
+                    '<textarea ya-model="namespace:editor" name="value2" value=""></textarea>',
+                    '</div>'
+                ],
+                models: [
+                    model
+                ]
+            }
+        });
+
+        view.render();
+
+        equal(view.querySelector('input').value, model.data('value'));
+        equal(view.querySelector('textarea').value, "");
+
+        view.querySelector('textarea').value = "Test2";
+        keyup(view.querySelector('textarea'), "");
+
+        equal(model.data('value2'), "Test2");
+        ok(true);
+
+    });
 }());

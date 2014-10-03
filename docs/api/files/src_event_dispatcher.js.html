@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>src\event\dispatcher.js - yam</title>
+    <title>src/event/dispatcher.js - yam</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -19,7 +19,7 @@
             
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.2.0</em>
+            <em>API Docs for: 0.3.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -43,15 +43,19 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
+                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+            
+                <li><a href="../classes/ya.Ajax.html">ya.Ajax</a></li>
+            
+                <li><a href="../classes/ya.ajax.JSON.html">ya.ajax.JSON</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
             
-                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
+                <li><a href="../classes/ya.collection.$manager.html">ya.collection.$manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
-                <li><a href="../classes/ya.controller.$Manager.html">ya.controller.$Manager</a></li>
+                <li><a href="../classes/ya.controller.$manager.html">ya.controller.$manager</a></li>
             
                 <li><a href="../classes/ya.Core.html">ya.Core</a></li>
             
@@ -59,7 +63,7 @@
             
                 <li><a href="../classes/ya.data.Proxy.html">ya.data.Proxy</a></li>
             
-                <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
+                <li><a href="../classes/ya.data.proxy.LocalStorage.html">ya.data.proxy.LocalStorage</a></li>
             
                 <li><a href="../classes/ya.Error.html">ya.Error</a></li>
             
@@ -83,17 +87,23 @@
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
+                <li><a href="../classes/ya.Module.html">ya.Module</a></li>
+            
                 <li><a href="../classes/ya.Router.html">ya.Router</a></li>
+            
+                <li><a href="../classes/ya.util.$detection.html">ya.util.$detection</a></li>
+            
+                <li><a href="../classes/ya.util.Parallel.html">ya.util.Parallel</a></li>
             
                 <li><a href="../classes/ya.View.html">ya.View</a></li>
             
-                <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
+                <li><a href="../classes/ya.view.$manager.html">ya.view.$manager</a></li>
             
                 <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
             
-                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
+                <li><a href="../classes/ya.view.template.$manager.html">ya.view.template.$manager</a></li>
             
             </ul>
 
@@ -136,15 +146,15 @@
             <div class="apidocs">
                 <div id="docs-main">
                     <div class="content">
-                        <h1 class="file-heading">File: src\event\dispatcher.js</h1>
+                        <h1 class="file-heading">File: src/event/dispatcher.js</h1>
 
 <div class="file">
     <pre class="code prettyprint linenums">
 /**
  * Dispatcher class allow you to delegates events across
  * newly generated views
- * @namespace ya.event
- * @class $dispatcher
+ * @namespace ya
+ * @class event.$dispatcher
  * @extends ya.Core
  * @static
  */
@@ -221,7 +231,10 @@ ya.Core.$extend({
             // If view is not null define regexp for
             // searching view id in delegated event
             // query.
-            regExp = new RegExp(&#x27;^\\$&#x27; + view.getId() + &quot;[\\s]&quot;);
+            regExp = view.hasCustomId() ?
+                new RegExp(&#x27;^\\$&#x27; + view.getId() + &quot;[\\s]&quot;) :
+                new RegExp(&#x27;^class:&#x27; + view.__class__ + &quot;[\\s]&quot;);
+
             // Get position for events which were matched.
             matchPos = __findAllByFn(delegates, matchIdFn);
             if (matchPos.length) {
@@ -229,8 +242,9 @@ ya.Core.$extend({
                 // If we found any events which need to be delegated,
                 __each(matchPos, function (r) {
                     // iterate through all of them.
-                    // As first step clear the array of elements
+                    // At first step clear the array of elements
                     els.length = 0;
+
                     delegate = delegates[r];
                     //
                     selector = delegate
@@ -240,10 +254,12 @@ ya.Core.$extend({
                     selector.shift();
 
                     if (selector.length) {
-                        // If still anything left get last part
-                        // from query and find in new view elements
-                        // which match to the selector.
-                        els = newView.querySelectorAll(selector.pop());
+                        // If still something left get last part
+                        // from query and search in the new view
+                        // elements which could match to the selector.
+                        var last = selector.pop();
+                        els = newView.querySelectorAll(last);
+
                         // Copy array with rest of them
                         cpSelector = selector.slice();
                         __each(els, function (el) {
@@ -292,13 +308,38 @@ ya.Core.$extend({
     },
     assignEvents: function (el, delegate, view) {
         var e = delegate.events,
-            eType;
+            eType, eHand, eHandLen, exists = false;
 
         for (eType in e) {
 
             if (e.hasOwnProperty(eType)) {
 
-                el.addEventListener(eType, e[eType].bind(delegate.scope, view), false);
+
+                eHandLen = view._eventHandlers.length;
+                while(eHandLen--){
+                    eHand = view._eventHandlers[eHandLen];
+                    if(
+                        eHand.event === eType &amp;&amp;
+                        eHand.el === el &amp;&amp;
+                        eHand.listener === e[eType] &amp;&amp;
+                        eHand.scope === delegate.scope
+                    ) {
+                        exists = true;
+                    }
+                }
+
+                if(!exists){
+
+                    // todo: pass element to which event was bind as 2th argument
+                    el.addEventListener(eType, e[eType].bind(delegate.scope, view, el), false);
+                    view.get(&#x27;eventHandlers&#x27;).push({
+                        event: eType,
+                        listener: e[eType],
+                        scope: delegate.scope,
+                        el: el
+                    });
+
+                }
 
             }
 
@@ -313,7 +354,6 @@ ya.Core.$extend({
         return this;
     }
 });
-
     </pre>
 </div>
 

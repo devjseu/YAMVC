@@ -1,6 +1,6 @@
 {
   "name": "ya",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Fast and ease to extend MVC Framework for one page desktop and mobile app",
   "main": "./distrib/yamvc.min.js",
   "repository": {

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>src\view\template.js - yam</title>
+    <title>src/view/template.js - yam</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -19,7 +19,7 @@
             
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.2.0</em>
+            <em>API Docs for: 0.3.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -43,15 +43,19 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
+                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+            
+                <li><a href="../classes/ya.Ajax.html">ya.Ajax</a></li>
+            
+                <li><a href="../classes/ya.ajax.JSON.html">ya.ajax.JSON</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
             
-                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
+                <li><a href="../classes/ya.collection.$manager.html">ya.collection.$manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
-                <li><a href="../classes/ya.controller.$Manager.html">ya.controller.$Manager</a></li>
+                <li><a href="../classes/ya.controller.$manager.html">ya.controller.$manager</a></li>
             
                 <li><a href="../classes/ya.Core.html">ya.Core</a></li>
             
@@ -59,7 +63,7 @@
             
                 <li><a href="../classes/ya.data.Proxy.html">ya.data.Proxy</a></li>
             
-                <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
+                <li><a href="../classes/ya.data.proxy.LocalStorage.html">ya.data.proxy.LocalStorage</a></li>
             
                 <li><a href="../classes/ya.Error.html">ya.Error</a></li>
             
@@ -83,17 +87,23 @@
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
+                <li><a href="../classes/ya.Module.html">ya.Module</a></li>
+            
                 <li><a href="../classes/ya.Router.html">ya.Router</a></li>
+            
+                <li><a href="../classes/ya.util.$detection.html">ya.util.$detection</a></li>
+            
+                <li><a href="../classes/ya.util.Parallel.html">ya.util.Parallel</a></li>
             
                 <li><a href="../classes/ya.View.html">ya.View</a></li>
             
-                <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
+                <li><a href="../classes/ya.view.$manager.html">ya.view.$manager</a></li>
             
                 <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
             
-                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
+                <li><a href="../classes/ya.view.template.$manager.html">ya.view.template.$manager</a></li>
             
             </ul>
 
@@ -136,13 +146,13 @@
             <div class="apidocs">
                 <div id="docs-main">
                     <div class="content">
-                        <h1 class="file-heading">File: src\view\template.js</h1>
+                        <h1 class="file-heading">File: src/view/template.js</h1>
 
 <div class="file">
     <pre class="code prettyprint linenums">
 /**
- * @namespace ya.view
- * @class Template
+ * @namespace ya
+ * @class ya.view.Template
  * @extends ya.Core
  */
 ya.Core.$extend({
@@ -154,11 +164,20 @@ ya.Core.$extend({
             return !document.createAttribute(&#x27;rel&#x27;) instanceof Node;
         }),
         BindingType: {
+            IF: 7,
+            MODEL: 6,
             CSS: 5,
             VIEW: 4,
             TEXT: 3,
             ATTR: 2,
             COL: 1
+        },
+        types: {
+            td: &#x27;tr&#x27;,
+            tr: &#x27;tbody&#x27;,
+            thead: &#x27;table&#x27;,
+            tfooter: &#x27;table&#x27;,
+            tbody: &#x27;table&#x27;
         }
     },
     mixins: [
@@ -207,23 +226,44 @@ ya.Core.$extend({
     initDefaults: function () {
         var me = this,
             html = me.getTpl(),
-            docFragment = document.createDocumentFragment();
+            docFragment = document.createDocumentFragment(),
+            types = ya.view.Template.$types,
+            tmp;
 
-        me.setId(me.getId() || &#x27;template-&#x27; + ya.view.template.$Manager.getCount());
+        me.setId(me.getId() || &#x27;template-&#x27; + ya.view.template.$manager.getUniqueId());
         me.setTDOM(me.getTDOM() || ya.view.TDOM);
 
         if (Array.isArray(html)) {
-            html = html.join(&quot;&quot;);
+            tmp = &#x27;&#x27;;
+            // for and concatenating is faster than Array.join
+            for (var i = 0, l = html.length; i &lt; l; i++) {
+
+                tmp = tmp + html[i];
+
+            }
+
+            html = tmp;
+
         }
 
         if (typeof html === &#x27;string&#x27; || html instanceof String) {
-            var evaluated = document.createElement(&#x27;div&#x27;);
+            var firstElMat = html.match(/\&lt;(.*?)[\s|&gt;]/),
+                firstEl = firstElMat ? firstElMat[1] : &#x27;&#x27;,
+                container = types[firstEl] ? types[firstEl] : &#x27;div&#x27;,
+                evaluated = document.createElement(container),
+                el;
 
             evaluated.innerHTML = html;
 
             while (evaluated.hasChildNodes()) {
 
-                docFragment.appendChild(evaluated.firstChild);
+                if(evaluated.firstChild.nodeType === 3){
+                    el = document.createElement(&#x27;span&#x27;);
+                    el.appendChild(evaluated.firstChild);
+                    docFragment.appendChild(el);
+                }else{
+                    docFragment.appendChild(evaluated.firstChild);
+                }
 
             }
 
@@ -244,16 +284,16 @@ ya.Core.$extend({
     initRegister: function () {
         var me = this;
 
-        ya.view.template
-            .$Manager.register(
-                me.getId(),
-                me
-            );
+        ya.view.template.$manager.register(
+            me.getId(),
+            me
+        );
 
         return me;
     },
     /**
      * @method initBindings
+     * @private
      * @returns {*}
      */
     initBindings: function () {
@@ -270,7 +310,9 @@ ya.Core.$extend({
         return me;
     },
     /**
+     * Finds all attribute bindings
      * @method findAttrsBindings
+     * @private
      */
     findAttrsBindings: function () {
         var me = this,
@@ -279,6 +321,7 @@ ya.Core.$extend({
             regEx = /^ya-(.*)/i,
             nodeAttrs = [],
             __slice = Array.prototype.slice,
+            $DOM4 = ya.view.Template.$DOM4,
             binding,
             walker,
             match,
@@ -301,13 +344,15 @@ ya.Core.$extend({
             // and push to array
             nodeAttrs = __slice.call(node.attributes);
 
-            // check if contents of should be scan
+            // check if parent contents ya attributes
+            // if yes it means that current element is
+            // a template and we dont want to check it
             if (me.isTemplate(node)) {
                 continue;
             }
             // DOM4 polyfill - attribute no longer inherits from Node
             // so we need to set owner element manually
-            if (ya.view.Template.$DOM4) {
+            if ($DOM4) {
                 /*jshint -W083 */
                 me.each(nodeAttrs, function (attr) {
                     attr.ownerElement = node;
@@ -331,10 +376,17 @@ ya.Core.$extend({
                     binding = me.prepareColBindings(attr);
                     break;
                 case &#x27;view&#x27; :
+                    if (attr.ownerElement.hasAttribute(&#x27;ya-if&#x27;)) continue;
                     binding = me.prepareViewBindings(attr);
+                    break;
+                case &#x27;model&#x27; :
+                    binding = me.prepareModelBindings(attr);
                     break;
                 case &#x27;css&#x27; :
                     binding = me.prepareCSSBindings(attr);
+                    break;
+                case &#x27;if&#x27; :
+                    binding = me.prepareIfBindings(attr);
                     break;
                 default :
                     binding = me.prepareAttrBindings(attr);
@@ -349,14 +401,20 @@ ya.Core.$extend({
 
         return bindings;
     },
+    /**
+     * @method isTemplate
+     * @private
+     * @param node
+     * @returns {boolean}
+     */
     isTemplate: function (node) {
 
         node = node.parentNode;
         while (node.parentNode) {
             if (
                 node.attributes.getNamedItem(&#x27;ya-view&#x27;) ||
-                    node.attributes.getNamedItem(&#x27;ya-collection&#x27;)
-                ) {
+                node.attributes.getNamedItem(&#x27;ya-collection&#x27;)
+            ) {
                 return true;
 
             }
@@ -366,6 +424,12 @@ ya.Core.$extend({
 
         return false;
     },
+    /**
+     *
+     * @method findTextBindings
+     * @private
+     * @returns {Array}
+     */
     findTextBindings: function () {
         var me = this,
             bindings = [],
@@ -403,9 +467,15 @@ ya.Core.$extend({
 
         return bindings;
     },
+    /**
+     * @method findTextBindings
+     * @private
+     * @param node
+     * @returns {boolean}
+     */
     prepareTextBindings: function (node) {
         var results = node.data.match(/\{\{(.*?)\}\}/gi),// we searching for mustached text inside it
-            i, len, headers, header, binding = false;
+            i, len, headers, header, binding = false, result, parts, headerFilters, filters;
 
         if (results) { // and if we have positive match
             var doc = document.createElement(&#x27;span&#x27;),// we create new span element
@@ -417,12 +487,22 @@ ya.Core.$extend({
             i = 0;
             len = results.length;
             headers = [];
+            filters = [];
 
             // In the end we replace all match via data.
             while (i &lt; len) {
 
                 result = results[i++];
-                header = result.substr(2, (result.length - 4)).split(&#x27;.&#x27;);
+                header = result.substr(2, (result.length - 4));
+                parts = header.split(&#x27;||&#x27;);
+                header = parts[0].split(&#x27;.&#x27;);
+                if (parts.length &gt; 1) {
+                    headerFilters = parts.splice(1);
+                } else {
+                    headerFilters = [];
+                }
+
+                filters.push(headerFilters);
                 headers.push(header);
 
             }
@@ -433,8 +513,9 @@ ya.Core.$extend({
                 old: node,
                 doc: doc,
                 models: {},
-                callbacks : [],
+                callbacks: [],
                 headers: headers,
+                filters: filters,
                 type: 3,
                 pointer: rId
             };
@@ -443,6 +524,86 @@ ya.Core.$extend({
 
         return binding;
     },
+    prepareModelBindings: function (attr) {
+        var node = attr.ownerElement,
+            rId = node.getAttribute(&#x27;ya-id&#x27;) || ya.view.Template.$id++,
+            options = attr.value.match(/(?:class|namespace)[?!:]([\w\.]+)/gi),
+            property = node.getAttribute(&#x27;name&#x27;) || null,
+            binding = {
+                pointer: rId,
+                type: ya.view.Template.$BindingType.MODEL,
+                model: {
+                    class: &#x27;ya.Model&#x27;,
+                    property: property
+                }
+            },
+            option;
+
+        if (!property) {
+
+            throw ya.Error.$create(&#x27;Missing name property in node&#x27;, &#x27;YVT3&#x27;);
+
+        }
+
+        node.setAttribute(&#x27;ya-id&#x27;, rId);
+
+        while (options &amp;&amp; options.length) {
+            option = options.pop().split(&#x27;:&#x27;);
+            binding.model[option[0]] = option[1];
+        }
+
+        return binding;
+    },
+    prepareIfBindings: function (attr) {
+        var condition = attr.value,
+            results = condition.match(/\{\{(.*?)\}\}/gi),// we searching for mustached text inside it
+            node = attr.ownerElement,
+            rId = node.getAttribute(&#x27;ya-id&#x27;) || ya.view.Template.$id++,
+            binding = {
+                pointer: rId,
+                type: ya.view.Template.$BindingType.IF,
+                condition: condition,
+                models: {},
+                callbacks: []
+            },
+            DOM = ya.mixins.DOM,
+            headers = [], header, result, i = 0, len;
+
+        node.setAttribute(&#x27;ya-id&#x27;, rId);
+
+        if (node.hasChildNodes()) {
+
+            binding.tpl = ya.$factory({
+                module: &#x27;ya&#x27;,
+                alias: &#x27;view.Template&#x27;,
+                tpl: DOM.removeChildren(node)
+            }).getId();
+
+        }
+
+        if (results) {
+
+            len = results.length;
+            while (i &lt; len) {
+
+                result = results[i++];
+                header = result.substr(2, (result.length - 4));
+                header = header.split(&#x27;.&#x27;);
+                headers.push(header);
+
+            }
+
+            binding.headers = headers;
+        }
+
+        return binding;
+    },
+    /**
+     * @method prepareColBindings
+     * @private
+     * @param attr
+     * @returns {{pointer: (number), type: (Template.static.BindingType.COL), collection: {view: string, class: string}}}
+     */
     prepareColBindings: function (attr) {
         var options = attr.value.match(/(?:class|id|namespace|model|view)[?!:]([\S]+)/gi),
             node = attr.ownerElement,
@@ -470,6 +631,7 @@ ya.Core.$extend({
 
         if (node.hasChildNodes()) {
 
+
             var tpl = ya.$factory({
                 module: &#x27;ya&#x27;,
                 alias: &#x27;view.Template&#x27;,
@@ -480,11 +642,18 @@ ya.Core.$extend({
 
         }
 
+        //console.log(binding);
+
         return binding;
     },
+    /**
+     * @method prepareViewBindings
+     * @private
+     * @param attr
+     * @returns {{pointer: (string|number), type: (number|.static.BindingType.VIEW|Template.static.BindingType.VIEW), view: {class: string}}}
+     */
     prepareViewBindings: function (attr) {
         var node = attr.ownerElement,
-            view = node.getAttribute(&#x27;ya-view&#x27;) || &#x27;ya.View&#x27;,
             rId = node.getAttribute(&#x27;ya-id&#x27;) || ya.view.Template.$id++,
             options = attr.value.match(/(?:class|id)[?!:]([\w\.]+)/gi),
             binding = {
@@ -505,12 +674,19 @@ ya.Core.$extend({
 
         return binding;
     },
+    /**
+     *
+     * @method prepareCSSBindings
+     * @private
+     * @param attr
+     * @returns {{original: *, fillAttr: boolean, headers: Array, callbacks: Array, models: {}, name: string, type: *, pointer: string}}
+     */
     prepareCSSBindings: function (attr) {
         var node = attr.ownerElement,
             results = attr.value &amp;&amp; attr.value.match(/\{\{(.*?)\}\}/gi),
             len = results &amp;&amp; results.length,
             headers = [], i = 0,
-            original, binding, header, rId, style;
+            original, binding, header, rId, style, parts, headerFilters, filters, result;
 
         rId = node.getAttribute(&#x27;ya-id&#x27;);
         if (!rId) {
@@ -522,10 +698,19 @@ ya.Core.$extend({
 
         if (results) {
 
+            filters = [];
             while (i &lt; len) {
 
                 result = results[i++];
-                header = result.substr(2, (result.length - 4)).split(&#x27;.&#x27;);
+                header = result.substr(2, (result.length - 4));
+                parts = header.split(&#x27;||&#x27;);
+                header = parts[0].split(&#x27;.&#x27;);
+                if (parts.length &gt; 1) {
+                    headerFilters = parts.splice(1);
+                } else {
+                    headerFilters = [];
+                }
+                filters.push(headerFilters);
                 headers.push(header);
 
             }
@@ -540,7 +725,8 @@ ya.Core.$extend({
             original: original,
             fillAttr: false,
             headers: headers,
-            callbacks : [],
+            callbacks: [],
+            filters: filters,
             models: {},
             name: &#x27;style&#x27;,
             type: ya.view.Template.$BindingType.ATTR,
@@ -549,16 +735,22 @@ ya.Core.$extend({
 
         return binding;
     },
+    /**
+     *
+     * @method prepareAttrBindings
+     * @private
+     * @param attr
+     * @returns {*}
+     */
     prepareAttrBindings: function (attr) {
         var node = attr.ownerElement,
             results = attr.value &amp;&amp; attr.value.match(/\{\{(.*?)\}\}/gi),
             len = results &amp;&amp; results.length,
             original = attr.value,
             headers = [], i = 0,
-            binding, rId, header;
+            binding, rId, header, result, parts, headerFilters, filters;
 
         if (results) {
-
 
             rId = node.getAttribute(&#x27;ya-id&#x27;);
             if (!rId) {
@@ -568,10 +760,19 @@ ya.Core.$extend({
 
             }
 
+            filters = [];
             while (i &lt; len) {
 
                 result = results[i++];
-                header = result.substr(2, (result.length - 4)).split(&#x27;.&#x27;);
+                header = result.substr(2, (result.length - 4));
+                parts = header.split(&#x27;||&#x27;);
+                header = parts[0].split(&#x27;.&#x27;);
+                if (parts.length &gt; 1) {
+                    headerFilters = parts.splice(1);
+                } else {
+                    headerFilters = [];
+                }
+                filters.push(headerFilters);
                 headers.push(header);
 
             }
@@ -581,8 +782,9 @@ ya.Core.$extend({
                 name: attr.name,
                 original: original,
                 models: {},
-                callbacks : [],
+                callbacks: [],
                 headers: headers,
+                filters: filters,
                 type: ya.view.Template.$BindingType.ATTR,
                 pointer: rId
             };
@@ -591,6 +793,13 @@ ya.Core.$extend({
 
         return results ? binding : null;
     },
+    /**
+     * Returns instance of TDOM object with cloned DOM
+     * and biding array
+     * @method getTDOMInstance
+     * @param view
+     * @returns {Function|*}
+     */
     getTDOMInstance: function (view) {
         var me = this;
 
@@ -603,7 +812,6 @@ ya.Core.$extend({
         });
     }
 });
-
     </pre>
 </div>
 

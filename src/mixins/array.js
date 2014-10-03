@@ -1,3 +1,4 @@
+
 /**
  * @namespace ya.mixins
  * @class Array
@@ -17,7 +18,7 @@ ya.$set('ya', 'mixins.Array', {
             val = argsLen > 2 ? arguments[2] : null,
             tmp, rec;
 
-        if (argsLen > 1) {
+        if (argsLen > 2) {
 
             while (len--) {
 

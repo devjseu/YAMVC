@@ -1,8 +1,8 @@
 /**
  * Dispatcher class allow you to delegates events across
  * newly generated views
- * @namespace ya.event
- * @class $dispatcher
+ * @namespace ya
+ * @class event.$dispatcher
  * @extends ya.Core
  * @static
  */
@@ -79,7 +79,10 @@ ya.Core.$extend({
             // If view is not null define regexp for
             // searching view id in delegated event
             // query.
-            regExp = new RegExp('^\\$' + view.getId() + "[\\s]");
+            regExp = view.hasCustomId() ?
+                new RegExp('^\\$' + view.getId() + "[\\s]") :
+                new RegExp('^class:' + view.__class__ + "[\\s]");
+
             // Get position for events which were matched.
             matchPos = __findAllByFn(delegates, matchIdFn);
             if (matchPos.length) {
@@ -87,8 +90,9 @@ ya.Core.$extend({
                 // If we found any events which need to be delegated,
                 __each(matchPos, function (r) {
                     // iterate through all of them.
-                    // As first step clear the array of elements
+                    // At first step clear the array of elements
                     els.length = 0;
+
                     delegate = delegates[r];
                     //
                     selector = delegate
@@ -98,10 +102,12 @@ ya.Core.$extend({
                     selector.shift();
 
                     if (selector.length) {
-                        // If still anything left get last part
-                        // from query and find in new view elements
-                        // which match to the selector.
-                        els = newView.querySelectorAll(selector.pop());
+                        // If still something left get last part
+                        // from query and search in the new view
+                        // elements which could match to the selector.
+                        var last = selector.pop();
+                        els = newView.querySelectorAll(last);
+
                         // Copy array with rest of them
                         cpSelector = selector.slice();
                         __each(els, function (el) {
@@ -150,13 +156,38 @@ ya.Core.$extend({
     },
     assignEvents: function (el, delegate, view) {
         var e = delegate.events,
-            eType;
+            eType, eHand, eHandLen, exists = false;
 
         for (eType in e) {
 
             if (e.hasOwnProperty(eType)) {
 
-                el.addEventListener(eType, e[eType].bind(delegate.scope, view), false);
+
+                eHandLen = view._eventHandlers.length;
+                while(eHandLen--){
+                    eHand = view._eventHandlers[eHandLen];
+                    if(
+                        eHand.event === eType &&
+                        eHand.el === el &&
+                        eHand.listener === e[eType] &&
+                        eHand.scope === delegate.scope
+                    ) {
+                        exists = true;
+                    }
+                }
+
+                if(!exists){
+
+                    // todo: pass element to which event was bind as 2th argument
+                    el.addEventListener(eType, e[eType].bind(delegate.scope, view, el), false);
+                    view.get('eventHandlers').push({
+                        event: eType,
+                        listener: e[eType],
+                        scope: delegate.scope,
+                        el: el
+                    });
+
+                }
 
             }
 

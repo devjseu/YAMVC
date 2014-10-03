@@ -39,10 +39,7 @@ ya.Core.$extend({
     static: {
         router: null,
         getRouter: function () {
-
-            ya.Controller.$router = ya.Controller.$router || new ya.Router();
-
-            return ya.Controller.$router;
+            return ya.Controller.$router = ya.Controller.$router || new ya.Router();
         }
     },
     init: function (opts) {
@@ -53,11 +50,20 @@ ya.Core.$extend({
             .initEvents()
             .initRoutes();
 
-        ya.controller.$Manager.register(me.getId(), me);
+        ya
+            .controller
+            .$manager
+            .register(
+            me.getId(),
+            me
+        );
 
-        ya.$onReady(function () {
-            me.restoreRouter();
-        });
+        ya
+            .$onReady(
+            function () {
+                me.restoreRouter();
+            }
+        );
 
         return me;
     },
@@ -68,10 +74,25 @@ ya.Core.$extend({
     initDefaults: function () {
         var me = this;
 
-        me.setId(me.getId() || 'controller-' + ya.controller.$Manager.getCount());
+        me.setId(
+            me.getId() ||
+            'controller-' + ya
+                .controller
+                .$manager
+                .getCount()
+        );
 
-        me.set('router', ya.Controller.$getRouter());
-        me.set('dispatcher', ya.event.$dispatcher);
+        me
+            .set(
+            'router',
+            ya.Controller.$getRouter()
+        );
+
+        me
+            .set(
+            'dispatcher',
+            ya.event.$dispatcher
+        );
 
         return me;
     },
@@ -85,6 +106,7 @@ ya.Core.$extend({
             events = me.getEvents(),
             views = [],
             rx = new RegExp('\\$([^\\s]+)'),
+            rx2 = new RegExp('[id|class]+:([^\\s]+)'),
             dispatcher = me._dispatcher,
             matches, view, l, obj, current;
 
@@ -113,7 +135,7 @@ ya.Core.$extend({
 
                     dispatcher.add(me, obj);
 
-                    matches = query.match(rx);
+                    matches = query.match(rx) || query.match(rx2);
                     if (matches) {
 
                         if (views.indexOf(matches[1]) < 0) {
@@ -125,7 +147,7 @@ ya.Core.$extend({
                     } else {
 
                         throw ya.Error.$create(
-                            me.__class__ + ': Event query should begin from id of the view (current query: ' + e + ')', 'CTRL1'
+                            me.__class__ + ': Event query should begin from id or class name of the view (current query: ' + query + ')', 'CTRL1'
                         );
 
                     }
@@ -138,7 +160,7 @@ ya.Core.$extend({
             while (l--) {
 
                 view = ya
-                    .view.$Manager
+                    .view.$manager
                     .getItem(views[l]);
 
                 if (view) {
@@ -147,11 +169,12 @@ ya.Core.$extend({
 
                         me.resolveEvents(view);
 
-                    } else {
-
-                        view.addEventListener('render', me.resolveEvents, me);
-
                     }
+//                    else {
+//
+//                        view.addEventListener('render', me.resolveEvents, me);
+//
+//                    }
 
                 }
             }
@@ -188,8 +211,8 @@ ya.Core.$extend({
      */
     resolveEvents: function (view) {
         var events = this.getEvents(),
-            newScope = function (func, scope, arg) {
-                return func.bind(scope, arg);
+            newScope = function (func, scope, arg, arg2) {
+                return func.bind(scope, arg, arg2);
             },
             rx = new RegExp('\\$([^\\s]+)'),
             matches,
@@ -197,6 +220,7 @@ ya.Core.$extend({
             elements,
             selector,
             scope;
+
 
         for (var query in events) {
             if (events.hasOwnProperty(query)) {
@@ -222,7 +246,7 @@ ya.Core.$extend({
 
                             if (viewEvents.hasOwnProperty(event)) {
 
-                                scope = newScope(viewEvents[event], this, view);
+                                scope = newScope(viewEvents[event], this, view, elements[i]);
 
                                 elements[i].addEventListener(event, scope);
 
@@ -245,7 +269,7 @@ ya.Core.$extend({
      * @returns {*}
      */
     getRouter: function () {
-        return router;
+        return this._router;
     },
     /**
      * Returns view by id
@@ -253,7 +277,7 @@ ya.Core.$extend({
      * @returns {*}
      */
     getView: function (id) {
-        return ya.view.$Manager.getItem(id);
+        return ya.view.$manager.getItem(id);
     },
     /**
      * Returns controller by id
@@ -261,7 +285,7 @@ ya.Core.$extend({
      * @returns {*}
      */
     getController: function (id) {
-        return ya.controller.$Manager.getItem(id);
+        return ya.controller.$manager.getItem(id);
     },
     /**
      * Returns collection by id
@@ -269,7 +293,7 @@ ya.Core.$extend({
      * @returns {*}
      */
     getCollection: function (id) {
-        return ya.collection.$Manager.getItem(id);
+        return ya.collection.$manager.getItem(id);
     },
     /**
      * Restores router state

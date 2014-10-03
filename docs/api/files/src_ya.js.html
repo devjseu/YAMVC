@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>src\ya.js - yam</title>
+    <title>src/ya.js - yam</title>
     <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
     <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
     <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
@@ -19,7 +19,7 @@
             
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.2.0</em>
+            <em>API Docs for: 0.3.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -43,15 +43,19 @@
             
                 <li><a href="../classes/ya.html">ya</a></li>
             
-                <li><a href="../classes/ya.$Promise.html">ya.$Promise</a></li>
+                <li><a href="../classes/ya.$promise.html">ya.$promise</a></li>
+            
+                <li><a href="../classes/ya.Ajax.html">ya.Ajax</a></li>
+            
+                <li><a href="../classes/ya.ajax.JSON.html">ya.ajax.JSON</a></li>
             
                 <li><a href="../classes/ya.Collection.html">ya.Collection</a></li>
             
-                <li><a href="../classes/ya.collection.$Manager.html">ya.collection.$Manager</a></li>
+                <li><a href="../classes/ya.collection.$manager.html">ya.collection.$manager</a></li>
             
                 <li><a href="../classes/ya.Controller.html">ya.Controller</a></li>
             
-                <li><a href="../classes/ya.controller.$Manager.html">ya.controller.$Manager</a></li>
+                <li><a href="../classes/ya.controller.$manager.html">ya.controller.$manager</a></li>
             
                 <li><a href="../classes/ya.Core.html">ya.Core</a></li>
             
@@ -59,7 +63,7 @@
             
                 <li><a href="../classes/ya.data.Proxy.html">ya.data.Proxy</a></li>
             
-                <li><a href="../classes/ya.data.proxy.Localstorage.html">ya.data.proxy.Localstorage</a></li>
+                <li><a href="../classes/ya.data.proxy.LocalStorage.html">ya.data.proxy.LocalStorage</a></li>
             
                 <li><a href="../classes/ya.Error.html">ya.Error</a></li>
             
@@ -83,17 +87,23 @@
             
                 <li><a href="../classes/ya.Model.html">ya.Model</a></li>
             
+                <li><a href="../classes/ya.Module.html">ya.Module</a></li>
+            
                 <li><a href="../classes/ya.Router.html">ya.Router</a></li>
+            
+                <li><a href="../classes/ya.util.$detection.html">ya.util.$detection</a></li>
+            
+                <li><a href="../classes/ya.util.Parallel.html">ya.util.Parallel</a></li>
             
                 <li><a href="../classes/ya.View.html">ya.View</a></li>
             
-                <li><a href="../classes/ya.view.$Manager.html">ya.view.$Manager</a></li>
+                <li><a href="../classes/ya.view.$manager.html">ya.view.$manager</a></li>
             
                 <li><a href="../classes/ya.view.TDOM.html">ya.view.TDOM</a></li>
             
                 <li><a href="../classes/ya.view.Template.html">ya.view.Template</a></li>
             
-                <li><a href="../classes/ya.view.template.$Manager.html">ya.view.template.$Manager</a></li>
+                <li><a href="../classes/ya.view.template.$manager.html">ya.view.template.$manager</a></li>
             
             </ul>
 
@@ -136,23 +146,22 @@
             <div class="apidocs">
                 <div id="docs-main">
                     <div class="content">
-                        <h1 class="file-heading">File: src\ya.js</h1>
+                        <h1 class="file-heading">File: src/ya.js</h1>
 
 <div class="file">
     <pre class="code prettyprint linenums">
 /**
- Main framework object...
-
+ Static object
  @module ya
  @main ya
  **/
-(function (undefined) {
+(function (window, undefined) {
     &#x27;use strict&#x27;;
 
     var ya = window.ya || {},
         appNamespace = &#x27;app&#x27;,
         onReadyCallbacks = [],
-        readyStateCheckInterval;
+        readyStateCheckTimeout;
 
     // Run all method when ready
     function run() {
@@ -174,15 +183,22 @@
      */
     ya.$onReady = function (callback) {
         onReadyCallbacks.push(callback);
-        if (!readyStateCheckInterval &amp;&amp; document.readyState !== &quot;complete&quot;) {
-            readyStateCheckInterval = setInterval(function () {
+        checkState();
+    };
+
+    function checkState() {
+        if (!readyStateCheckTimeout &amp;&amp; document.readyState !== &quot;complete&quot;) {
+            readyStateCheckTimeout = setTimeout(function () {
                 if (document.readyState === &quot;complete&quot;) {
-                    clearInterval(readyStateCheckInterval);
+                    console.log(&#x27;%cLOG: document ready!&#x27;, &#x27;backdround: green; color: white;&#x27;);
                     run();
+                } else {
+                    readyStateCheckTimeout = null;
+                    checkState();
                 }
             }, 10);
         }
-    };
+    }
 
     // Merge two objects.
     /**
@@ -199,7 +215,7 @@
 
             if (obj2.hasOwnProperty(property)) {
 
-                if(typeof obj2[property] !== &#x27;undefined&#x27;) {
+                if (typeof obj2[property] !== &#x27;undefined&#x27;) {
 
                     obj1[property] = obj2[property];
 
@@ -266,7 +282,10 @@
     ya.$get = function () {
         var module = arguments.length &lt; 2 ? appNamespace : arguments[0],
             namespace = arguments.length &lt; 2 ? arguments[0] : arguments[1],
-            namespaces = namespace ? (namespace.search(/\./) &gt; 0 ? namespace.split(&#x27;.&#x27;) : [namespace]) : [],
+            className = arguments.length &gt; 1 ? (module + &#x27;.&#x27; + namespace) : namespace,
+            namespaces = namespace ? (
+                namespace.search(/\./) &gt; 0 ? namespace.split(&#x27;.&#x27;) : [namespace]
+            ) : [],
             pointer = null,
             current;
 
@@ -288,9 +307,10 @@
                 pointer = window[current];
 
             } else {
-
                 pointer = null;
-                break;
+                throw ya.Error.$create(
+                    &#x27;ya.$get: Cannot find class: &#x27; + className, &#x27;GEN1&#x27;
+                );
 
             }
 
@@ -309,20 +329,26 @@
     ya.$factory = function (config) {
         var Class, instance, opts;
 
-        if (!config.alias) {
+        if (!config.alias &amp;&amp; !config.class) {
 
             throw ya.Error.$create(&#x27;Factory method needs alias property&#x27;, &#x27;YA1&#x27;);
 
         }
 
+        if (config.class) {
+            config.class = config.class.split(&#x27;.&#x27;);
+            Class = ya.$get(config.class.shift(), config.class.join(&#x27;.&#x27;));
+        } else {
+            Class = ya.$get(config.module || appNamespace, config.alias);
 
-        Class = ya.$get(config.module || appNamespace, config.alias);
+        }
         opts = config.methods || {};
 
         opts.config = config;
 
         delete config.alias;
         delete config.module;
+        delete config.class;
         delete config.methods;
 
         instance = Class.$create(opts);
@@ -347,8 +373,19 @@
 
     };
 
+    ya.$uuid = function () {
+        return &#x27;xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx&#x27;.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0, v = c == &#x27;x&#x27; ? r : (r &amp; 0x3 | 0x8);
+            return v.toString(16);
+        });
+    };
+
+    ya.$exec = function (fn) {
+        return new Function(&#x27;return &#x27; + fn)();
+    };
+
     window.ya = ya;
-}());
+}(window));
     </pre>
 </div>
 

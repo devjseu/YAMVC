@@ -34,7 +34,7 @@ asyncTest("we are able to save model to db", function () {
         proxy,
         promise;
 
-    proxy = new ya.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.LocalStorage();
 
     model = new ya.Model({
         config: {
@@ -60,14 +60,14 @@ asyncTest("we are able to save model to db", function () {
                 "Model was saved"
             );
 
-            ya.data.proxy.Localstorage.$clear('testModel');
+            ya.data.proxy.LocalStorage.$clear('testModel');
 
             start();
 
         })
         .then(0, function () {
 
-            ya.data.proxy.Localstorage.$clear('testModel');
+            ya.data.proxy.LocalStorage.$clear('testModel');
             start();
 
         });
@@ -79,7 +79,7 @@ asyncTest("we are able to load model from db", function () {
         proxy,
         promise;
 
-    proxy = new ya.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.LocalStorage();
 
     model = new ya.Model({
         config: {
@@ -105,12 +105,12 @@ asyncTest("we are able to load model from db", function () {
                 "Model was saved"
             );
 
-            ya.data.proxy.Localstorage.$clear('testModel2');
+            ya.data.proxy.LocalStorage.$clear('testModel2');
             start();
         })
         .then(0, function () {
 
-            ya.data.proxy.Localstorage.$clear('testModel2');
+            ya.data.proxy.LocalStorage.$clear('testModel2');
             start();
 
         });
@@ -124,7 +124,7 @@ asyncTest("we are able to update model from db", function () {
         promise,
         updateFn;
 
-    proxy = new ya.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.LocalStorage();
 
     model = new ya.Model({
         config: {
@@ -148,12 +148,12 @@ asyncTest("we are able to update model from db", function () {
                     "Record was updated"
                 );
 
-                ya.data.proxy.Localstorage.$clear('testModel3');
+                ya.data.proxy.LocalStorage.$clear('testModel3');
                 start();
             })
             .then(0, function () {
 
-                ya.data.proxy.Localstorage.$clear('testModel');
+                ya.data.proxy.LocalStorage.$clear('testModel');
                 start();
 
             });
@@ -174,7 +174,7 @@ asyncTest("we are able to update model from db", function () {
         )
         .then(0, function () {
 
-            ya.data.proxy.Localstorage.$clear('testModel3');
+            ya.data.proxy.LocalStorage.$clear('testModel3');
             start();
 
         });
@@ -188,7 +188,7 @@ asyncTest("we are able to remove model from db", function () {
         promise,
         removeFn;
 
-    proxy = new ya.data.proxy.Localstorage();
+    proxy = new ya.data.proxy.LocalStorage();
 
     model = new ya.Model({
         config: {
@@ -214,7 +214,7 @@ asyncTest("we are able to remove model from db", function () {
             })
             .then(0, function () {
 
-                ya.data.proxy.Localstorage.$clear('testModel');
+                ya.data.proxy.LocalStorage.$clear('testModel');
                 start();
 
             });
@@ -235,7 +235,7 @@ asyncTest("we are able to remove model from db", function () {
         )
         .then(0, function () {
 
-            ya.data.proxy.Localstorage.$clear('testModel4');
+            ya.data.proxy.LocalStorage.$clear('testModel4');
             start();
 
         });

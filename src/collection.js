@@ -25,7 +25,12 @@ ya.Core.$extend({
          * @type ya.data.Proxy Instance of proxy for transferring data
          * @required
          */
-        proxy: null
+        proxy: null,
+        /**
+         * @attribute config.remote
+         * @type boolean if true search will be perform
+         */
+        remote: false
     },
     /**
      * initialize collection
@@ -39,7 +44,12 @@ ya.Core.$extend({
             .__super(opts)
             .initData();
 
-        ya.collection.$Manager.register(me.getId(), me);
+        ya.collection
+            .$manager
+            .register(
+            me.getId(),
+            me
+        );
 
         return me;
     },
@@ -48,10 +58,17 @@ ya.Core.$extend({
      * @returns {*}
      */
     initDefaults: function () {
-        var me = this;
+        var me = this,
+            model = me.getModel();
 
-        me.setId(me.getId() || 'collection-' + ya.collection.$Manager.getCount());
-        me.setModel(me.getModel() || ya.$get('ya.Model'));
+        me.setId(me.getId() || 'collection-' + ya.collection.$manager.getCount());
+
+        if (typeof model === 'string') {
+            model = ya.$get(model);
+        }
+
+
+        me.setModel(model || ya.$get('ya.Model'));
 
         me.set('set', []);
         me.set('cache', []);
@@ -103,7 +120,7 @@ ya.Core.$extend({
      */
     push: function (records) {
         var me = this,
-            record,
+            record, raw,
             ModelDefinition = me.getModel(),
             namespace = me.getNamespace(),
             newRecords = [];
@@ -114,27 +131,48 @@ ya.Core.$extend({
 
         while (records.length) {
 
-            record = records.shift();
+            raw = record = records.shift();
 
-            if (!(record instanceof ModelDefinition)) {
-                record = new ModelDefinition(
-                    {
-                        config: {
-                            namespace: namespace,
-                            data: record
+            if (record) {
+
+                if (!(record instanceof ModelDefinition)) {
+                    record = new ModelDefinition(
+                        {
+                            config: {
+                                namespace: namespace,
+                                data: record
+                            }
                         }
-                    }
-                );
+                    );
+                }
+
+                if (
+                    record
+                        .getNamespace() !==
+                    me
+                        .getNamespace()
+                ) {
+
+                    throw ya
+                        .Error
+                        .$create(
+                        'Model should have same namespace as collection',
+                        'COL2'
+                    );
+
+                }
+
+                me
+                    ._raw
+                    .push(raw);
+
+                me
+                    ._cache
+                    .push(record);
+
+                newRecords
+                    .push(record);
             }
-
-            if (record.getNamespace() !== me.getNamespace()) {
-
-                throw ya.Error.$create('Model should have same namespace as collection', 'COL2');
-
-            }
-
-            me._cache.push(record);
-            newRecords.push(record);
 
         }
 
@@ -164,6 +202,16 @@ ya.Core.$extend({
                 return true;
             }
 
+            if (
+                (
+                r.data(r.getIdProperty()) && r.data(rec.getIdProperty())
+                ) &&
+                r.data(r.getIdProperty()) === r.data(rec.getIdProperty())
+            ) {
+                idx = i;
+                return true;
+            }
+
         };
 
         if (!Array.isArray(records)) {
@@ -178,6 +226,7 @@ ya.Core.$extend({
 
             if (idx >= 0) {
 
+                me._raw.splice(idx, 1);
                 removed.push(me._cache.splice(idx, 1).pop());
 
             }
@@ -192,6 +241,18 @@ ya.Core.$extend({
 
         return me;
     },
+    removeByField: function (field, record) {
+        var me = this,
+            records = me
+                .getBy(function (r) {
+                    return r.data(field) === record.data(key)
+                });
+
+        me
+            .remove(records);
+
+        return me;
+    },
     /**
      *
      * @returns {Array}
@@ -202,6 +263,7 @@ ya.Core.$extend({
 
         me.set('set', []);
         me.set('cache', []);
+        me.set('raw', []);
         me.fireEvent('remove', me, removed);
 
         return me;
@@ -226,6 +288,7 @@ ya.Core.$extend({
 
         me.set('set', []);
         me.set('cache', []);
+        me.set('raw', []);
         me.set('removed', []);
 
         me.fireEvent('clear', me);
@@ -309,7 +372,8 @@ ya.Core.$extend({
 
         //TODO: clear by multiple filters id
         me.set('filters', []);
-        me.filter();
+        me.set('set', me._cache);
+        me.fireEvent('filter', me, []);
 
         return me;
     },
@@ -426,16 +490,37 @@ ya.Core.$extend({
     findOneBy: function (fn) { //
         var me = this,
             records = me._set,
-            i = 0, len = records.length;
+            len = records.length,
+            i = 0,
+            founded = -1;
 
         while (i < len) {
 
-            if (fn(records[i])) break;
+            if (fn(records[i])) {
+                founded = i;
+                break;
+            }
 
             i++;
-        }
+        } //todo: need to be changed in library
 
-        return len;
+        return founded;
+    },
+    /**
+     *
+     * @returns {boolean}
+     */
+    contains: function (field, value) {
+        var me = this,
+            contains = false;
+
+        me.each(function (r) {
+            if (r.data(field) === value) {
+                contains = true;
+            }
+        });
+
+        return contains;
     },
     /**
      * @param fn
@@ -447,7 +532,7 @@ ya.Core.$extend({
             record,
             i = 0, len = records.length;
 
-        while (i<len) {
+        while (i < len) {
 
             if (fn(records[i])) {
                 record = records[i];
@@ -474,7 +559,7 @@ ya.Core.$extend({
      */
     load: function (params) {
         var me = this,
-            deferred = ya.$Promise.deferred(),
+            deferred = ya.$promise.deferred(),
             namespace = me.getNamespace(),
             action = ya.data.Action.$create(),
             callback,
@@ -484,7 +569,7 @@ ya.Core.$extend({
 
         if (
             i === 0
-            )
+        )
             throw ya.Error.$create('You need to pass at least one condition to load model collection', 'COL3');
 
         if (!me.getProxy())
@@ -493,7 +578,7 @@ ya.Core.$extend({
 
         callback = function () {
 
-            if (me.getProxy().getStatus() === 'success') {
+            if (action.getStatus() === 'success') {
 
                 me.fireEvent('load', me, action.getResponse(), 'read');
                 me.setData(action.getData());
@@ -512,7 +597,9 @@ ya.Core.$extend({
                 namespace: namespace
             });
 
-        me.getProxy().read(action);
+        me
+            .getProxy()
+            .read(action);
 
         return deferred.promise;
     },
@@ -522,7 +609,7 @@ ya.Core.$extend({
      */
     save: function () {
         var me = this,
-            deferred = ya.$Promise.deferred(),
+            deferred = ya.$promise.deferred(),
             action,
             toCreate = [],
             toUpdate = [],
@@ -558,8 +645,8 @@ ya.Core.$extend({
         byIdFn = function (record) {
             return function (_record) {
                 return record.__clientId__ ?
-                    _record.data('__clientId__') === record.__clientId__ :
-                    _record.data('id') === record.id;
+                _record.data('__clientId__') === record.__clientId__ :
+                _record.data('id') === record.id;
             };
         };
 
@@ -683,7 +770,7 @@ ya.Core.$extend({
     prepareData: function (data) {
         var me = this,
             ModelInstance = me.getModel(),
-            modelConfig = { namespace: me.getNamespace()},
+            modelConfig = {namespace: me.getNamespace()},
             l = data.length,
             models = [];
 
@@ -700,8 +787,7 @@ ya.Core.$extend({
 
         me.suspendEvents(true);
         me.filter();
-        me.sort()
-        ;
+        me.sort();
         me.resumeEvents();
         me.fireEvent('prepare');
 

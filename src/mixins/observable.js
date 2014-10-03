@@ -13,14 +13,19 @@ ya.$set('ya', 'mixins.Observable', {
             return true;
         var ret = true,
             shift = Array.prototype.shift,
-            evName = shift.call(arguments);
+            evName = shift.call(arguments),
+            listener;
 
         for (var i = 0, li = this._listeners[evName] || [], len = li.length; i < len; i++) {
 
             if (ret) {
 
-                ret = li[i].apply(li[i], arguments);
+                listener = li[i];
+                ret = listener.apply(listener, arguments);
                 ret = typeof ret === 'undefined' ? true : ret;
+                if(listener.single) {
+                    this.removeEventListener(evName, listener);
+                }
 
             }
 
@@ -30,15 +35,16 @@ ya.$set('ya', 'mixins.Observable', {
 
     /**
      * fire event
-     * @version 0.1.12
      * @param evName
      * @param callback
      * @param scope
+     * @param single
      * @returns {this}
      *
      */
-    addEventListener: function (evName, callback, scope) {
+    addEventListener: function (evName, callback, scope, single) {
         var listeners = this._listeners[evName] || [];
+        if(single) callback.single = true;
         listeners.push(scope ? callback.bind(scope) : callback);
         this._listeners[evName] = listeners;
         return this;
@@ -46,7 +52,6 @@ ya.$set('ya', 'mixins.Observable', {
 
     /**
      * fire event
-     * @version 0.1.12
      * @param evName
      * @param callback
      * @returns {this}

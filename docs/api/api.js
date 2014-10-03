@@ -2,7 +2,8 @@ YUI.add("yuidoc-meta", function(Y) {
    Y.YUIDoc = { meta: {
     "classes": [
         "ya",
-        "ya.$Promise",
+        "ya.$promise",
+        "ya.Ajax",
         "ya.Collection",
         "ya.Controller",
         "ya.Core",
@@ -10,13 +11,15 @@ YUI.add("yuidoc-meta", function(Y) {
         "ya.Job",
         "ya.Manager",
         "ya.Model",
+        "ya.Module",
         "ya.Router",
         "ya.View",
-        "ya.collection.$Manager",
-        "ya.controller.$Manager",
+        "ya.ajax.JSON",
+        "ya.collection.$manager",
+        "ya.controller.$manager",
         "ya.data.Action",
         "ya.data.Proxy",
-        "ya.data.proxy.Localstorage",
+        "ya.data.proxy.LocalStorage",
         "ya.event.$dispatcher",
         "ya.mixins.Array",
         "ya.mixins.CSSStyle",
@@ -24,10 +27,12 @@ YUI.add("yuidoc-meta", function(Y) {
         "ya.mixins.DOM",
         "ya.mixins.GetSet",
         "ya.mixins.Observable",
-        "ya.view.$Manager",
+        "ya.util.$detection",
+        "ya.util.Parallel",
+        "ya.view.$manager",
         "ya.view.TDOM",
         "ya.view.Template",
-        "ya.view.template.$Manager"
+        "ya.view.template.$manager"
     ],
     "modules": [
         "ya"
@@ -36,7 +41,7 @@ YUI.add("yuidoc-meta", function(Y) {
         {
             "displayName": "ya",
             "name": "ya",
-            "description": "Main framework object..."
+            "description": "Static object"
         }
     ]
 } };

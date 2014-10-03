@@ -53,9 +53,9 @@ ya.Core.$extend({
     initRequired: function () {
         var me = this;
 
-        if (!me.getNamespace()){
+        if (!me.getNamespace()) {
 
-            throw ya.Error.$create("Model need to have namespace");
+            throw ya.Error.$create("Model need to has a namespace");
 
         }
 
@@ -90,6 +90,7 @@ ya.Core.$extend({
 
             me.set('isDirty', true);
             me.fireEvent('data' + property.charAt(0).toUpperCase() + property.slice(1) + 'Change', me, value, oldVal);
+            me.fireEvent('dataChange', me, data);
 
         }
     },
@@ -99,7 +100,13 @@ ya.Core.$extend({
      * @returns {*}
      */
     getDataProperty: function (property) {
-        return this.get('data')[property];
+        var value = this.get('data')[property];
+
+        if (typeof value === "undefined") {
+            value = "";
+        }
+
+        return value;
     },
     /**
      * @method data
@@ -155,7 +162,6 @@ ya.Core.$extend({
                 me.data(key, null);
             }
         }
-        me.set('data', {});
         me.fireEvent('dataChange', me, data);
     },
     /**
@@ -166,14 +172,15 @@ ya.Core.$extend({
         var me = this,
             data = me.get('data'),
             idProperty = me.getIdProperty(),
-            deferred = ya.$Promise.deferred(),
+            deferred = ya.$promise.deferred(),
             action = new ya.data.Action(),
             opts = {},
             response;
 
         if (
-            typeof params[idProperty] === 'undefined' && typeof data[idProperty] === 'undefined'
-            )
+            typeof params[idProperty] === 'undefined' &&
+            typeof data[idProperty] === 'undefined'
+        )
             throw ya.Error.$create('You need to pass id to load model');
 
         params[idProperty] = data[idProperty];
@@ -182,20 +189,62 @@ ya.Core.$extend({
         opts.params = params;
         opts.callback = function () {
 
-            response = me.getProxy().getResponse();
+            response = action
+                .getResponse();
 
-            if (me.getProxy().getStatus() === 'success') {
+            if (
+                action
+                    .getStatus() === ya
+                    .data
+                    .Action
+                    .$status
+                    .SUCCESS
+            ) {
 
-                me.set('isDirty', false);
-                me.set('data', response);
+                me
+                    .set(
+                    'isDirty',
+                    false
+                );
 
-                deferred.resolve({scope: me, response: response, action: 'read'});
-                me.fireEvent('loaded', me, response, 'read');
+                me
+                    .set(
+                    'data',
+                    response
+                        .result
+                );
+
+                deferred
+                    .resolve({
+                        scope: me,
+                        response: response,
+                        action: 'read'
+                    });
+
+                me
+                    .fireEvent(
+                    'loaded',
+                    me,
+                    response,
+                    'read'
+                );
 
             } else {
 
-                deferred.reject({scope: me, response: response, action: 'read'});
-                me.fireEvent('error', me, response, 'read');
+                deferred
+                    .reject({
+                        scope: me,
+                        response: response,
+                        action: 'read'
+                    });
+
+                me
+                    .fireEvent(
+                    'error',
+                    me,
+                    response,
+                    'read'
+                );
 
             }
 
@@ -215,7 +264,7 @@ ya.Core.$extend({
         var me = this,
             data = me.get('data'),
             idProperty = me.getIdProperty(),
-            deferred = ya.$Promise.deferred(),
+            deferred = ya.$promise.deferred(),
             action = new ya.data.Action(),
             proxy = me.getProxy(),
             opts = {},
@@ -255,7 +304,6 @@ ya.Core.$extend({
             .setOptions(opts)
             .setData(data);
 
-
         if (typeof data[idProperty] === 'undefined') {
 
             type = 'create';
@@ -277,7 +325,7 @@ ya.Core.$extend({
         var me = this,
             data = me.get('data'),
             idProperty = me.getIdProperty(),
-            deferred = ya.$Promise.deferred(),
+            deferred = ya.$promise.deferred(),
             action = new ya.data.Action(),
             proxy = me.getProxy(),
             opts = {},

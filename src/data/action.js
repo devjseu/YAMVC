@@ -1,8 +1,6 @@
 /**
- *
- *
- * @namespace ya.data
- * @class Action
+ * @namespace ya
+ * @class data.Action
  * @extends ya.Core
  */
 ya.Core.$extend({
@@ -19,6 +17,7 @@ ya.Core.$extend({
         var me = this;
 
         me.set('response', {});
+        me.set('results', null);
         me.set('status', ya.data.Action.$status.PENDING);
 
         return me;
@@ -29,8 +28,7 @@ ya.Core.$extend({
      * @returns {*}
      */
     setData: function (data) {
-        this.set('data', data);
-        return this;
+        return this.set('data', data);
     },
     /**
      * @methods getData
@@ -45,8 +43,7 @@ ya.Core.$extend({
      * @returns {*}
      */
     setOptions: function (opts) {
-        this.set('options', opts);
-        return this;
+        return this.set('options', opts);
     },
     /**
      * @methods getOptions
@@ -76,7 +73,13 @@ ya.Core.$extend({
      * @returns {Object}
      */
     getResponse: function () {
-        return this.get('response');
+        return this._response;
+    },
+    setResultSet: function (results) {
+        return this.set('results', results);
+    },
+    getResultSet: function () {
+        return this._results;
     },
     /**
      * @methods setStatus
